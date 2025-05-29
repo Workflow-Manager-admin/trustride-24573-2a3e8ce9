@@ -404,7 +404,9 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             label="Fare"
             value={
               <span>
-                <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>${typeof ride.price === "number" ? ride.price.toFixed(2) : ride.price}</span>
+                <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>
+                  ₹{typeof ride.price === "number" ? ride.price.toLocaleString("en-IN") : ride.price}
+                </span>
                 <span style={{ color: "#7ec9c9", fontWeight: 500, fontSize: 13.2, marginLeft: 2 }}>/seat</span>
               </span>
             }
