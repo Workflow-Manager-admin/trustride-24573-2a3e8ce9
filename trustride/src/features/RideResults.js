@@ -16,7 +16,7 @@ const mockRides = [
     id: "ride-1",
     driver: "Priya Shah",
     departure: new Date(Date.now() + 60 * 60000), // 1 hour from now
-    eta: "14:45",
+    eta: new Date(Date.now() + 90 * 60000), // e.g., 1.5hrs from now, set as Date
     price: 3.50,
     trustIndex: 95,
     ecoScore: 28,
@@ -25,7 +25,7 @@ const mockRides = [
     id: "ride-2",
     driver: "Fatima Hossain",
     departure: new Date(Date.now() + 100 * 60000), // 1h40m
-    eta: "15:30",
+    eta: new Date(Date.now() + 130 * 60000),
     price: 2.90,
     trustIndex: 91,
     ecoScore: 32,
@@ -34,17 +34,17 @@ const mockRides = [
     id: "ride-3",
     driver: "Robin Thomas",
     departure: new Date(Date.now() + 30 * 60000), // 30min
-    eta: "14:25",
+    eta: new Date(Date.now() + 70 * 60000),
     price: 2.50,
     trustIndex: 88,
     ecoScore: 23,
   },
 ];
 
-// Format time for card display
+// Format time for card display (12-hour with AM/PM)
 function fmtTime(date) {
   const d = new Date(date);
-  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 }
 
 // PUBLIC_INTERFACE
@@ -120,7 +120,7 @@ export default function RideResults({ onBack, onChooseRide }) {
             <InfoBox
               icon="🕓"
               label="ETA"
-              value={ride.eta}
+              value={fmtTime(ride.eta)}
               color="var(--color-accent)"
             />
             <InfoBox
