@@ -14,7 +14,8 @@ import TrustSafetyScreen from './screens/TrustSafetyScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SignInScreen from './screens/SignInScreen';
 
-// Ride booking screen stub to redirect to after sign-in
+// PUBLIC_INTERFACE
+// Minimalist ride booking screen after successful sign-in
 function BookRideScreen() {
   return (
     <div className="container" style={{ paddingTop: 90, paddingBottom: 70 }}>
@@ -33,19 +34,19 @@ function BookRideScreen() {
           flexWrap: "wrap",
           margin: "28px 0",
         }}>
+          <TransportCard icon="🚘" label="Car" />
+          <TransportCard icon="🚲" label="Bike" />
+          <TransportCard icon="🚐" label="Minivan" />
           <TransportCard icon="🚌" label="Shuttle Bus" />
-          <TransportCard icon="🚘" label="Carpool" />
-          <TransportCard icon="🚴‍♂️" label="Bicycle" />
           <TransportCard icon="🛴" label="e-Scooter" />
-          <TransportCard icon="🚶‍♂️" label="Walk" />
+          {/* Add more modes if needed */}
         </div>
-        {/* Optionally, more details/options go here */}
       </section>
     </div>
   );
 }
 
-function TransportCard({icon, label}) {
+function TransportCard({ icon, label }) {
   return (
     <div style={{
       background: 'var(--card-bg)',
@@ -67,8 +68,8 @@ function TransportCard({icon, label}) {
       padding: 14,
       transition: 'box-shadow .17s'
     }}>
-      <span style={{fontSize: 32}}>{icon}</span>
-      <span style={{fontSize: 13.5, color: 'var(--text-secondary)'}}>{label}</span>
+      <span style={{ fontSize: 32 }}>{icon}</span>
+      <span style={{ fontSize: 13.5, color: 'var(--text-secondary)' }}>{label}</span>
     </div>
   );
 }
