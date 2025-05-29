@@ -581,82 +581,104 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         style={{
           marginBottom: 23,
           borderRadius: "var(--radius-main)",
-          padding: "22px 18px 20px 18px",
-          background: "#fafdfc",
-          border: "1.4px solid var(--color-border)",
-          boxShadow: "0 3px 16px rgba(0, 168, 150, 0.045)",
+          padding: "24px 18px 18px 18px",
+          background: "#fafdfe",
+          border: "1.55px solid var(--color-border)",
+          boxShadow: "0 3px 18px rgba(0, 168, 150, 0.050)",
         }}
         aria-label="Ride Conduct Agreement"
       >
-        <div style={{
-          fontWeight: 740,
-          fontSize: 17.2,
-          color: "var(--color-accent)",
-          marginBottom: 8,
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          letterSpacing: "-0.02em"
-        }}>
-          <span role="img" aria-label="rules">📃</span>
-          Passenger Conduct Agreement
+        <div
+          style={{
+            fontWeight: 750,
+            fontSize: 17.7,
+            color: "var(--color-accent)",
+            marginBottom: 8,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          <span role="img" aria-label="rules" style={{ fontSize: 24, marginRight: 2 }}>📃</span>
+          Conduct Agreement
         </div>
         <div className="description"
           style={{
-            fontSize: 15.6,
+            fontSize: 15.7,
             color: "var(--color-text-secondary)",
-            fontWeight: 500,
-            marginBottom: 11,
-            lineHeight: 1.5
+            fontWeight: 600,
+            marginBottom: 13,
+            lineHeight: 1.6
           }}
         >
-          To confirm a ride, you must agree to abide by the following community rules:
+          Please read and agree to these conduct rules to complete your booking:
         </div>
-        <ol style={{ margin: 0, paddingLeft: 22, color: "var(--color-text-secondary)", fontSize: 15.1, fontWeight: 500 }}>
+        <ol style={{
+          margin: 0,
+          paddingLeft: 24,
+          color: "var(--color-text-secondary)",
+          fontSize: 15,
+          fontWeight: 510,
+          marginBottom: 0,
+          lineHeight: 1.36
+        }}>
           {DEFAULT_RULES.map((rule, idx) => (
             <li key={idx} style={{ marginBottom: 3 }}>{rule}</li>
           ))}
         </ol>
-        <div style={{ marginTop: 19, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ marginTop: 20, display: "flex", alignItems: "center", gap: 10 }}>
           <input
             id="accept-rules-checkbox"
+            name="accept-rules-checkbox"
             type="checkbox"
             checked={agreed}
             onChange={() => setAgreed((a) => !a)}
             style={{
               width: 21,
               height: 21,
-              accentColor: "var(--color-accent)"
+              accentColor: "var(--color-accent)",
+              outline: agreed ? "2px solid var(--color-accent)" : undefined,
             }}
+            aria-required="true"
+            aria-checked={agreed}
+            tabIndex={0}
           />
           <label
             htmlFor="accept-rules-checkbox"
             style={{
-              fontWeight: 650,
-              fontSize: 15.5,
-              color: "var(--color-accent)",
+              fontWeight: 680,
+              fontSize: 15.65,
+              color: agreed ? "var(--color-accent)" : "#8da8ad",
               cursor: "pointer",
-              userSelect: "none"
+              userSelect: "none",
+              outline: "none"
             }}
           >
-            I have read and <u>agree to follow</u> these rules
+            <span>
+              I have read and <u>agree to follow</u> all conduct rules above
+              <span style={{ color: "#e22b38", marginLeft: 4, fontWeight: 400 }} aria-hidden={!(!agreed)}>
+                {(!agreed) ? "*" : ""}
+              </span>
+            </span>
           </label>
         </div>
         {!agreed && (
           <div
             style={{
-              color: "#e22b38",
-              fontWeight: 600,
-              fontSize: 13.2,
-              marginTop: 6,
+              color: "#d32242",
+              fontWeight: 650,
+              fontSize: 13.6,
+              marginTop: 7,
               background: "#fff7f8",
-              padding: "4px 12px",
-              borderRadius: 8,
-              maxWidth: 355
+              padding: "7px 14px",
+              borderRadius: 7,
+              maxWidth: 370
             }}
+            role="alert"
             aria-live="polite"
           >
-            You must accept the rules to proceed with the booking.
+            Please accept conduct rules to enable booking.
           </div>
         )}
       </section>
