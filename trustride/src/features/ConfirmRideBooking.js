@@ -343,27 +343,40 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         aria-label="Review ETA & Fare"
         style={{
           borderRadius: "var(--radius-main)",
-          border: "2px solid var(--color-accent)",
-          boxShadow: "0 4px 22px rgba(0,168,150,0.07)",
+          border: "2.5px solid var(--color-accent)",
+          boxShadow: "0 6px 24px rgba(0,168,150,0.10)",
           marginBottom: 19,
           background: "#f4fbf9",
           padding: "22px 17px 17px 19px",
           display: "flex",
           flexDirection: "column",
           gap: 8,
+          animation: !etaFareReviewed ? "pulse-accent 1.5s infinite alternate" : "none"
         }}
       >
+        <style>
+          {`
+            @keyframes pulse-accent {
+              0% { box-shadow: 0 0 0 rgba(0,168,150,0.05);}
+              100% { box-shadow: 0 0 18px 2px rgba(0,168,150,0.11);}
+            }
+          `}
+        </style>
         <div style={{
-          fontWeight: 700,
-          fontSize: 17.1,
+          fontWeight: 800,
+          fontSize: 17.3,
           color: "var(--color-accent)",
           marginBottom: 8,
           display: "flex",
           alignItems: "center",
-          gap: 7
+          gap: 7,
+          letterSpacing: "-0.03em",
+          paddingBottom: 2
         }}>
           <span role="img" aria-label="review">🔎</span>
-          Please confirm your Estimated Time of Arrival and Fare
+          <span>
+            Please <b>review and confirm</b> your <span style={{ color: "var(--color-primary)" }}>Estimated Time of Arrival (12-hour clock, AM/PM)</span> and <span style={{ color: "#00A896" }}>fare</span>
+          </span>
         </div>
         <div style={{
           display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", marginBottom: 2
@@ -371,14 +384,11 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           {/* ETA */}
           <StatBox
             icon="🕓"
-            label="ETA"
+            label="ETA (12-hour AM/PM)"
             value={
-              typeof ride.eta === 'string'
-                ? ride.eta
-                : (ride.eta instanceof Date
-                  ? formatTime(ride.eta)
-                  : (ride.eta ? String(ride.eta) : 'N/A')
-                )
+              ride.eta
+                ? formatTime12AMPM(ride.eta)
+                : (typeof ride.eta === 'string' ? ride.eta : "N/A")
             }
             color="var(--color-accent)"
           />
@@ -421,18 +431,20 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               width: 20,
               height: 20,
               accentColor: "var(--color-accent)",
+              outline: "1.8px solid var(--color-accent)"
             }}
           />
           <label
             htmlFor="review-eta-fare-checkbox"
             style={{
-              fontWeight: 650,
-              fontSize: 15.5,
+              fontWeight: 740,
+              fontSize: 15.8,
               color: etaFareReviewed ? "var(--color-accent)" : "#8da2a8",
-              cursor: "pointer"
+              cursor: "pointer",
+              userSelect: "none"
             }}
           >
-            I have reviewed and confirm the ETA & Fare above.
+            I have <span style={{textDecoration: "underline dotted"}}>reviewed and acknowledge</span> the ETA and Fare information above.
           </label>
         </div>
         {!etaFareReviewed && (
@@ -450,7 +462,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             }}
             aria-live="polite"
           >
-            Please review and confirm ETA & Fare to continue.
+            Please review and confirm ETA & Fare (above) to continue: this step is required before booking.
           </div>
         )}
       </section>
