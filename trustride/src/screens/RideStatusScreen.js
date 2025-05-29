@@ -231,7 +231,13 @@ function RideStatusScreen() {
   function handleCloseSOS() { setShowSOS(false); }
 
   // Return to Home/Book new ride
-  function handleBackHome() { navigate("/", { replace: true }); }
+  function handleBackHome() {
+    setShowFeedbackModal(false);
+    setShowThankYou(false);
+    setSelectedRating(null);
+    setDidHomeRedirect(false);
+    navigate("/", { replace: true });
+  }
 
   // Emergency button style
   const emergBtnStyle = {
@@ -398,129 +404,153 @@ function RideStatusScreen() {
         </div>
 
         {/* Post-ride Emoji Rating Feedback */}
-        {rideStatus === "Completed" ? (
-          <>
-            {/* Modal/Dialog overlay for emoji feedback: always visible on 'Completed' until rating chosen */}
+        {showFeedbackModal && rideStatus === "Completed" && (
+          <div
+            style={{
+              position: "fixed",
+              left: 0,
+              top: 0,
+              width: "100vw",
+              height: "100vh",
+              zIndex: 9100,
+              background: "rgba(30,40,58,0.23)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={
+              selectedRating == null
+                ? "Rate your ride"
+                : "Thank you for your feedback"
+            }
+          >
             <div
               style={{
-                position: "fixed",
-                left: 0, top: 0, width: "100vw", height: "100vh",
-                zIndex: 9100,
-                background: "rgba(30,40,58,0.23)",
-                display: "flex", alignItems: "center", justifyContent: "center"
+                background: "#fff",
+                borderRadius: 21,
+                minWidth: 285,
+                maxWidth: 350,
+                boxShadow: "0 8px 42px rgba(0,168,150, 0.21)",
+                padding: "2.1rem 1.2rem 1.5rem 1.2rem",
+                border: "2px solid var(--accent)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                position: "relative",
               }}
-              role="dialog"
-              aria-modal="true"
-              aria-label={
-                selectedRating == null
-                  ? "Rate your ride"
-                  : "Thank you for your feedback"
-              }
             >
               <div
+                className="heading-2"
                 style={{
-                  background: "#fff",
-                  borderRadius: 21,
-                  minWidth: 285,
-                  maxWidth: 350,
-                  boxShadow: "0 8px 42px rgba(0,168,150, 0.21)",
-                  padding: "2.1rem 1.2rem 1.5rem 1.2rem",
-                  border: "2px solid var(--accent)",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  position: "relative"
-                }}
-              >
-                <div className="heading-2" style={{
                   fontSize: 18,
                   color: "var(--accent)",
                   marginBottom: 9,
                   fontWeight: 700,
                   letterSpacing: 0.12,
                   textAlign: "center",
-                }}>
-                  {selectedRating == null ? (
-                    <>
-                      Enjoyed the ride?<br />
-                      <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
-                        Take a moment to rate us.
-                      </span>
-                    </>
-                  ) : (
-                    <span>
-                      {/* To ensure accessibility: Thank you title */}
-                      Thank you for riding with us!
-                    </span>
-                  )}
-                </div>
+                }}
+              >
                 {selectedRating == null ? (
                   <>
-                    <div style={{
+                    Enjoyed the ride?<br />
+                    <span
+                      style={{
+                        fontWeight: 500,
+                        color: "var(--text-secondary)",
+                        fontSize: 15.1,
+                      }}
+                    >
+                      Take a moment to rate us.
+                    </span>
+                  </>
+                ) : (
+                  <span>
+                    Thank you for riding with us!
+                  </span>
+                )}
+              </div>
+              {selectedRating == null ? (
+                <>
+                  <div
+                    style={{
                       display: "flex",
                       flexDirection: "row",
                       justifyContent: "center",
                       gap: 19,
-                      margin: "15px 0 8px 0"
-                    }}>
-                      {[{
-                        emoji: "😡", label: "Very Poor"
-                      }, {
-                        emoji: "😕", label: "Poor"
-                      }, {
-                        emoji: "😐", label: "Okay"
-                      }, {
-                        emoji: "🙂", label: "Good"
-                      }, {
-                        emoji: "😄", label: "Excellent"
-                      }].map((item, idx) => (
-                        <button
-                          key={item.emoji}
-                          style={{
-                            fontSize: 35,
-                            background: "transparent",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "0 3px",
-                            transition: "transform .14s",
-                          }}
-                          aria-label={item.label}
-                          tabIndex={0}
-                          onClick={() => setSelectedRating(idx + 1)}
-                        >
-                          <span role="img" aria-label={item.label}>{item.emoji}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{
+                      margin: "15px 0 8px 0",
+                    }}
+                  >
+                    {[
+                      { emoji: "😡", label: "Very Poor" },
+                      { emoji: "😕", label: "Poor" },
+                      { emoji: "😐", label: "Okay" },
+                      { emoji: "🙂", label: "Good" },
+                      { emoji: "😄", label: "Excellent" },
+                    ].map((item, idx) => (
+                      <button
+                        key={item.emoji}
+                        style={{
+                          fontSize: 35,
+                          background: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "0 3px",
+                          transition: "transform .14s",
+                        }}
+                        aria-label={item.label}
+                        tabIndex={0}
+                        onClick={() => setSelectedRating(idx + 1)}
+                      >
+                        <span role="img" aria-label={item.label}>
+                          {item.emoji}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                  <div
+                    style={{
                       color: "var(--text-secondary)",
                       fontSize: 13.5,
                       fontStyle: "italic",
                       marginTop: 7,
-                      textAlign: "center"
-                    }}>
-                      Tap an emoji to rate and return to home
-                    </div>
-                  </>
-                ) : (
-                  // Thank You Message always visible on feedback, before auto-navigate
-                  <div style={{
-                    color: "var(--primary)",
-                    fontWeight: 700,
-                    fontSize: 18,
-                    margin: "18px 0 12px 0",
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center"
-                  }}>
-                    <span style={{ fontSize: 44, marginBottom: 2, marginTop: 2 }}>🎉</span>
+                      textAlign: "center",
+                    }}
+                  >
+                    Tap an emoji to rate and return to home
+                  </div>
+                </>
+              ) : (
+                showThankYou && (
+                  <div
+                    style={{
+                      color: "var(--primary)",
+                      fontWeight: 700,
+                      fontSize: 18,
+                      margin: "18px 0 12px 0",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 44,
+                        marginBottom: 2,
+                        marginTop: 2,
+                      }}
+                    >
+                      🎉
+                    </span>
                     Thank you for your feedback!
                   </div>
-                )}
-              </div>
+                )
+              )}
             </div>
-          </>
-        ) : (
+          </div>
+        )}
+        {(!showFeedbackModal || rideStatus !== "Completed") && (
           // Only show buttons if not in feedback mode – i.e., NOT 'Completed'
           <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
             <button
