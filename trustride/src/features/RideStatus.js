@@ -37,34 +37,32 @@ const userIcon = new L.Icon({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   shadowSize: [38, 38]
 });
-// Fix for missing default marker icons in leaflet
+
 /**
  * PUBLIC_INTERFACE
  * RideStatus: Displays ride status, estimated pickup, and a real map with live mock driver location and route.
  */
 export default function RideStatus({ ride, onSOS }) {
-  // Use mock data if no ride passed
+  // Mock ride if none is passed
   const mockRide = {
     driver: "Priya Shah",
     vehicle: "Hyundai Verna - Blue",
     depPoint: "Greenwood University Main Gate",
-    // Note: estPickup will be set below for realism
-    driverLatLng: [19.103, 72.87],               // sample "on the way" location
-    pickupLatLng: [19.1167, 72.8333],            // fixed mock pickup (Mumbai)
+    driverLatLng: [19.103, 72.87],
+    pickupLatLng: [19.1167, 72.8333],
   };
-  // Calculate a random or mock ETA (between 3-8 min) each render and set pickup time
+
+  // Calculate mock ETA (6-12 min) or real from ride.estPickup
   const etaMins = useMemo(() => {
-    // If ride.estPickup provided, use the real diff, else randomize
     if (ride && ride.estPickup) {
       const minFromNow = Math.max(1, Math.ceil((new Date(ride.estPickup) - new Date()) / 60000));
       return minFromNow;
     } else {
-      // Demo: random between 3–8 minutes
-      return Math.floor(3 + Math.random() * 6);
+      return Math.floor(6 + Math.random() * 7); // 6-12 min
     }
   }, [ride && ride.estPickup]);
 
-  // Set estPickup to now + etaMins
+  // Calculate the target pickup time object
   const estPickup = useMemo(() => {
     if (ride && ride.estPickup) return new Date(ride.estPickup);
     const now = new Date();
@@ -79,25 +77,18 @@ export default function RideStatus({ ride, onSOS }) {
     estPickup
   };
 
-  // For "Arriving in X min" logic -- always based on estPickup
+  // Display strings for ETA
   const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date()) / 60000));
   const timeStr = timeDiff <= 1
     ? "Arriving now"
     : `Arriving in ${timeDiff} min`;
 
-  // (optional) Use 'en route' line or animated marker here if desired
-  const route = [r.driverLatLng, r.pickupLatLng];
-
-  // Responsive map height for mobile
-  const getMapHeight = () =>
-    window.innerWidth < 420 ? 180 : 210;
-
-  // Format as '08:45 PM' string
-  function fmtClock(dt) {
+  // Format as '08:12 PM'
+  function formatClock(dt) {
     return new Date(dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
   }
 
-  // Handler for SOS
+  // SOS handler
   function handleSOS() {
     if (onSOS) return onSOS();
     window.alert(
@@ -105,38 +96,70 @@ export default function RideStatus({ ride, onSOS }) {
     );
   }
 
-  // Style for ETA display (high attention, animated pulse to catch user's eye)
+  // Style for ETA
   const etaBoxStyle = {
-    margin: "18px auto 8px",
+    margin: "0 auto 13px",
     fontWeight: 900,
-    fontSize: "1.62rem",
+    fontSize: "2rem",
     color: "var(--color-accent)",
     background: "linear-gradient(90deg, #faffeb 60%, #eaf9ff 100%)",
-    borderRadius: 17,
+    borderRadius: 20,
     border: "2.7px solid var(--color-accent)",
-    boxShadow: "0 6px 22px #a7f2eb32",
-    padding: "13px 27px 12px 22px",
+    boxShadow: "0 8px 33px #a7f2eb25",
+    padding: "15px 33px 13px 27px",
     textAlign: "center",
-    letterSpacing: "1.2px",
-    display: "inline-block",
-    lineHeight: 1.13,
-    textShadow: "0 1.7px 1.5px #00A89612",
-    animation: "pulseEtaTime 1.35s infinite alternate"
+    letterSpacing: "1.4px",
+    display: "block",
+    lineHeight: 1.21,
+    textShadow: "0 2px 4px #00A89611",
+    animation: "pulseEtaTime 1.35s infinite alternate",
+    position: "relative",
+    top: "-18px",
+    zIndex: 11,
+    transition: "background 0.25s"
   };
 
-  // Add keyframes animation inline (safe as this is a small effect for attention)
   const etaPulseKeyframesStyle = `
     @keyframes pulseEtaTime {
-      0% { box-shadow: 0 0 0 rgba(0,168,150,0.07); background-size: 100% 100%; }
-      100% { box-shadow: 0 4px 23px 2px #a7f2eb44; background-size: 120% 110%; }
+      0% { box-shadow: 0 0 0 rgba(0,168,150,0.09); background-size: 100% 100%; }
+      100% { box-shadow: 0 7px 28px 7px #a7f2eb44; background-size: 118% 113%; }
     }
   `;
 
-  // Main component render
+  // Map route
+  const route = [r.driverLatLng, r.pickupLatLng];
+
+  // Map height (responsive for mobile)
+  const getMapHeight = () => window.innerWidth < 420 ? 180 : 210;
+
+  // Main render
   return (
-    <div style={{ paddingTop: 48, paddingBottom: 30, maxWidth: 430, margin: "0 auto" }}>
+    <div style={{ paddingTop: 34, paddingBottom: 30, maxWidth: 430, margin: "0 auto" }}>
       <style>{etaPulseKeyframesStyle}</style>
-      {/* Status Card */}
+      {/* ETA PROMINENT DISPLAY */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        style={etaBoxStyle}
+      >
+        {timeStr}
+        <span style={{
+          margin: "0 12px 0 9px",
+          fontSize: "1.19rem",
+          color: "#129083",
+          fontWeight: 800,
+          background: "rgba(0,168,150,0.09)",
+          padding: "6px 15px",
+          borderRadius: 12,
+          verticalAlign: "middle",
+          letterSpacing: "0.1em",
+          border: "1.2px solid #00A896",
+          boxShadow: "0 1px 8px #b9efe925"
+        }}>
+          &#x23F1; {formatClock(r.estPickup)}
+        </span>
+      </div>
+      {/* Ride status card */}
       <section
         className="card"
         style={{
@@ -173,22 +196,6 @@ export default function RideStatus({ ride, onSOS }) {
         </span>
         <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15 }}>
           Your verified driver is on the way!
-        </div>
-        {/* PROMINENT ETA */}
-        <div
-          aria-live="polite"
-          aria-atomic="true"
-          style={etaBoxStyle}
-        >
-          {timeStr} <span style={{
-            margin: "0 8px",
-            fontSize: "1.12rem",
-            color: "#129083",
-            fontWeight: 800,
-            background: "rgba(0,168,150,0.09)",
-            padding: "4px 10px",
-            borderRadius: 9
-          }}>&#x23F1; {fmtClock(r.estPickup)}</span>
         </div>
         <div
           style={{
@@ -242,8 +249,7 @@ export default function RideStatus({ ride, onSOS }) {
           Pickup Point: <span style={{ color: "#0077B6" }}>{r.depPoint}</span>
         </div>
       </section>
-
-      {/* Map Card */}
+      {/* Map card */}
       <section
         className="card"
         style={{
@@ -268,7 +274,7 @@ export default function RideStatus({ ride, onSOS }) {
             letterSpacing: "-0.3px"
           }}
         >
-          <span style={{marginRight: 7, fontSize: 23}}>🗺️</span>
+          <span style={{ marginRight: 7, fontSize: 23 }}>🗺️</span>
           Live Map: Driver & Route
         </div>
         <div style={{
@@ -301,14 +307,14 @@ export default function RideStatus({ ride, onSOS }) {
               maxZoom={18}
               attribution="&copy; OpenStreetMap contributors"
             />
-            {/* Driver marker (car icon) */}
+            {/* Driver marker */}
             <Marker position={r.driverLatLng} icon={carIcon}>
               <Popup>
                 Driver: {r.driver} <br />
                 {r.vehicle}
               </Popup>
             </Marker>
-            {/* Pickup marker (blue pin) */}
+            {/* Pickup marker */}
             <Marker position={r.pickupLatLng} icon={userIcon}>
               <Popup>
                 Pickup: {r.depPoint}
@@ -336,7 +342,6 @@ export default function RideStatus({ ride, onSOS }) {
           Track progress live on the map.
         </div>
       </section>
-
       {/* SOS Button Section */}
       <section
         style={{
