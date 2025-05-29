@@ -6,7 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
  * RideStatusScreen — shows ride status (Scheduled/In Progress), estimated time, live (mock) driver tracker, and safety tools.
  * Features:
  *  - Displays ride status as "Scheduled" and auto-transitions to "In Progress" (with notification).
- *  - Prominent visual notification when ride starts.
+ *  - Prominent visual notification when ride starts, which auto-dismisses or can be manually dismissed.
  *  - Shows booking, ride, and guardian details from navigation state robustly.
  *  - Mock driver/vehicle animated tracker with ETA.
  *  - If guardian is set, activates Buddy Safety—shows info that guardian has been notified and mock live GPS feed.
@@ -76,10 +76,13 @@ function RideStatusScreen() {
       ? ride.eta
       : 7;
 
-    // Ride status: "Scheduled" initially, "In Progress" after delay (simulate driver started)
+  // Ride status: "Scheduled" initially, "In Progress" after delay (simulate driver started)
   const [rideStatus, setRideStatus] = useState("Scheduled");
-  // State to show ride start notification (visual modal)
+  // State to show ride start notification (visual modal/banner)
   const [showRideStartNotif, setShowRideStartNotif] = useState(false);
+  // Banner visual state: for dismiss animation/transition
+  const [showBanner, setShowBanner] = useState(false);
+
   // Mock driver animation progress
   const [driverProgress, setDriverProgress] = useState(0);
   // SOS alert modal
@@ -92,22 +95,32 @@ function RideStatusScreen() {
       startStatusTimer = setTimeout(() => {
         setRideStatus("In Progress 🚗");
         setShowRideStartNotif(true);
-      }, 2200);
+        setShowBanner(true);
+      }, 2000);
     }
     return () => startStatusTimer && clearTimeout(startStatusTimer);
     // eslint-disable-next-line
   }, [rideStatus]);
 
-  // Dismiss ride start notification after X seconds
+  // Dismiss ride start notification after X seconds (auto-close)
   useEffect(() => {
     let notifTimer;
     if (showRideStartNotif) {
-      notifTimer = setTimeout(() => setShowRideStartNotif(false), 2900);
+      notifTimer = setTimeout(() => {
+        setShowBanner(false); // animate/dismiss
+        setTimeout(() => setShowRideStartNotif(false), 350);
+      }, 3500);
     }
     return () => notifTimer && clearTimeout(notifTimer);
   }, [showRideStartNotif]);
 
-  // Animate driver progress every 2 sec (mocked to ETA arrival)
+  // Manual notification/banner dismiss
+  function handleManuallyDismiss() {
+    setShowBanner(false);
+    setTimeout(() => setShowRideStartNotif(false), 350);
+  }
+
+  // Animate driver progress every N seconds (mocked to ETA arrival)
   useEffect(() => {
     let timer;
     if (driverProgress < MOCK_ROUTE.length - 1) {
@@ -192,57 +205,77 @@ function RideStatusScreen() {
         </div>
       )}
 
-      {/* Ride Start Notification Modal */}
+      {/* Prominent ride-start banner/modal/notification */}
       {showRideStartNotif && (
         <div
           style={{
             position: "fixed",
-            zIndex: 4200,
-            inset: 0,
-            background: "rgba(0,119,182,0.12)",
+            top: "16vh",
+            left: 0,
+            width: "100vw",
+            zIndex: 4000,
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center"
+            justifyContent: "center",
+            pointerEvents: "none"
           }}
-          aria-modal="true"
-          role="dialog"
+          role="alert"
+          tabIndex={-1}
+          aria-live="assertive"
         >
           <div
             style={{
               background: "#fff",
-              borderRadius: 19,
-              boxShadow: "0 8px 44px rgba(0,119,182,.13)",
-              maxWidth: 355,
-              width: "92vw",
-              padding: "2.4rem 1.2rem 1.5rem 1.2rem",
+              border: "2.5px solid var(--accent)",
+              borderRadius: 22,
+              boxShadow: "0 8px 44px rgba(0,168,150, 0.18)",
+              padding: "1.3rem 2.1rem 1.13rem 2.0rem",
               display: "flex",
-              flexDirection: "column",
               alignItems: "center",
-              border: "2px solid var(--accent)"
+              gap: 18,
+              minWidth: 290,
+              maxWidth: "90vw",
+              fontWeight: 700,
+              fontSize: 18,
+              color: "var(--primary)",
+              opacity: showBanner ? 1 : 0,
+              transform: showBanner ? "translateY(0px)" : "translateY(-36px)",
+              pointerEvents: "auto",
+              transition: "opacity .33s, transform .32s cubic-bezier(.77,.12,.33,1.15)"
             }}
           >
-            <span style={{ fontSize: 47, marginBottom: 7, color: "var(--primary)" }}>🚗</span>
-            <div className="heading-2" style={{ fontWeight: 700, fontSize: 22, color: "var(--accent)", marginBottom: 7, textAlign: "center" }}>
-              Your ride has started!
-            </div>
-            <div style={{ color: "var(--primary)", fontWeight: 600, fontSize: 16, marginBottom: 11, textAlign: "center" }}>
-              Stay seated and fasten your seatbelt. Wishing you a safe journey!
-            </div>
+            <span role="img" aria-label="Ride started" style={{ fontSize: 43, marginRight: 2 }}>🚗</span>
+            <span>
+              Ride <span style={{ color: "var(--accent)" }}>In Progress</span> — Your journey has begun!
+              <div style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15, marginTop: 5 }}>
+                Fasten your seatbelt. Safe travels! 🚦
+              </div>
+            </span>
             <button
-              className="btn btn-large"
+              className="btn"
               style={{
-                borderRadius: 22,
-                minWidth: 110,
-                fontWeight: 600,
                 fontSize: 15,
+                fontWeight: 700,
+                minWidth: 35,
+                minHeight: 35,
+                borderRadius: 22,
                 background: "var(--primary)",
-                marginTop: 5,
-                marginBottom: -5
+                color: "#fff",
+                marginLeft: 18,
+                padding: "6px 15px",
+                alignSelf: "flex-start",
+                boxShadow: "0 1px 7px rgba(0,119,182,0.09)",
+                outline: "none",
+                border: "none",
+                cursor: "pointer",
+                pointerEvents: "auto"
               }}
-              onClick={() => setShowRideStartNotif(false)}
               tabIndex={0}
               type="button"
-            >OK</button>
+              aria-label="Dismiss ride started notification"
+              onClick={handleManuallyDismiss}
+            >
+              ×
+            </button>
           </div>
         </div>
       )}
