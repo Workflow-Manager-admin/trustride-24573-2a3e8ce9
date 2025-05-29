@@ -209,7 +209,9 @@ export default function RideResults({ onBack, onChooseRide }) {
   );
 }
 
-// Sub-component: InfoBox for simple stat
+/**
+ * InfoBox for simple stat. Ensures consistency for fare display.
+ */
 function InfoBox({ icon, label, value, color }) {
   return (
     <div style={{

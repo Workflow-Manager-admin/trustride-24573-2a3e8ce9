@@ -216,7 +216,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
                 value={
                   <span>
                     <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>
-                      ${ride.price.toFixed(2)}
+                      ₹{typeof ride.price === "number" ? ride.price.toLocaleString("en-IN") : ride.price}
                     </span>
                     <span
                       style={{
