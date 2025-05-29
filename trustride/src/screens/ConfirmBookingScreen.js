@@ -38,7 +38,11 @@ function getModeIcon(mode) {
   }
 }
 
-// PUBLIC_INTERFACE
+/*
+ * PUBLIC_INTERFACE
+ * ConfirmBookingScreen – Now includes robust fallback and error UI if state is missing
+ * to prevent blank page and assist the user in navigating correctly.
+ */
 function ConfirmBookingScreen() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,7 +55,10 @@ function ConfirmBookingScreen() {
   const ride = state.ride || state.selectedRide || {};
   const mode = state.mode || "Ride";
   const modeIcon = state.modeIcon || getModeIcon(mode);
-  const guardianContact = typeof state.guardianContact === "string" && state.guardianContact.trim() ? state.guardianContact : null;
+  const guardianContact = typeof state.guardianContact === "string" && state.guardianContact.trim()
+    ? state.guardianContact
+    : null;
+
   // Fallbacks for pickup/destination - highest priority: explicit state > booking object
   const pickup = state.pickup || booking.pickup || "";
   const destination = state.destination || booking.destination || "";
@@ -66,6 +73,16 @@ function ConfirmBookingScreen() {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [submitPending, setSubmitPending] = useState(false);
   const [confirmSuccess, setConfirmSuccess] = useState(false);
+
+  // Determine if critical state is missing
+  const missingCritical =
+    !ride ||
+    !ride.price ||
+    !driverName ||
+    !pickup ||
+    !destination ||
+    !mode ||
+    (typeof fare !== "number" && fare !== "—");
 
   // PUBLIC_INTERFACE
   // Handles ride confirmation flow: disables, simulates backend, shows confirmation
@@ -82,6 +99,12 @@ function ConfirmBookingScreen() {
   // After confirmation, return to home
   function handleReturnHome() {
     navigate("/", { replace: true });
+  }
+
+  // PUBLIC_INTERFACE
+  // If data is missing, user can return to previous page or book again
+  function handleBackToBooking() {
+    navigate("/book-ride", { replace: true });
   }
 
   // UI: Show success confirmation if booked
@@ -145,6 +168,65 @@ function ConfirmBookingScreen() {
           >
             Return Home
           </button>
+        </section>
+      </div>
+    );
+  }
+
+  // Fallback UI if required data is missing
+  if (missingCritical) {
+    return (
+      <div className="container" style={{ paddingTop: 92, paddingBottom: 72 }}>
+        <section
+          className="rounded-card"
+          style={{
+            maxWidth: 425,
+            margin: "46px auto",
+            padding: "2.2rem 1.3rem",
+            textAlign: "center",
+            border: "2px solid var(--accent)",
+            background: "#fffbe3"
+          }}
+        >
+          <span role="img" aria-label="Warning" style={{ fontSize: 44, color: "var(--accent)", marginBottom: 10 }}>⚠️</span>
+          <div className="heading-2" style={{ color: "var(--primary)", fontWeight: 700, fontSize: 19.5, marginBottom: 9 }}>
+            Oops! Incomplete Booking Information
+          </div>
+          <div style={{ color: "var(--text-secondary)", fontSize: 15.5, marginBottom: 11 }}>
+            It looks like essential details needed to confirm your booking were not supplied. <br /><br />
+            You may have landed on this screen out of order or after a session timeout. Please restart the booking process.<br />
+            <br />
+            <b style={{ color: "var(--accent)" }}>We never process a booking without all information securely provided.</b>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: 17 }}>
+            <button
+              className="btn btn-large"
+              style={{
+                marginTop: 5,
+                borderRadius: 22,
+                minWidth: 120,
+                fontWeight: 700,
+                fontSize: 15.2,
+              }}
+              onClick={handleBackToBooking}
+            >
+              Start a New Booking
+            </button>
+            <button
+              className="btn btn-large"
+              style={{
+                marginTop: 5,
+                background: "var(--accent)",
+                borderRadius: 22,
+                minWidth: 110,
+                fontWeight: 700,
+                fontSize: 15.2,
+              }}
+              onClick={handleReturnHome}
+            >
+              Home
+            </button>
+          </div>
         </section>
       </div>
     );
