@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const MOCK_PAYMENTS = [
   { id: "upi", name: "UPI", icon: "🇮🇳" },
-  { id: "card", name: "Card", icon: "💳" },
+  { id: "card", name: "Credit Card", icon: "💳" },
   { id: "cash", name: "Cash", icon: "💵" },
 ];
 
@@ -21,6 +21,7 @@ const CONDUCT_TERMS = [
   "Adhere to ride timings and safety instructions.",
 ];
 
+// Simple utility to choose icon if not passed via navigation state
 function getModeIcon(mode) {
   switch ((mode || "").toLowerCase()) {
     case "bike": return "🚲";
