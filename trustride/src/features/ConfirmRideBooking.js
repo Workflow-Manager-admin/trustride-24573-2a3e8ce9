@@ -776,37 +776,32 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         </div>
         {multiplePayments ? (
           <>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {paymentMethods.map((m, idx) => (
-                <label
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 22,
+                justifyContent: "flex-start",
+                alignItems: "center",
+                marginTop: 4,
+                marginBottom: 3,
+                flexWrap: "wrap"
+              }}
+              role="radiogroup"
+              aria-label="Payment method options"
+            >
+              {paymentMethods.map((m) => (
+                <PaymentMethodIconButton
                   key={m}
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    fontWeight: 600,
-                    color: "var(--color-accent)",
-                    gap: 9,
-                    fontSize: 15
+                  method={m}
+                  icon={PAYMENT_METHOD_ICONS[m] || <span>{m[0]}</span>}
+                  selected={selectedPayment === m}
+                  setSelected={() => {
+                    setSelectedPayment(m);
+                    setTouchedPayment(true);
                   }}
-                >
-                  <input
-                    type="radio"
-                    name="payment-method"
-                    value={m}
-                    checked={selectedPayment === m}
-                    onChange={(e) => {
-                      setSelectedPayment(e.target.value);
-                      setTouchedPayment(true);
-                    }}
-                    style={{
-                      accentColor: "var(--color-accent)",
-                      width: 18, height: 18,
-                      marginRight: 8
-                    }}
-                    required
-                  />
-                  {m}
-                </label>
+                  label={m}
+                />
               ))}
             </div>
             {touchedPayment && !selectedPayment && (
@@ -817,6 +812,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           </>
         ) : (
           <div style={{ fontWeight: 600, color: "var(--color-muted)", fontSize: 15.1 }}>
+            {PAYMENT_METHOD_ICONS[paymentMethods[0]]}
             {paymentMethods[0]} (only available)
           </div>
         )}
