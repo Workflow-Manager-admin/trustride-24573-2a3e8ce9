@@ -13,8 +13,7 @@ const HomeScreen = () => {
 
   // Handler for Login button
   const handleLogin = () => {
-    setModal('login');
-    // In real app: navigate('/login') or show real login, here just "modal" for now.
+    navigate('/sign-in');
   };
 
   // Handler for Discover Ride button
