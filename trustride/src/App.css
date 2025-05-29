@@ -1,9 +1,22 @@
 :root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+  /* TrustRide Theme Colors */
+  --primary: #0077B6;
+  --accent: #00A896;
+  --background: #FFFFFF;
+  --text-primary: #222a32;
+  --text-secondary: #4B6473;
+  --card-bg: #fff;
+  --card-shadow: 0 6px 30px rgba(0, 119, 182, 0.08);
+  --border-color: #e7eef3;
+
+  /* UI General */
+  --radius: 18px;
+  --radius-btn: 28px;
+  --radius-card: 18px;
+  --transition: 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Utility */
+  --ring: 0 0 0 3px rgba(0, 168, 150, 0.12);
 }
 
 body {
