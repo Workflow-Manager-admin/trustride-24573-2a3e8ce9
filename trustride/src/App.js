@@ -3,6 +3,7 @@ import './App.css';
 import BottomTabBar from './components/BottomTabBar';
 import Login from './components/Login';
 import RideResults from './features/RideResults';
+import ConfirmRideBooking from './features/ConfirmRideBooking';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -13,12 +14,36 @@ function App() {
   const [activeTab, setActiveTab] = useState('home');
   // RideResults navigation flag
   const [showRideResults, setShowRideResults] = useState(false);
+  // Confirm booking page state
+  const [bookingState, setBookingState] = useState({
+    showConfirm: false,
+    selectedRide: null,
+  });
 
   // Provide navigation for RideDiscovery → RideResults
   useEffect(() => {
     window._navigateToRideResults = () => setShowRideResults(true);
     return () => { window._navigateToRideResults = null; };
   }, []);
+
+  // Handler to go from RideResults to ConfirmRideBooking
+  const handleChooseRide = (ride) => {
+    setShowRideResults(false);
+    setBookingState({ showConfirm: true, selectedRide: ride });
+  };
+
+  // Handler to go back from ConfirmRideBooking (returns to RideResults)
+  const handleBackFromConfirm = () => {
+    setBookingState({ showConfirm: false, selectedRide: null });
+    setShowRideResults(true);
+  };
+
+  // Handler after successful confirmation/booked ride (return to home tab after confirmation)
+  const handleRideConfirmed = () => {
+    setBookingState({ showConfirm: false, selectedRide: null });
+    setShowRideResults(false);
+    setActiveTab('home');
+  };
 
   // Show Login until an institution-verified user logs in
   if (!user || !user.verified) {
@@ -41,6 +66,39 @@ function App() {
     );
   }
 
+  // Show ConfirmRideBooking screen (when user has chosen a ride to book)
+  if (bookingState.showConfirm) {
+    return (
+      <div className="app">
+        <nav className="navbar" role="navigation">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="logo" aria-label="TrustRide Logo">
+              <span className="logo-symbol">🚗</span>
+              TrustRide
+            </span>
+          </div>
+        </nav>
+        <main style={{ flex: 1 }}>
+          <div className="container">
+            <ConfirmRideBooking
+              ride={bookingState.selectedRide}
+              onConfirm={handleRideConfirmed}
+              onBack={handleBackFromConfirm}
+            />
+          </div>
+        </main>
+        <BottomTabBar
+          activeTab={activeTab}
+          onTabChange={tab => {
+            setActiveTab(tab);
+            setShowRideResults(false);
+            setBookingState({ showConfirm: false, selectedRide: null });
+          }}
+        />
+      </div>
+    );
+  }
+
   // Handle RideResults special rendering
   if (showRideResults) {
     return (
@@ -55,12 +113,16 @@ function App() {
         </nav>
         <main style={{ flex: 1 }}>
           <div className="container">
-            <RideResults onBack={() => setShowRideResults(false)} />
+            <RideResults
+              onBack={() => setShowRideResults(false)}
+              onChooseRide={handleChooseRide}
+            />
           </div>
         </main>
         <BottomTabBar activeTab={activeTab} onTabChange={tab => {
           setActiveTab(tab);
           setShowRideResults(false);
+          setBookingState({ showConfirm: false, selectedRide: null });
         }} />
       </div>
     );
