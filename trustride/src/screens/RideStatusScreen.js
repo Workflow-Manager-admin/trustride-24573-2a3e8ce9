@@ -76,21 +76,40 @@ function RideStatusScreen() {
       ? ride.eta
       : 7;
 
-  // Ride status: "Scheduled" initially, "Enroute" after delay
+    // Ride status: "Scheduled" initially, "In Progress" after delay (simulate driver started)
   const [rideStatus, setRideStatus] = useState("Scheduled");
+  // State to show ride start notification (visual modal)
+  const [showRideStartNotif, setShowRideStartNotif] = useState(false);
   // Mock driver animation progress
   const [driverProgress, setDriverProgress] = useState(0);
   // SOS alert modal
   const [showSOS, setShowSOS] = useState(false);
 
+  // Ride start status simulation timer
+  useEffect(() => {
+    let startStatusTimer;
+    if (rideStatus === "Scheduled") {
+      startStatusTimer = setTimeout(() => {
+        setRideStatus("In Progress 🚗");
+        setShowRideStartNotif(true);
+      }, 2200);
+    }
+    return () => startStatusTimer && clearTimeout(startStatusTimer);
+    // eslint-disable-next-line
+  }, [rideStatus]);
+
+  // Dismiss ride start notification after X seconds
+  useEffect(() => {
+    let notifTimer;
+    if (showRideStartNotif) {
+      notifTimer = setTimeout(() => setShowRideStartNotif(false), 2900);
+    }
+    return () => notifTimer && clearTimeout(notifTimer);
+  }, [showRideStartNotif]);
+
   // Animate driver progress every 2 sec (mocked to ETA arrival)
   useEffect(() => {
     let timer;
-    if (rideStatus === "Scheduled" && driverProgress === 0) {
-      timer = setTimeout(() => {
-        setRideStatus("Enroute 🚗");
-      }, 2200);
-    }
     if (driverProgress < MOCK_ROUTE.length - 1) {
       timer = setTimeout(() => {
         setDriverProgress((p) => Math.min(MOCK_ROUTE.length - 1, p + 1));
@@ -98,7 +117,7 @@ function RideStatusScreen() {
     }
     return () => clearTimeout(timer);
     // eslint-disable-next-line
-  }, [rideStatus, driverProgress, etaMinutes]);
+  }, [driverProgress, etaMinutes]);
 
   // Main: Section/card styling helper
   const sectionCardStyle = {
