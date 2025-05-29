@@ -162,34 +162,49 @@ function RideStatusScreen() {
 
   // Show emoji feedback modal as soon as status transitions to Completed, regardless of flow
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+
+  // NEW: ensure modal dialog always persists for feedback input when ride completes for the first time
   useEffect(() => {
     if (rideStatus === "Completed") {
       setShowFeedbackModal(true);
+      setShowThankYou(false);
+      setSelectedRating(null);
+      setDidHomeRedirect(false);
+    } else {
+      // Clean up if unmounted/navigation reversed
+      setShowFeedbackModal(false);
+      setShowThankYou(false);
+      setSelectedRating(null);
+      setDidHomeRedirect(false);
     }
+    // Only on rideStatus changes, not on unrelated rerenders
+    // eslint-disable-next-line
   }, [rideStatus]);
 
-  // When a rating is selected, always show thank you, then auto-redirect to Home (once)
+  // Upon emoji selection: always show thank you, then after a delay, redirect to home and reset UI state
   useEffect(() => {
-    let thankYouTimer, redirectTimer;
+    let thankYouTimer;
+    // Trigger only in the correct context
     if (
       rideStatus === "Completed" &&
+      showFeedbackModal &&
       selectedRating !== null &&
       !didHomeRedirect
     ) {
       setShowThankYou(true);
-      // Short thank you, then dismiss and redirect home
       thankYouTimer = setTimeout(() => {
-        setShowThankYou(false);
-        setDidHomeRedirect(true); // Prevent double navigations
-        setShowFeedbackModal(false);
-        navigate("/", { replace: true });
+        setShowThankYou(false);       // Hide thank you
+        setShowFeedbackModal(false);  // Hide feedback modal
+        setDidHomeRedirect(true);     // Prevent double redirect
+        setSelectedRating(null);      // Reset feedback selection
+        // Redirect to home and ensure all RideStatusScreen state/modal is reset on remount
+        navigate("/", { replace: true, state: {} });
       }, 1700);
     }
     return () => {
       if (thankYouTimer) clearTimeout(thankYouTimer);
-      if (redirectTimer) clearTimeout(redirectTimer);
     };
-  }, [selectedRating, rideStatus, didHomeRedirect, navigate]);
+  }, [selectedRating, rideStatus, showFeedbackModal, didHomeRedirect, navigate]);
 
   // Manual notification/banner dismiss
   function handleManuallyDismiss() {
