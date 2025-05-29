@@ -74,6 +74,7 @@ function BookingDetailsScreen(props) {
   // PUBLIC_INTERFACE
   // Navigates to /add-guardian-contact with booking data in state
   function handleBook(ride) {
+    window.scrollTo(0, 0); // UX improvement on navigation
     navigate('/add-guardian-contact', {
       state: {
         selectedRide: ride,
@@ -225,34 +226,7 @@ function BookingDetailsScreen(props) {
                     borderRadius: 11,
                     minWidth: 44,
                   }}
-                  // On click, check if guardian contact is set (stub: always false), go to /add-guardian-contact with current booking data
-                  onClick={() => {
-                    // In a real app: check user/session state for guardian, or allow passing down.
-                    // For now, always require prompt.
-                    window.scrollTo(0,0); // UX: scroll to top
-
-                    // The following block previously used require with useNavigate, which cannot be used in a callback
-                    // Rewrite to use a callback prop for navigation, or useNavigate in a wrapper
-
-                    // If you need navigation outside of render, use a workaround context.
-                    // Instead, move to an inline functional component with useNavigate:
-
-                    // We'll wrap this button with a local functional component for correct navigation.
-                    // However, this file is not using useNavigate directly.
-
-                    // For runtime fix: move this button component outside the map with a handler, or
-                    // better: use a component to encapsulate correct navigation usage.
-
-                    // So, instead, let's refactor this onClick handler to use a custom handler that can use useNavigate
-
-                    // We will add useNavigate into the parent BookingDetailsScreen component
-                    // (see code above: import { useNavigate } from 'react-router-dom'), so let's
-                    // do that and update the map so each book button will call handleBook(ride).
-
-                    // Change to: handleBook(ride)
-
-                    handleBook(ride);
-                  }}
+                  onClick={() => handleBook(ride)}
                   title="Proceed to add guardian contact"
                 >Book</button>
               </div>
