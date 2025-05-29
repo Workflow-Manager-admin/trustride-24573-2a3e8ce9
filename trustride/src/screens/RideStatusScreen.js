@@ -89,7 +89,7 @@ function RideStatusScreen() {
       ? ride.eta
       : 7;
 
-  // Ride status: "Scheduled" initially, "In Progress" after delay (simulate driver started)
+  // Ride status: "Scheduled" initially, then "In Progress", then "Completed" (simulate driver started and ride completion)
   const [rideStatus, setRideStatus] = useState("Scheduled");
   // State to show ride start notification (visual modal/banner)
   const [showRideStartNotif, setShowRideStartNotif] = useState(false);
@@ -98,6 +98,11 @@ function RideStatusScreen() {
 
   // Mock driver animation progress
   const [driverProgress, setDriverProgress] = useState(0);
+
+  // --- Feedback (emoji rating) state ----
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(null);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   // SOS alert modal
   const [showSOS, setShowSOS] = useState(false);
@@ -122,19 +127,27 @@ function RideStatusScreen() {
     return () => clearTimeout(t);
   }, [showToast]);
 
-  // Ride start status simulation timer
+  // Ride status transitions: "Scheduled" -> "In Progress" -> "Completed"
   useEffect(() => {
-    let startStatusTimer;
+    let startStatusTimer, completeStatusTimer;
     if (rideStatus === "Scheduled") {
       startStatusTimer = setTimeout(() => {
         setRideStatus("In Progress 🚗");
         setShowRideStartNotif(true);
         setShowBanner(true);
+        // After some seconds, complete the ride
+        completeStatusTimer = setTimeout(() => {
+          setRideStatus("Completed");
+          setShowFeedback(true);
+        }, Math.max(4000, etaMinutes * 500)); // Simulate trip completion
       }, 2000);
     }
-    return () => startStatusTimer && clearTimeout(startStatusTimer);
+    return () => {
+      if (startStatusTimer) clearTimeout(startStatusTimer);
+      if (completeStatusTimer) clearTimeout(completeStatusTimer);
+    };
     // eslint-disable-next-line
-  }, [rideStatus]);
+  }, [rideStatus, etaMinutes]);
 
   // Dismiss ride start notification after X seconds (auto-close)
   useEffect(() => {
@@ -148,6 +161,25 @@ function RideStatusScreen() {
     return () => notifTimer && clearTimeout(notifTimer);
   }, [showRideStartNotif]);
 
+  // When a rating is selected, show thank you and then return to home page after short delay
+  useEffect(() => {
+    let thankYouTimer, redirectTimer;
+    if (selectedRating !== null) {
+      setShowThankYou(true);
+      thankYouTimer = setTimeout(() => {
+        setShowThankYou(false);
+        setShowFeedback(false);
+        // Redirect to home
+        navigate("/", { replace: true });
+      }, 1700);
+    }
+    return () => {
+      if (thankYouTimer) clearTimeout(thankYouTimer);
+      if (redirectTimer) clearTimeout(redirectTimer);
+    };
+    // eslint-disable-next-line
+  }, [selectedRating, navigate]);
+
   // Manual notification/banner dismiss
   function handleManuallyDismiss() {
     setShowBanner(false);
@@ -157,14 +189,15 @@ function RideStatusScreen() {
   // Animate driver progress every N seconds (mocked to ETA arrival)
   useEffect(() => {
     let timer;
-    if (driverProgress < MOCK_ROUTE.length - 1) {
+    // If in "Completed" status, do not animate
+    if (driverProgress < MOCK_ROUTE.length - 1 && rideStatus !== "Completed") {
       timer = setTimeout(() => {
         setDriverProgress((p) => Math.min(MOCK_ROUTE.length - 1, p + 1));
       }, Math.max(1000, (etaMinutes * 60 * 1000) / MOCK_ROUTE.length));
     }
     return () => clearTimeout(timer);
     // eslint-disable-next-line
-  }, [driverProgress, etaMinutes]);
+  }, [driverProgress, etaMinutes, rideStatus]);
 
   // Main: Section/card styling helper
   const sectionCardStyle = {
