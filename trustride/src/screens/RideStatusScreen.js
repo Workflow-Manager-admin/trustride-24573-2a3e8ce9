@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+// Simple utility: Scroll modal backgrounds lock
+function useModalLock(open) {
+  React.useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+}
 /**
  * PUBLIC_INTERFACE
  * RideStatusScreen — shows ride status (Scheduled/In Progress), estimated time, live (mock) driver tracker, and safety tools.
@@ -85,8 +98,13 @@ function RideStatusScreen() {
 
   // Mock driver animation progress
   const [driverProgress, setDriverProgress] = useState(0);
+
   // SOS alert modal
   const [showSOS, setShowSOS] = useState(false);
+
+  // Chat/call modals
+  const [showChat, setShowChat] = useState(false);
+  const [showCall, setShowCall] = useState(false);
 
   // Ride start status simulation timer
   useEffect(() => {
