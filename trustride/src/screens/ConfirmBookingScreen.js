@@ -50,23 +50,48 @@ function ConfirmBookingScreen() {
   // Navigation state extraction
   const state = location.state || {};
 
-  // Booking and ride data structure. Support multiple navigation patterns.
-  const booking = state.booking || {};
-  const ride = state.ride || state.selectedRide || {};
-  const mode = state.mode || "Ride";
-  const modeIcon = state.modeIcon || getModeIcon(mode);
-  const guardianContact = typeof state.guardianContact === "string" && state.guardianContact.trim()
-    ? state.guardianContact
-    : null;
+  // Normalize and robustly extract data from available state, defend for malformation/null/etc
+  const booking = state && typeof state === "object" ? (state.booking || {}) : {};
+  const ride =
+    state && typeof state === "object"
+      ? state.ride || state.selectedRide || {}
+      : {};
+  const mode =
+    state && typeof state === "object"
+      ? state.mode || state.transportMode || "Ride"
+      : "Ride";
+  const modeIcon =
+    (state && typeof state === "object" && state.modeIcon) ||
+    getModeIcon(mode);
 
-  // Fallbacks for pickup/destination - highest priority: explicit state > booking object
-  const pickup = state.pickup || booking.pickup || "";
-  const destination = state.destination || booking.destination || "";
+  const guardianContact =
+    state && typeof state === "object" && typeof state.guardianContact === "string" && state.guardianContact.trim()
+      ? state.guardianContact
+      : null;
 
-  // Summary fields
-  const fare = ride.price !== undefined ? ride.price : "—";
-  const eta = ride.eta !== undefined ? ride.eta : "—";
-  const driverName = ride.driver || "";
+  // Safe fallback for pickup/destination
+  const pickup =
+    (state && typeof state === "object" && (state.pickup || (state.booking && state.booking.pickup))) ||
+    booking.pickup ||
+    "";
+  const destination =
+    (state && typeof state === "object" && (state.destination || (state.booking && state.booking.destination))) ||
+    booking.destination ||
+    "";
+
+  // Summary fields with robust fallback
+  const fare =
+    ride && typeof ride === "object" && ride.price !== undefined
+      ? ride.price
+      : "—";
+  const eta =
+    ride && typeof ride === "object" && ride.eta !== undefined
+      ? ride.eta
+      : "—";
+  const driverName =
+    ride && typeof ride === "object" && typeof ride.driver === "string"
+      ? ride.driver
+      : "";
 
   // UI states
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -74,15 +99,25 @@ function ConfirmBookingScreen() {
   const [submitPending, setSubmitPending] = useState(false);
   const [confirmSuccess, setConfirmSuccess] = useState(false);
 
-  // Determine if critical state is missing
-  const missingCritical =
-    !ride ||
-    !ride.price ||
-    !driverName ||
-    !pickup ||
-    !destination ||
-    !mode ||
-    (typeof fare !== "number" && fare !== "—");
+  // More robust: check for required critical booking info
+  function isCriticalDataMissing() {
+    // ride must be a non-empty object with driver and price (number), plus pickup/destination/mode
+    if (
+      !ride ||
+      typeof ride !== "object" ||
+      Object.keys(ride).length === 0 ||
+      typeof ride.price !== "number" ||
+      !ride.driver ||
+      !pickup ||
+      !destination ||
+      !mode
+    ) {
+      return true;
+    }
+    return false;
+  }
+
+  const missingCritical = isCriticalDataMissing();
 
   // PUBLIC_INTERFACE
   // Handles ride confirmation flow: disables, simulates backend, shows confirmation
