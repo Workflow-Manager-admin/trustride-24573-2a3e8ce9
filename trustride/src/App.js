@@ -12,35 +12,36 @@ function App() {
 
   // Navigation state (simulate routing)
   const [activeTab, setActiveTab] = useState('home');
-  // RideResults navigation flag
+  // RideResults page navigation state
   const [showRideResults, setShowRideResults] = useState(false);
-  // Confirm booking page state
-  const [bookingState, setBookingState] = useState({
-    showConfirm: false,
-    selectedRide: null,
-  });
+  // Confirm booking page state: holds selected ride if a ride is chosen
+  const [selectedRide, setSelectedRide] = useState(null);
 
   // Provide navigation for RideDiscovery → RideResults
   useEffect(() => {
-    window._navigateToRideResults = () => setShowRideResults(true);
+    // Expose a handler globally for the feature to "navigate" to RideResults
+    window._navigateToRideResults = () => {
+      setShowRideResults(true);
+      setSelectedRide(null);
+    };
     return () => { window._navigateToRideResults = null; };
   }, []);
 
   // Handler to go from RideResults to ConfirmRideBooking
   const handleChooseRide = (ride) => {
     setShowRideResults(false);
-    setBookingState({ showConfirm: true, selectedRide: ride });
+    setSelectedRide(ride);
   };
 
   // Handler to go back from ConfirmRideBooking (returns to RideResults)
   const handleBackFromConfirm = () => {
-    setBookingState({ showConfirm: false, selectedRide: null });
+    setSelectedRide(null);
     setShowRideResults(true);
   };
 
   // Handler after successful confirmation/booked ride (return to home tab after confirmation)
   const handleRideConfirmed = () => {
-    setBookingState({ showConfirm: false, selectedRide: null });
+    setSelectedRide(null);
     setShowRideResults(false);
     setActiveTab('home');
   };
@@ -67,7 +68,7 @@ function App() {
   }
 
   // Show ConfirmRideBooking screen (when user has chosen a ride to book)
-  if (bookingState.showConfirm) {
+  if (selectedRide) {
     return (
       <div className="app">
         <nav className="navbar" role="navigation">
@@ -81,7 +82,7 @@ function App() {
         <main style={{ flex: 1 }}>
           <div className="container">
             <ConfirmRideBooking
-              ride={bookingState.selectedRide}
+              ride={selectedRide}
               onConfirm={handleRideConfirmed}
               onBack={handleBackFromConfirm}
             />
@@ -92,7 +93,7 @@ function App() {
           onTabChange={tab => {
             setActiveTab(tab);
             setShowRideResults(false);
-            setBookingState({ showConfirm: false, selectedRide: null });
+            setSelectedRide(null);
           }}
         />
       </div>
@@ -122,21 +123,19 @@ function App() {
         <BottomTabBar activeTab={activeTab} onTabChange={tab => {
           setActiveTab(tab);
           setShowRideResults(false);
-          setBookingState({ showConfirm: false, selectedRide: null });
+          setSelectedRide(null);
         }} />
       </div>
     );
   }
 
-  // Simple minimal page content for each tab
+  // Simple minimal page content for each tab, "home" triggers RideDiscovery which triggers RideResults
   function renderTabContent(tab) {
     switch (tab) {
       case 'home':
-        // Ride Discovery & Pooling
-        // Renders filter bar, ride pool cards, and booking (mock interaction)
-        // (Minimalist, modern card layout with TrustRide color/UX)
-        // Import lazy, falls back to hero on error
+        // Ride Discovery & Pooling screen
         try {
+          // Import RideDiscovery dynamically
           const RideDiscovery = require('./features/RideDiscovery').default;
           return <RideDiscovery />;
         } catch (e) {
@@ -153,6 +152,7 @@ function App() {
           );
         }
       case 'eco':
+        // Could dynamically import EcoScore if desired
         return (
           <div className="hero">
             <div className="subtitle">Your Eco Impact</div>
@@ -173,7 +173,6 @@ function App() {
           </div>
         );
       case 'profile': {
-        // Import the Profile screen from features
         const Profile = require('./features/Profile').default;
         return <Profile />;
       }
@@ -195,7 +194,11 @@ function App() {
       <main style={{ flex: 1 }}>
         <div className="container">{renderTabContent(activeTab)}</div>
       </main>
-      <BottomTabBar activeTab={activeTab} onTabChange={setActiveTab} />
+      <BottomTabBar activeTab={activeTab} onTabChange={tab => {
+        setActiveTab(tab);
+        setShowRideResults(false);
+        setSelectedRide(null);
+      }} />
     </div>
   );
 }
