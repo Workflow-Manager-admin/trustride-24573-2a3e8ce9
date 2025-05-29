@@ -425,14 +425,92 @@ A confirmation will be sent (mock).`
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          gap: 18,
+          gap: 8, // slightly less vertical gap for a tighter look w/ suggestions
         }}
       >
         <div style={{ fontWeight: 700, fontSize: 17, color: "var(--color-primary)", marginBottom: 5, display: "flex", gap: 8, alignItems: "center" }}>
           <span role="img" aria-label="car" style={{ fontSize: 18, marginRight: 1 }}>🚗</span>
           Enter Pickup & Destination
         </div>
-        {/* Input fields & integrated map mock, minimalistic UI */}
+
+        {/* SUGGESTION CHIPS UI */}
+        <div
+          style={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 9,
+            marginBottom: 7,
+            marginTop: 4,
+          }}
+          aria-label="Common location suggestions"
+        >
+          {COMMON_LOCATIONS.map(loc => (
+            <button
+              key={loc.label}
+              className="tr-chip"
+              type="button"
+              style={{
+                background: "linear-gradient(90deg, #e3f3ff, #ecfcf7 99%)",
+                color: "var(--color-accent)",
+                border: "1.1px solid var(--color-border)",
+                borderRadius: 17,
+                fontWeight: 670,
+                fontSize: 14.2,
+                padding: "6px 17px",
+                marginRight: 0,
+                outline: "none",
+                cursor: "pointer",
+                boxShadow: "0 1.7px 7px rgba(0,168,150,0.03)",
+                letterSpacing: "-0.06px",
+                lineHeight: 1,
+                transition: "background 0.13s",
+              }}
+              onClick={() => {
+                setPickup(loc.address);
+                addRecentAddress(loc.address);
+              }}
+              tabIndex={0}
+              aria-label={`Set pickup: ${loc.label}`}
+            >
+              {loc.label}
+            </button>
+          ))}
+          {recentAddresses.length > 0 &&
+            recentAddresses.map(addr => (
+              <button
+                key={addr}
+                className="tr-chip"
+                type="button"
+                style={{
+                  background: "linear-gradient(90deg, #ecfcf7 65%, #e3f3ff 99%)",
+                  color: "var(--color-primary)",
+                  border: "1.1px solid var(--color-border)",
+                  borderRadius: 17,
+                  fontWeight: 600,
+                  fontSize: 13.5,
+                  padding: "5px 13px",
+                  marginRight: 0,
+                  outline: "none",
+                  cursor: "pointer",
+                  opacity: 0.98,
+                  lineHeight: 1,
+                  marginLeft: 0,
+                }}
+                onClick={() => {
+                  setDestination(addr);
+                  addRecentAddress(addr);
+                }}
+                tabIndex={0}
+                aria-label={`Set destination: ${addr}`}
+                title="Recently used"
+              >
+                {addr.length < 22 ? addr : addr.slice(0, 20) + "…"}
+              </button>
+            ))
+          }
+        </div>
+
+        {/* Input fields & integrated map mock, minimalist UI */}
         <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
           {/* Pickup Field with icon */}
           <div style={{

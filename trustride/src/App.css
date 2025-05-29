@@ -167,6 +167,28 @@ body {
   border-radius: 8px;
 }
 
+/* TrustRide location suggestion chip (feature: RideDiscovery) */
+.tr-chip {
+  background: linear-gradient(90deg, #e3f3ff, #ecfcf7 99%);
+  color: var(--color-accent);
+  border: 1.1px solid var(--color-border);
+  border-radius: 17px;
+  font-weight: 670;
+  font-size: 14.2px;
+  padding: 6px 17px;
+  margin-right: 0;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 1.7px 7px rgba(0,168,150,0.03);
+  letter-spacing: -0.06px;
+  line-height: 1;
+  transition: background 0.13s;
+}
+.tr-chip:hover, .tr-chip:focus {
+  background: linear-gradient(90deg, #d0f6ec, #eaf9ff 99%);
+  color: var(--color-primary);
+  outline: none;
+}
 /* BottomTabBar styles */
 .bottom-tab-bar {
   position: fixed;
