@@ -385,55 +385,144 @@ function RideStatusScreen() {
         <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
           <b>Fare:</b> {fare !== "—" ? <>₹{fare}</> : "—"}
         </div>
-        {/* Chat and Call Buttons */}
-        <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
-          <button
-            className="btn"
-            style={{
-              borderRadius: 22,
-              minWidth: 92,
+
+        {/* Post-ride Emoji Rating Feedback */}
+        {showFeedback && rideStatus === "Completed" ? (
+          <div style={{
+            margin: "32px auto 10px auto",
+            background: "rgba(0,168,150,0.07)",
+            border: "1.5px solid var(--accent)",
+            borderRadius: 14,
+            padding: "1.2rem 0.7rem 1.4rem 0.7rem",
+            textAlign: "center",
+            maxWidth: 330,
+            boxShadow: "0 6px 22px rgba(0,168,150,0.08)"
+          }}>
+            <div className="heading-2" style={{
+              fontSize: 17,
+              color: "var(--accent)",
+              marginBottom: 10,
               fontWeight: 700,
-              fontSize: 15,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 9,
-              background: "var(--primary)",
-              color: "#fff",
-              boxShadow: "0 2px 9px #0077B609"
-            }}
-            onClick={() => setShowChat(true)}
-            type="button"
-            tabIndex={0}
-            aria-label="Open driver chat"
-          >
-            <span role="img" aria-label="chat" style={{ fontSize: 20 }}>💬</span>
-            Chat
-          </button>
-          <button
-            className="btn"
-            style={{
-              borderRadius: 22,
-              minWidth: 92,
-              fontWeight: 700,
-              fontSize: 15,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 9,
-              background: "var(--accent)",
-              color: "#fff",
-              boxShadow: "0 2px 9px #00A89609"
-            }}
-            onClick={() => setShowCall(true)}
-            type="button"
-            tabIndex={0}
-            aria-label="Call driver"
-          >
-            <span role="img" aria-label="call" style={{ fontSize: 20 }}>📞</span>
-            Call
-          </button>
-        </div>
+              letterSpacing: 0.15
+            }}>
+              Enjoyed the ride?<br />
+              <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
+                Take a moment to rate us.
+              </span>
+            </div>
+            {!selectedRating ? (
+              <div style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 19,
+                margin: "10px 0 6px 0"
+              }}>
+                {[{
+                  emoji: "😡", label: "Very Poor"
+                }, {
+                  emoji: "☹️", label: "Poor"
+                }, {
+                  emoji: "😐", label: "Okay"
+                }, {
+                  emoji: "😊", label: "Good"
+                }, {
+                  emoji: "🤩", label: "Excellent"
+                }].map((item, idx) => (
+                  <button
+                    key={item.emoji}
+                    style={{
+                      fontSize: 33,
+                      background: "transparent",
+                      border: "none",
+                      cursor: "pointer",
+                      transition: "transform .14s",
+                    }}
+                    aria-label={item.label}
+                    tabIndex={0}
+                    onClick={() => setSelectedRating(idx + 1)}
+                  >
+                    <span role="img" aria-label={item.label}>{item.emoji}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              // Thank You Message after rating
+              <div style={{
+                color: "var(--primary)",
+                fontWeight: 700,
+                fontSize: 18,
+                margin: "16px 0 10px 0",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center"
+              }}>
+                <span style={{ fontSize: 38, marginBottom: 2 }}>🎉</span>
+                Thank you for your feedback!
+              </div>
+            )}
+            {!selectedRating &&
+              <div style={{
+                color: "var(--text-secondary)",
+                fontSize: 13.5,
+                fontStyle: "italic",
+                marginTop: 7
+              }}>
+                Tap an emoji to rate and return to home
+              </div>
+            }
+          </div>
+        ) : (
+          // Only show buttons if not in feedback mode
+          <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
+            <button
+              className="btn"
+              style={{
+                borderRadius: 22,
+                minWidth: 92,
+                fontWeight: 700,
+                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 9,
+                background: "var(--primary)",
+                color: "#fff",
+                boxShadow: "0 2px 9px #0077B609"
+              }}
+              onClick={() => setShowChat(true)}
+              type="button"
+              tabIndex={0}
+              aria-label="Open driver chat"
+            >
+              <span role="img" aria-label="chat" style={{ fontSize: 20 }}>💬</span>
+              Chat
+            </button>
+            <button
+              className="btn"
+              style={{
+                borderRadius: 22,
+                minWidth: 92,
+                fontWeight: 700,
+                fontSize: 15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 9,
+                background: "var(--accent)",
+                color: "#fff",
+                boxShadow: "0 2px 9px #00A89609"
+              }}
+              onClick={() => setShowCall(true)}
+              type="button"
+              tabIndex={0}
+              aria-label="Call driver"
+            >
+              <span role="img" aria-label="call" style={{ fontSize: 20 }}>📞</span>
+              Call
+            </button>
+          </div>
+        )}
       </section>
 
       {/* Section: Mock Live Tracker */}
