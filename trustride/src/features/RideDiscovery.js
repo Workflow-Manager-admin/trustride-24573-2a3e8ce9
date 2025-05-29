@@ -355,19 +355,18 @@ export default function RideDiscovery() {
   // --- NEW: Ride time picker states ---
   // "now" or "later"
   const [rideTimeType, setRideTimeType] = useState("now");
-  // If scheduled, pick a date+time (default: today, next half-hour)
+  // If "later", store date + time (initialize to today, next half hour)
   const today = new Date().toISOString().slice(0, 10);
-  const nowMinutes = new Date().getMinutes();
-  // Default: round up to next half-hour for nice prefill
   function getNextHalfHour() {
     const now = new Date();
-    now.setMinutes(nowMinutes < 30 ? 30 : 0, 0, 0);
-    if (nowMinutes >= 30) now.setHours(now.getHours() + 1);
-    return now.toISOString().slice(11, 16); // "HH:MM"
+    const cur = now.getMinutes();
+    now.setMinutes(cur < 30 ? 30 : 0, 0, 0);
+    if (cur >= 30) now.setHours(now.getHours() + 1);
+    return now.toISOString().slice(11, 16);
   }
   const [scheduledDate, setScheduledDate] = useState(today);
   const [scheduledTime, setScheduledTime] = useState(getNextHalfHour());
-  // Flexible time range: ±15/±30min (default: 15)
+  // Flexible range: ±15/±30 min (default 15)
   const [timeFlex, setTimeFlex] = useState(15);
 
   // Commonly visited/used addresses (in real app: fetched/tracked; here: mock)
