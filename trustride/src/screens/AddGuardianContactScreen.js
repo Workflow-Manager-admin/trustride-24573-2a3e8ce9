@@ -26,14 +26,58 @@ function AddGuardianContactScreen() {
   // Helper: Checks if minimum booking state is present for navigation flow
   function isBookingDataPresent(state) {
     // Must minimally have ride, pickup, destination, mode
+    if (!state || typeof state !== 'object') return false;
     const rideObj = state.selectedRide || state.ride;
     const hasRide = rideObj && typeof rideObj === 'object' && Object.keys(rideObj).length > 0;
+    const pickup =
+      state.pickup ||
+      (state.booking && state.booking.pickup) ||
+      '';
+    const destination =
+      state.destination ||
+      (state.booking && state.booking.destination) ||
+      '';
+    const mode = state.mode || state.transportMode || '';
     return (
       hasRide &&
-      (state.pickup || (state.booking && state.booking.pickup)) &&
-      (state.destination || (state.booking && state.booking.destination)) &&
-      (state.mode || state.transportMode)
+      !!pickup &&
+      !!destination &&
+      !!mode
     );
+  }
+
+  // Returns safe navigation state for confirmation
+  function buildBookingState(guardianContactValue) {
+    // Defensive fallbacks for state structure, but ensure critical info
+    const currentState = prevState && typeof prevState === 'object' ? prevState : {};
+    const ride = currentState.selectedRide || currentState.ride || {};
+    const mode = currentState.mode || currentState.transportMode || '';
+    // Mode icon fallback
+    const modeIcon = currentState.modeIcon ||
+      (mode === "Bike" ? "🚲" :
+        mode === "Mini Cab" ? "🚕" :
+        mode === "Prime Cab" ? "🚖" :
+        mode === "Auto" ? "🛺" :
+        "🚘");
+    const pickup =
+      currentState.pickup ||
+      (currentState.booking && currentState.booking.pickup) ||
+      '';
+    const destination =
+      currentState.destination ||
+      (currentState.booking && currentState.booking.destination) ||
+      '';
+    // Compose "booking" obj for next step
+    return {
+      ...currentState,
+      guardianContact: guardianContactValue,
+      booking: { pickup, destination },
+      ride,
+      mode,
+      modeIcon,
+      pickup,
+      destination,
+    };
   }
 
   // User adds a guardian contact, proceeds to confirmation
@@ -53,21 +97,9 @@ function AddGuardianContactScreen() {
       });
       return;
     }
-    // Pass along complete state for confirmation
-    const ride = prevState.selectedRide || prevState.ride;
-    const mode = prevState.mode || prevState.transportMode || '';
-    const modeIcon = prevState.modeIcon || '';
-    const pickup = prevState.pickup || (prevState.booking && prevState.booking.pickup) || '';
-    const destination = prevState.destination || (prevState.booking && prevState.booking.destination) || '';
+    // Pass along full, robust state for confirmation; never let empty state reach confirmation
     navigate("/confirm-booking", {
-      state: {
-        ...prevState,
-        guardianContact: guardian || null,
-        booking: { pickup, destination },
-        ride,
-        mode,
-        modeIcon,
-      },
+      state: buildBookingState(guardian || null),
     });
   }
 
@@ -80,20 +112,8 @@ function AddGuardianContactScreen() {
       });
       return;
     }
-    const ride = prevState.selectedRide || prevState.ride;
-    const mode = prevState.mode || prevState.transportMode || '';
-    const modeIcon = prevState.modeIcon || '';
-    const pickup = prevState.pickup || (prevState.booking && prevState.booking.pickup) || '';
-    const destination = prevState.destination || (prevState.booking && prevState.booking.destination) || '';
     navigate("/confirm-booking", {
-      state: {
-        ...prevState,
-        guardianContact: null,
-        booking: { pickup, destination },
-        ride,
-        mode,
-        modeIcon,
-      },
+      state: buildBookingState(null),
     });
   }
 
