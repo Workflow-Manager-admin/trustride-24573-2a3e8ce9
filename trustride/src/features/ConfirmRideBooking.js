@@ -1,0 +1,354 @@
+import React, { useState } from "react";
+
+/**
+ * PUBLIC_INTERFACE
+ * ConfirmRideBooking: Displays selected ride details for user confirmation,
+ * presents conduct rules (with acceptance checkbox), and enables booking confirmation
+ * only after agreement. Uses TrustRide modern UI branding.
+ *
+ * @param {Object} props
+ * @param {Object} props.ride - The selected ride details object (driver, fare, schedule, etc.)
+ * @param {function} props.onConfirm - Called after user confirms the booking.
+ * @param {function} props.onBack - Called when user cancels or wishes to go back.
+ */
+const DEFAULT_RULES = [
+  "Respect your driver and fellow passengers at all times.",
+  "No eating, smoking, or drinking alcohol during the ride.",
+  "Maintain appropriate noise levels - headphones for music/calls.",
+  "Be punctual at the pickup point.",
+  "TrustRide is a verified community. Report issues to support promptly.",
+];
+
+function formatTime(time) {
+  const d = new Date(time);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDate(time) {
+  const d = new Date(time);
+  return d.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
+}
+
+export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
+  // Local state: Checkbox for rules, feedback on confirm interaction
+  const [agreed, setAgreed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  if (!ride) {
+    // Defensive: No ride selected
+    return (
+      <div style={{ paddingTop: 50, textAlign: "center" }}>
+        <div style={{ fontWeight: 700, color: "var(--color-primary)", fontSize: 22, marginBottom: 18 }}>
+          No ride selected
+        </div>
+        <button
+          className="btn"
+          style={{
+            background: "#f4fbf9",
+            color: "var(--color-accent)",
+            border: "1.3px solid var(--color-accent)",
+            fontWeight: 650,
+            borderRadius: 11,
+            minWidth: 100
+          }}
+          type="button"
+          tabIndex={0}
+          onClick={onBack}
+        >
+          ← Back
+        </button>
+      </div>
+    );
+  }
+
+  // PUBLIC_INTERFACE
+  function handleConfirm() {
+    setSubmitting(true);
+    // Simulate a booking request (in a real app, async API here)
+    setTimeout(() => {
+      setSubmitting(false);
+      setSuccess(true);
+      onConfirm && onConfirm();
+    }, 1100);
+  }
+
+  // Modern TrustRide card layout
+  return (
+    <div style={{ paddingTop: 44, paddingBottom: 35, maxWidth: 435, margin: "0 auto" }}>
+      <header style={{ marginBottom: 23, textAlign: "center" }}>
+        <div className="subtitle" style={{ color: "var(--color-accent)", fontWeight: 700, marginBottom: 3 }}>
+          Booking Confirmation
+        </div>
+        <h1 className="title" style={{ fontSize: "2rem", margin: 0 }}>
+          Confirm Your Ride
+        </h1>
+        <div className="description" style={{ color: "var(--color-muted)", marginTop: 3, fontSize: 15.5 }}>
+          Please review your ride details and agree to conduct rules before booking.
+        </div>
+      </header>
+      {/* Ride Details Summary */}
+      <section
+        className="card"
+        style={{
+          marginBottom: 22,
+          borderRadius: "var(--radius-main)",
+          boxShadow: "0 2px 14px rgba(0,119,182,0.06)",
+          border: "1.5px solid var(--color-border)",
+          padding: "25px 18px 19px 21px",
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8 }}>
+          <span
+            style={{
+              background: "#eaf9ff",
+              borderRadius: "50%",
+              color: "var(--color-primary)",
+              fontWeight: 700,
+              fontSize: 22,
+              width: 38,
+              height: 38,
+              minWidth: 38,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: "1.38px solid var(--color-border)",
+              marginRight: 10,
+            }}
+            aria-label="driver"
+          >
+            {ride.driver.split(" ").map((n) => n[0]).join("").toUpperCase()}
+          </span>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 17.5, color: "var(--color-primary)" }}>
+              Driver: {ride.driver}
+            </div>
+            <div style={{ color: "var(--color-accent)", fontWeight: 600, fontSize: 13, marginTop: 1 }}>
+              Verified & Rated
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 19, flexWrap: "wrap", marginBottom: 7 }}>
+          <StatBox
+            icon="⏰"
+            label="Departure"
+            value={
+              <span>
+                {formatDate(ride.departure)}
+                <span style={{ margin: "0 2px" }} />
+                {formatTime(ride.departure)}
+              </span>
+            }
+            color="var(--color-primary)"
+          />
+          <StatBox
+            icon="🕓"
+            label="ETA"
+            value={ride.eta}
+            color="var(--color-accent)"
+          />
+          <StatBox
+            icon="💸"
+            label="Fare"
+            value={
+              <span>
+                <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>${ride.price.toFixed(2)}</span>
+                <span style={{ color: "#7ec9c9", fontWeight: 500, fontSize: 13.2, marginLeft: 2 }}>/seat</span>
+              </span>
+            }
+            color="#00A896"
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <Badge label="Trust Index" value={ride.trustIndex} icon="🛡️" color="var(--color-accent)" />
+          <Badge label="Eco Score" value={ride.ecoScore} icon="🍃" color="var(--color-primary)" />
+        </div>
+      </section>
+      {/* Conduct Rules */}
+      <section
+        className="card"
+        style={{
+          marginBottom: 26,
+          borderRadius: "var(--radius-main)",
+          padding: "20px 17px 19px 17px",
+          background: "#fafdfc",
+          border: "1px solid var(--color-border)",
+          boxShadow: "0 2px 14px rgba(0, 168, 150, 0.03)",
+        }}
+      >
+        <div style={{
+          fontWeight: 700,
+          fontSize: 17,
+          color: "var(--color-accent)",
+          marginBottom: 8,
+          display: "flex",
+          alignItems: "center",
+          gap: 7
+        }}>
+          <span role="img" aria-label="rules">📃</span>
+          Ride Conduct Rules
+        </div>
+        <ol style={{ margin: 0, paddingLeft: 23, color: "var(--color-text-secondary)", fontSize: 15.1, fontWeight: 500 }}>
+          {DEFAULT_RULES.map((rule, idx) => (
+            <li key={idx} style={{ marginBottom: 3 }}>{rule}</li>
+          ))}
+        </ol>
+        <div style={{ marginTop: 17, display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            id="accept-rules-checkbox"
+            type="checkbox"
+            checked={agreed}
+            onChange={() => setAgreed((a) => !a)}
+            style={{
+              width: 20,
+              height: 20,
+              accentColor: "var(--color-accent)"
+            }}
+          />
+          <label
+            htmlFor="accept-rules-checkbox"
+            style={{
+              fontWeight: 600,
+              fontSize: 15.2,
+              color: "var(--color-accent)",
+              cursor: "pointer"
+            }}
+          >
+            I agree to follow these rules
+          </label>
+        </div>
+      </section>
+      {/* Confirm action area */}
+      <div style={{ display: "flex", justifyContent: "center", gap: 19 }}>
+        <button
+          className="btn"
+          style={{
+            color: "var(--color-primary)",
+            background: "#f4fbf9",
+            fontWeight: 650,
+            border: "1.5px solid var(--color-primary)",
+            borderRadius: 10,
+            minWidth: 100
+          }}
+          type="button"
+          onClick={onBack}
+          disabled={submitting}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn btn-large"
+          style={{
+            background: agreed
+              ? "linear-gradient(90deg, var(--color-primary), var(--color-accent))"
+              : "#e8eeee",
+            color: agreed ? "#fff" : "#aac7c6",
+            fontWeight: 700,
+            fontSize: "1.09rem",
+            borderRadius: 10,
+            minWidth: 160,
+            boxShadow: agreed
+              ? "0 2px 8px rgba(0,119,182,0.10)"
+              : "none",
+            outline: "none",
+            transition: "background 0.18s cubic-bezier(0.4,0,0.2,1)",
+            cursor: agreed ? "pointer" : "not-allowed"
+          }}
+          type="button"
+          disabled={!agreed || submitting || success}
+          aria-disabled={!agreed || submitting || success}
+          onClick={handleConfirm}
+        >
+          {submitting ? "Booking..." : success ? "Confirmed!" : "Confirm Booking"}
+        </button>
+      </div>
+      {/* Confirmation message */}
+      {success && (
+        <div
+          style={{
+            marginTop: 27,
+            color: "var(--color-accent)",
+            fontWeight: 770,
+            fontSize: 18,
+            textAlign: "center"
+          }}
+          aria-live="polite"
+        >
+          🎉 Your ride is confirmed!
+        </div>
+      )}
+      <div className="description" style={{
+        marginTop: 23,
+        fontSize: 13,
+        color: "#9fb3c8",
+        textAlign: "center"
+      }}>
+        Your seat is reserved. For any changes or cancellations, contact TrustRide support.
+      </div>
+    </div>
+  );
+}
+
+// Compact stat box for schedule/fare display
+function StatBox({ icon, label, value, color }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        flexDirection: "column",
+        minWidth: 80,
+        gap: 1,
+        marginRight: 7
+      }}
+    >
+      <span style={{ fontSize: 21, fontWeight: 700, color }}>{icon}</span>
+      <span style={{
+        fontWeight: 600,
+        fontSize: 13.3,
+        color: "var(--color-text-secondary)"
+      }}>
+        {label}
+      </span>
+      <span style={{
+        fontWeight: 700,
+        fontSize: 16.1,
+        color: "var(--color-primary)"
+      }}>
+        {value}
+      </span>
+    </div>
+  );
+}
+
+// Small badge for Trust Index / Eco Score
+function Badge({ label, value, icon, color }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 5,
+        background: "#f7fafd",
+        border: `1.2px solid var(--color-border)`,
+        borderRadius: 11,
+        padding: "7px 15px 7px 10px",
+        minWidth: 70,
+        fontSize: 14.2,
+        fontWeight: 650,
+        color
+      }}
+    >
+      {icon} {label}: <span style={{
+        marginLeft: 3,
+        fontWeight: 820,
+        color,
+        fontSize: 15
+      }}>{value}</span>
+    </div>
+  );
+}
