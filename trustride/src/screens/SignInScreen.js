@@ -3,10 +3,20 @@ import { useNavigate } from 'react-router-dom';
 
 /**
  * PUBLIC_INTERFACE
- * SignInScreen – Institutional sign-in form.
- * Validates institutional email domain, displays error/success, and redirects on success.
+ * SignInScreen – Institutional sign-in form with domain validation.
+ * Validates institutional email domain, disables sign-in unless valid, and advances the flow to ride booking upon success.
  */
-const INSTITUTION_DOMAIN = '@institution.edu'; // Replace with actual institution domain as needed
+const INSTITUTION_DOMAIN = '@institution.edu'; // Required institution domain
+
+// PUBLIC_INTERFACE
+function isInstitutionalEmail(email) {
+  /** Checks if email ends with correct institutional domain */
+  return (
+    typeof email === 'string' &&
+    email.trim().length > 0 &&
+    email.trim().toLowerCase().endsWith(INSTITUTION_DOMAIN)
+  );
+}
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
@@ -14,15 +24,8 @@ const SignInScreen = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
 
-  // PUBLIC_INTERFACE
-  function isInstitutionalEmail(email) {
-    /** Simple institutional domain matching, e.g., endsWith institutional domain */
-    return (
-      typeof email === 'string' &&
-      email.trim().length > 0 &&
-      email.trim().toLowerCase().endsWith(INSTITUTION_DOMAIN)
-    );
-  }
+  // Validate as user types
+  const isValid = isInstitutionalEmail(email.trim());
 
   // PUBLIC_INTERFACE
   function handleSubmit(e) {
@@ -93,7 +96,11 @@ const SignInScreen = () => {
               minWidth: 120,
               margin: "0 auto",
               fontWeight: 600,
+              background: isValid ? undefined : "#bbb",
+              cursor: isValid ? 'pointer' : 'not-allowed',
+              opacity: isValid ? 1 : 0.72
             }}
+            disabled={!isValid}
           >
             Sign In
           </button>
