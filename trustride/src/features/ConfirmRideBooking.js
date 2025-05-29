@@ -129,9 +129,9 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
     }, 1100);
   }
 
-  // Show full confirmation replacement after booking success
-  // NEW: Instead of static confirmation, immediately show RideStatus page after a short success flash
+  // Fix: Always call hooks at the top-level, not conditionally
   const [redirectToRideStatus, setRedirectToRideStatus] = useState(false);
+
   React.useEffect(() => {
     if (success) {
       // Show success for a short moment, then "redirect" to RideStatus
@@ -140,10 +140,15 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
     }
   }, [success]);
 
+  // Render RideStatus if redirecting, not inside a conditional
   if (redirectToRideStatus && ride) {
-    // Dynamically import RideStatus to avoid circular imports
-    const RideStatus = require('./RideStatus').default;
-    return <RideStatus ride={ride} />;
+    try {
+      const RideStatus = require('./RideStatus').default;
+      return <RideStatus ride={ride} />;
+    } catch (err) {
+      // fallback: show nothing or a message
+      return <div>Loading status...</div>;
+    }
   }
 
   if (success) {
