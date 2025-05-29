@@ -37,7 +37,11 @@ export default function RideDiscovery() {
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
   // Quick chips: track last four used for suggestions (in real: recent search etc)
-  const [recent, setRecent] = useState(["City Center Plaza", "Greenwood Sports Complex", "Main Bus Stand"]);
+  const [recent, setRecent] = useState([
+    "City Center Plaza",
+    "Greenwood Sports Complex",
+    "Main Bus Stand"
+  ]);
 
   // Date/Time scheduling
   const [scheduleType, setScheduleType] = useState("now"); // "now" or "later"
@@ -428,18 +432,10 @@ export default function RideDiscovery() {
           tabIndex={0}
           disabled={!pickup.trim() || !destination.trim()}
           onClick={() => {
-            // In the actual app, would show search or next page. For now, just a dialog
-            window.alert(
-              `Find rides from:
-
-• Pickup: ${pickup.trim()}
-• Destination: ${destination.trim()}
-• When: ${scheduleType === "now" ?
-                "Now" : `${scheduledDate} ${scheduledTime} (±${timeFlex} min)`}
-
-(This is a demo - booking not implemented)`
-            );
-            // Store these as 'recent' addresses
+            // Navigate to RideResults page (handled/appended by App.js)
+            if (typeof window._navigateToRideResults === "function") {
+              window._navigateToRideResults();
+            }
             rememberRecent(pickup.trim());
             rememberRecent(destination.trim());
           }}
