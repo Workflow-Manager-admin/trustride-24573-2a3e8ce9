@@ -13,6 +13,7 @@ import { useLocation, useNavigate } from "react-router-dom";
  *  - Safety-first, readable UI, visually consistent with app.
  */
 
+// Helper: fallback icon for each mode
 function getModeIcon(mode) {
   switch ((mode || "").toLowerCase()) {
     case "bike":
@@ -28,6 +29,7 @@ function getModeIcon(mode) {
   }
 }
 
+// Mock driving animation route (simple for demo)
 const MOCK_ROUTE = [
   { x: 20, y: 80 },
   { x: 38, y: 70 },
@@ -39,6 +41,7 @@ const MOCK_ROUTE = [
 
 const DRIVER_ICONS = ["🚕", "🛺", "🚖", "🚲", "🚘", "🚌"];
 
+// PUBLIC_INTERFACE
 function RideStatusScreen() {
   const location = useLocation();
   const navigate = useNavigate();
