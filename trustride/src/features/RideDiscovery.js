@@ -345,11 +345,12 @@ export default function RideDiscovery() {
   const [selectedInstitution, setSelectedInstitution] = useState("All");
   const [rides, setRides] = useState(MOCK_RIDES);
 
-  // Pickup & Destination state
+  // Pickup & Destination state (now enhanced for map pin support)
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  // For demonstration, pinning address via map is a placeholder (not interactive)
-  // Would use lat/lng and address resolution in real implementation
+  // Store pin mock map states: {lat, lng, address, _mockX, _mockY}
+  const [pickupLatLng, setPickupLatLng] = useState(undefined);
+  const [destLatLng, setDestLatLng] = useState(undefined);
 
   const institutions = ["All", ...getInstitutions(rides)];
 
@@ -372,6 +373,17 @@ export default function RideDiscovery() {
 
 A confirmation will be sent (mock).`
     );
+  }
+
+  // Handle MapPicker location updates
+  function handleMapLocationChange(loc) {
+    if (loc.type === "pickup") {
+      setPickupLatLng(loc);
+      setPickup(""); // Could trigger reverse-geocode for address string
+    } else if (loc.type === "destination") {
+      setDestLatLng(loc);
+      setDestination("");
+    }
   }
 
   // UI minimalist filter bar, Pickup/Destination inputs, card grid, empty state if none
@@ -397,7 +409,7 @@ A confirmation will be sent (mock).`
           <span role="img" aria-label="car" style={{ fontSize: 18, marginRight: 1 }}>🚗</span>
           Enter Pickup & Destination
         </div>
-        {/* Input fields & map placeholder, minimalistic UI */}
+        {/* Input fields & integrated map mock, minimalistic UI */}
         <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
           {/* Pickup Field with icon */}
           <div style={{
@@ -460,18 +472,24 @@ A confirmation will be sent (mock).`
                 autoFocus
               />
             </div>
-            {/* Future: pin button on map */}
+            {/* Pin picker: active when clicking map or in future on this button */}
             <span
-              aria-label="map pin placeholder"
+              aria-label="toggle pickup pin"
               style={{
                 color: "#00A896",
                 marginRight: 13,
                 marginLeft: 4,
                 fontSize: 22,
-                opacity: 0.86
+                opacity: 0.86,
+                cursor: "pointer"
               }}
               role="img"
-              title="Pin on map (coming soon)"
+              title="Pin on map"
+              tabIndex={0}
+              onClick={() => {
+                // In a real app, focus the pickup pin on the map
+                document.activeElement.blur();
+              }}
             >
               📍
             </span>
@@ -536,46 +554,34 @@ A confirmation will be sent (mock).`
                 autoComplete="off"
               />
             </div>
-            {/* Future: pin button on map */}
+            {/* Pin picker: as with pickup */}
             <span
-              aria-label="map pin placeholder"
+              aria-label="toggle destination pin"
               style={{
                 color: "#0077B6",
                 marginRight: 13,
                 marginLeft: 4,
                 fontSize: 22,
-                opacity: 0.86
+                opacity: 0.86,
+                cursor: "pointer"
               }}
               role="img"
-              title="Pin on map (coming soon)"
+              title="Pin on map"
+              tabIndex={0}
+              onClick={() => {
+                document.activeElement.blur();
+              }}
             >
               📍
             </span>
           </div>
-          {/* Map placeholder: future enhancement */}
-          <div
-            style={{
-              background: "linear-gradient(90deg, #e3f3ff 65%, #e0faf7 99%)",
-              border: "1.3px dashed var(--color-accent)",
-              borderRadius: 14,
-              minHeight: 74,
-              marginTop: 10,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: "#90bda1",
-              fontWeight: 600,
-              fontSize: 14.7,
-            }}
-            aria-label="Map location picker (placeholder)"
-          >
-            <span style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 9 }}>
-              <span role="img" aria-label="location pin" style={{ fontSize: 23, marginRight: 6 }}>🗺️</span>
-              Pick location on map (coming soon)
-              <span style={{ color: "var(--color-muted)", fontWeight: 500, fontSize: 13, marginLeft: 8 }}>
-                (Map support coming soon)
-              </span>
-            </span>
+          {/* MapPicker (interactive) */}
+          <div style={{ marginTop: 7, marginBottom: 2, display: "flex", justifyContent: "center" }}>
+            <MapPicker
+              pickupLatLng={pickupLatLng}
+              destLatLng={destLatLng}
+              onLocationChange={handleMapLocationChange}
+            />
           </div>
         </div>
       </section>
