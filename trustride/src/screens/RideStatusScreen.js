@@ -321,6 +321,55 @@ function RideStatusScreen() {
         <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
           <b>Fare:</b> {fare !== "—" ? <>₹{fare}</> : "—"}
         </div>
+        {/* Chat and Call Buttons */}
+        <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
+          <button
+            className="btn"
+            style={{
+              borderRadius: 22,
+              minWidth: 92,
+              fontWeight: 700,
+              fontSize: 15,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 9,
+              background: "var(--primary)",
+              color: "#fff",
+              boxShadow: "0 2px 9px #0077B609"
+            }}
+            onClick={() => setShowChat(true)}
+            type="button"
+            tabIndex={0}
+            aria-label="Open driver chat"
+          >
+            <span role="img" aria-label="chat" style={{ fontSize: 20 }}>💬</span>
+            Chat
+          </button>
+          <button
+            className="btn"
+            style={{
+              borderRadius: 22,
+              minWidth: 92,
+              fontWeight: 700,
+              fontSize: 15,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 9,
+              background: "var(--accent)",
+              color: "#fff",
+              boxShadow: "0 2px 9px #00A89609"
+            }}
+            onClick={() => setShowCall(true)}
+            type="button"
+            tabIndex={0}
+            aria-label="Call driver"
+          >
+            <span role="img" aria-label="call" style={{ fontSize: 20 }}>📞</span>
+            Call
+          </button>
+        </div>
       </section>
 
       {/* Section: Mock Live Tracker */}
