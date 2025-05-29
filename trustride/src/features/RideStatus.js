@@ -2,6 +2,7 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
+import L from "leaflet";
 // SVGs for custom markers (blue car, green home pointer for style), fallback to default
 const carSVG = encodeURIComponent(
   `<svg width="42" height="42" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="21" r="21" fill="#00A896"/><text x="13.5" y="28" font-size="22" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">🚗</text></svg>`
@@ -10,7 +11,6 @@ const pickupSVG = encodeURIComponent(
   `<svg width="42" height="42" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="21" r="21" fill="#0077B6"/><text x="9" y="29" font-size="25" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">📍</text></svg>`
 );
 
-import L from "leaflet";
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl:
