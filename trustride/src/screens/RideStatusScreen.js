@@ -308,62 +308,113 @@ function RideStatusScreen() {
       {/* Section: Mock Live Tracker */}
       <section style={{ ...sectionCardStyle, textAlign: "center" }}>
         <div className="heading-2" style={{ marginBottom: 12, fontSize: 17, color: "var(--accent)" }}>
-          Live Driver Location
+          Live Route Tracker
         </div>
-        <div style={{ width: 220, height: 110, margin: "0 auto 7px auto", position: "relative", background: "rgba(0,168,150,0.06)", borderRadius: 14 }}>
-          {/* Mock tracker "map" — simple SVG/Canvas for demo */}
-          <svg width="220" height="110" style={{ display: "block" }}>
+        <div style={{ width: 252, height: 120, margin: "0 auto 10px auto", position: "relative", background: "rgba(0,168,150,0.06)", borderRadius: 17, border: "1px solid var(--accent)", boxShadow: "0 4px 16px rgba(0,119,182,0.08)" }}>
+          {/* Stylized route map/diagram as SVG */}
+          <svg width="252" height="120" style={{ display: "block" }}>
             {/* Route line */}
             <polyline
-              points={MOCK_ROUTE.map(p => `${p.x},${p.y}`).join(" ")}
+              points={MOCK_ROUTE.map(p => `${p.x+16},${p.y+7}`).join(" ")}
               fill="none"
               stroke="#00A896"
-              strokeWidth="3"
-              opacity="0.38"
+              strokeWidth="3.2"
+              opacity="0.45"
+              strokeDasharray="8 4"
             />
-            {/* Plot start (pickup) */}
-            <circle cx={MOCK_ROUTE[0].x} cy={MOCK_ROUTE[0].y} r="7"
-              fill="#0077B6"
-              stroke="#fff"
-              strokeWidth="2"
+            {/* Start (pickup) */}
+            <circle cx={MOCK_ROUTE[0].x+16} cy={MOCK_ROUTE[0].y+7} r="11"
+              fill="#fff"
+              stroke="#0077B6"
+              strokeWidth="2.3"
+              style={{filter: "drop-shadow(0 2px 7px #00679822)"}}
             />
-            <text x={MOCK_ROUTE[0].x - 3} y={MOCK_ROUTE[0].y - 12} fontSize="13" fill="#0077B6">
-              P
-            </text>
-            {/* Plot end (dest) */}
-            <circle cx={MOCK_ROUTE.at(-1).x} cy={MOCK_ROUTE.at(-1).y} r="7"
-              fill="#00A896"
-              stroke="#fff"
-              strokeWidth="2"
+            <text x={MOCK_ROUTE[0].x+12} y={MOCK_ROUTE[0].y + 13} fontSize="17" fill="#0077B6" fontWeight="bold">🏁</text>
+            {/* Label "Pickup" */}
+            <text x={MOCK_ROUTE[0].x-7} y={MOCK_ROUTE[0].y+1} fontSize="12" fill="#0077B6" fontWeight="600">Pickup</text>
+            {/* End (destination) */}
+            <circle cx={MOCK_ROUTE.at(-1).x+16} cy={MOCK_ROUTE.at(-1).y+7} r="11"
+              fill="#fff"
+              stroke="#00A896"
+              strokeWidth="2.3"
+              style={{filter: "drop-shadow(0 2px 7px #018d6e22)"}}
             />
-            <text x={MOCK_ROUTE.at(-1).x - 7} y={MOCK_ROUTE.at(-1).y + 25} fontSize="13" fill="#00A896">
-              D
-            </text>
-            {/* Animate driver icon */}
-            <text
-              fontSize="25"
-              x={MOCK_ROUTE[driverProgress].x - 13}
-              y={MOCK_ROUTE[driverProgress].y + 8}
-              style={{
-                filter: "drop-shadow(0 2px 4px #0077B690)",
-                transition: "x, y .5s"
-              }}
-            >
-              {DRIVER_ICONS[driverProgress % DRIVER_ICONS.length]}
-            </text>
+            <text x={MOCK_ROUTE.at(-1).x+7} y={MOCK_ROUTE.at(-1).y+22} fontSize="17" fill="#00A896" fontWeight="bold">🏁</text>
+            <text x={MOCK_ROUTE.at(-1).x+1} y={MOCK_ROUTE.at(-1).y+36} fontSize="12" fill="#00A896" fontWeight="600">Dest.</text>
+            {/* Animated driver icon on path */}
+            <g>
+              <circle
+                cx={MOCK_ROUTE[driverProgress].x+16}
+                cy={MOCK_ROUTE[driverProgress].y+7}
+                r="13"
+                fill="#FFD700"
+                stroke="#fac500"
+                strokeWidth="1.7"
+                style={{ filter: "drop-shadow(0 4px 12px #FFD70030)" }}
+              />
+              <text
+                fontSize="26"
+                x={MOCK_ROUTE[driverProgress].x + 5}
+                y={MOCK_ROUTE[driverProgress].y + 19}
+                style={{
+                  filter: "drop-shadow(0 1px 3px #3332)",
+                  userSelect: "none",
+                  pointerEvents: "none",
+                  transition: "x, y .62s"
+                }}
+              >{DRIVER_ICONS[driverProgress % DRIVER_ICONS.length]}</text>
+            </g>
           </svg>
+          {/* Info overlays: driver and eta */}
           <div style={{
             position: "absolute",
-            left: MOCK_ROUTE[driverProgress].x + 19,
-            top: MOCK_ROUTE[driverProgress].y - 2,
+            left: `${MOCK_ROUTE[driverProgress].x + 44}px`,
+            top: `${MOCK_ROUTE[driverProgress].y - 8}px`,
+            minWidth: 78,
+            background: "#fff",
+            borderRadius: 9,
+            boxShadow: "0 2px 12px #0077B610",
+            border: "1px solid var(--accent)",
             color: "var(--primary)",
-            fontSize: 13.5
+            fontWeight: 700,
+            fontSize: 14,
+            padding: "5px 8px",
+            textAlign: "left"
           }}>
-            {driverName}
+            <span style={{ fontSize: 13, color: "var(--primary)", fontWeight: 600 }}>
+              <span role="img" aria-label="Driver" style={{ fontSize: 18, marginRight: 3 }}>{modeIcon}</span>
+              Driver
+            </span>
+            <br />
+            <span style={{ color: "var(--accent)", fontWeight: 700 }}>{driverName}</span>
+            <br />
+            <span style={{ color: "var(--primary)", fontWeight: 400, fontSize: 12.5 }}>
+              ETA: <b>{Math.max(0, etaMinutes - Math.floor((driverProgress/(MOCK_ROUTE.length-1))*etaMinutes))} min</b>
+            </span>
           </div>
+          {/* Pickup icon left of map */}
+          <span role="img" aria-label="Pickup" style={{
+            position: "absolute",
+            left: 0,
+            top: MOCK_ROUTE[0].y-2,
+            fontSize: 29,
+            color: "#0077B6",
+            filter: "drop-shadow(0 1px 4px #0077B616)"
+          }}>📍</span>
+          {/* Destination icon right of map */}
+          <span role="img" aria-label="Dest" style={{
+            position: "absolute",
+            right: 3,
+            top: MOCK_ROUTE.at(-1).y+2,
+            fontSize: 28,
+            color: "#00A896",
+            filter: "drop-shadow(0 1px 4px #00A89616)"
+          }}>🏠</span>
         </div>
-        <div style={{ color: "var(--text-secondary)", fontSize: 13, fontStyle: "italic", marginTop: 6 }}>
-          {rideStatus === "Scheduled" ? "Driver is on the way to pickup." : "Enroute to destination..."}
+        <div style={{ color: "var(--text-secondary)", fontSize: 13.2, fontStyle: "italic", marginTop: 7 }}>
+          {rideStatus === "Scheduled"
+            ? "Driver is on the way to pickup. Tracking live route…"
+            : "Enroute to destination, tracking in real time…"}
         </div>
       </section>
 
