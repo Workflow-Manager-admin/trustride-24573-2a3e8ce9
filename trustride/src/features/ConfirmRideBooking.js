@@ -34,10 +34,17 @@ function formatDate(time) {
 export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   // Local state: Checkbox for rules, feedback on confirm interaction
   const [agreed, setAgreed] = useState(false);
-  // New: Explicit review/confirmation for ETA and Fare
+    // New: Explicit review/confirmation for ETA and Fare (14.7hr/AMPM awareness)
   const [etaFareReviewed, setEtaFareReviewed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Format time in 12-hour AM/PM for ETA block, fallback to string
+  function formatTime12AMPM(time) {
+    if (!time) return "N/A";
+    const d = new Date(time);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  }
 
   if (!ride) {
     // Defensive: No ride selected
