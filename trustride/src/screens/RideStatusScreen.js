@@ -521,12 +521,23 @@ function RideStatusScreen() {
         </section>
       )}
 
+      {/* Call modal lock at root of RideStatusScreen (unconditional as per React rules) */}
+=======
+  // ...state and effect hooks...
+
+  // Chat/call modals
+  const [showChat, setShowChat] = useState(false);
+  const [showCall, setShowCall] = useState(false);
+  // Always call the hook at the top
+  useModalLock(showChat || showCall);
+
+  // ...rest of component...
+
       {/* Mock Chat Modal */}
       {showChat && <ChatModal driverName={driverName} onClose={() => setShowChat(false)} />}
       {/* Mock Call Modal */}
       {showCall && <CallModal driverName={driverName} onClose={() => setShowCall(false)} />}
-      {/* Modal lock logic */}
-      {(showChat || showCall) && useModalLock(true)}
+      {/* Modal lock logic removed from JSX */}
 
       {/* Persistent/floating SOS */}
       <button
