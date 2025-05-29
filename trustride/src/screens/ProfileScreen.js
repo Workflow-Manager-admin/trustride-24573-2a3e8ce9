@@ -3,7 +3,8 @@ import React from 'react';
 /**
  * PUBLIC_INTERFACE
  * Profile screen for TrustRide app –
- * Minimalist layout with rounded cards, profile, rides, and settings stubs.
+ * Minimalist layout with rounded cards, profile, rides, emergency, and settings stubs.
+ * Visual placeholders included for verified badge, emergency contacts, and ride/ratings.
  */
 const ProfileScreen = () => (
   <div className="container" style={{ paddingTop: 84, paddingBottom: 70 }}>
@@ -13,6 +14,7 @@ const ProfileScreen = () => (
         View and manage your account, rides, and safety preferences.
       </p>
     </header>
+    {/* Profile summary card */}
     <section className="rounded-card" style={{ display: 'flex', alignItems: 'center', gap: 20, marginBottom: 22 }}>
       <div style={{
         background: 'var(--accent)',
@@ -38,12 +40,34 @@ const ProfileScreen = () => (
           width: 'fit-content',
           marginBottom: 4,
           fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center'
         }}>
           Verified
+          <span role="img" aria-label="Verified Badge" style={{ marginLeft: 7, fontSize: 17 }}>✔️</span>
         </div>
         <div style={{ color: 'var(--text-secondary)', fontSize: 14 }}>ID: #TST9922</div>
       </div>
     </section>
+    {/* Emergency contacts section */}
+    <section className="rounded-card" style={{ marginBottom: 22 }}>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+        <span role="img" aria-label="Emergency Contacts" style={{ fontSize: 20, marginRight: 9 }}>📞</span>
+        <span className="heading-2">Emergency Contacts</span>
+      </div>
+      {/* Placeholder contact list */}
+      <div style={{
+        background: 'rgba(0,168,150,0.07)',
+        padding: '8px 13px',
+        borderRadius: 11,
+        fontSize: 14,
+        color: 'var(--text-secondary)',
+        marginBottom: 7
+      }}>
+        <div><b>Not set</b> – Set trusted guardian contacts in settings.</div>
+      </div>
+    </section>
+    {/* Rides & Ratings Stub */}
     <section className="rounded-card" style={{ marginBottom: 22 }}>
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
         <span role="img" aria-label="Ride History" style={{ fontSize: 22, marginRight: 10 }}>🧾</span>
@@ -54,6 +78,7 @@ const ProfileScreen = () => (
         Trust Index: <b>Beta</b> – <span style={{ fontStyle: 'italic' }}>community rating coming soon</span>
       </div>
     </section>
+    {/* Settings/Preferences Card */}
     <section className="rounded-card">
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
         <span role="img" aria-label="Settings" style={{ fontSize: 22, marginRight: 10 }}>⚙️</span>
