@@ -521,6 +521,13 @@ function RideStatusScreen() {
         </section>
       )}
 
+      {/* Mock Chat Modal */}
+      {showChat && <ChatModal driverName={driverName} onClose={() => setShowChat(false)} />}
+      {/* Mock Call Modal */}
+      {showCall && <CallModal driverName={driverName} onClose={() => setShowCall(false)} />}
+      {/* Modal lock logic */}
+      {(showChat || showCall) && useModalLock(true)}
+
       {/* Persistent/floating SOS */}
       <button
         className="btn"
@@ -554,6 +561,232 @@ function RideStatusScreen() {
         <button className="btn" style={{borderRadius:16, minWidth:100}} onClick={handleBackHome}>Done / Back Home</button>
       </div>
       */}
+    </div>
+  );
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * ChatModal – Simulates a secure ride chat UI (mock only, no backend)
+ * Shows message exchange between user and driver, allows user to send "messages"
+ */
+function ChatModal({ driverName = "Driver", onClose }) {
+  const [messages, setMessages] = React.useState([
+    { user: "driver", text: `Hi, I'm on my way!` },
+    { user: "self", text: `Okay, see you soon.` },
+  ]);
+  const [input, setInput] = React.useState("");
+  // Modal background scroll lock
+  useModalLock(true);
+
+  function handleSend(e) {
+    e.preventDefault();
+    if (!input.trim()) return;
+    setMessages([...messages, { user: "self", text: input.trim() }]);
+    setInput("");
+    // Simulate driver response after a slight delay
+    setTimeout(() => {
+      if (Math.random() > 0.6) {
+        setMessages(msgs =>
+          [...msgs, { user: "driver", text: Math.random() > 0.5 ? "Almost there!" : "Let me know if you have questions." }]
+        );
+      }
+    }, 1200);
+  }
+
+  return (
+    <div
+      style={{
+        position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+        zIndex: 5001, background: "rgba(20, 38, 60, 0.2)", display: "flex",
+        alignItems: "center", justifyContent: "center"
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ride chat dialog"
+    >
+      <div
+        style={{
+          background: "#fff", borderRadius: 19, width: "94vw", maxWidth: 395, minHeight: 320,
+          boxShadow: "0 5px 30px #0077B61A", padding: "1.6rem 1.2rem 1.24rem 1.2rem",
+          display: "flex", flexDirection: "column", alignItems: "stretch", position: "relative"
+        }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 7, gap: 12 }}>
+          <span role="img" aria-label="chat" style={{ fontSize: 28 }}>💬</span>
+          <div className="heading-2" style={{ fontWeight: 600, fontSize: 18.5, color: "var(--primary)" }}>
+            Chat with {driverName}
+          </div>
+          <button
+            className="btn"
+            style={{
+              position: "absolute", top: 10, right: 12, fontWeight: 700, fontSize: 15,
+              background: "var(--accent)", color: "#fff", borderRadius: 15, padding: "2px 15px"
+            }}
+            aria-label="Close chat"
+            onClick={onClose}
+            tabIndex={0}
+            type="button"
+          >×</button>
+        </div>
+        <div style={{
+          flex: 1, minHeight: 120, maxHeight: 210, overflowY: "auto",
+          marginBottom: 11, marginTop: 2, background: "rgba(0,119,182,0.068)",
+          borderRadius: 10, padding: "5px 6px",
+          border: "1px solid var(--border-color)"
+        }}>
+          {messages.map((msg, idx) => (
+            <div
+              key={idx}
+              style={{
+                marginBottom: 7,
+                display: "flex",
+                justifyContent: msg.user === "self" ? "flex-end" : "flex-start"
+              }}>
+              <span style={{
+                background: msg.user === "self" ? "var(--primary)" : "var(--accent)",
+                color: "#fff",
+                borderRadius: "13px",
+                padding: "7px 13px",
+                fontWeight: 500,
+                fontSize: 14.7,
+                maxWidth: 210,
+                wordBreak: "break-word",
+                boxShadow: msg.user === "self"
+                  ? "0 2px 15px #0077B619"
+                  : "0 2px 8px #00A89616",
+                marginLeft: msg.user === "self" ? 28 : 0,
+                marginRight: msg.user === "self" ? 0 : 28
+              }}>{msg.text}</span>
+            </div>
+          ))}
+        </div>
+        <form onSubmit={handleSend} style={{ display: "flex", gap: 7, alignItems: "center" }}>
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            placeholder="Type your message…"
+            style={{
+              flex: 1,
+              padding: "9px 11px",
+              borderRadius: 9,
+              border: "1.2px solid var(--border-color)",
+              fontSize: 15.4,
+              background: "var(--background)"
+            }}
+            autoFocus
+            aria-label="Type message"
+          />
+          <button
+            className="btn"
+            style={{
+              borderRadius: 12, fontWeight: 600,
+              background: "var(--primary)",
+              color: "#fff", minWidth: 54, fontSize: 14,
+              opacity: input.trim() ? 1 : 0.55,
+              cursor: input.trim() ? "pointer" : "not-allowed"
+            }}
+            type="submit"
+            disabled={!input.trim()}
+          >Send</button>
+        </form>
+        <div style={{
+          color: "var(--text-secondary)",
+          fontStyle: "italic",
+          fontSize: 12.5,
+          margin: "5px 0 0 1px"
+        }}>
+          Messages are end-to-end encrypted (mocked).
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * CallModal – Simulates a secure ride call dialog (mock only)
+ * Shows driver call UI, ongoing call indicator, and basic hang up.
+ */
+function CallModal({ driverName = "Driver", onClose }) {
+  // Call timer
+  const [seconds, setSeconds] = React.useState(0);
+  // Lock scroll
+  useModalLock(true);
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setSeconds(sec => sec + 1), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+        zIndex: 5001, background: "rgba(20,38,60,0.22)", display: "flex",
+        alignItems: "center", justifyContent: "center"
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Ride call dialog"
+    >
+      <div
+        style={{
+          background: "#fff", borderRadius: 19, width: "92vw", maxWidth: 340, minHeight: 230,
+          boxShadow: "0 7px 33px #00A89624", padding: "1.5rem 1.1rem 1.25rem 1.1rem",
+          display: "flex", flexDirection: "column", alignItems: "center", position: "relative"
+        }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 13 }}>
+          <span role="img" aria-label="call" style={{ fontSize: 30 }}>📞</span>
+          <div className="heading-2" style={{ fontWeight: 700, fontSize: 18, color: "var(--accent)" }}>
+            Calling {driverName}
+          </div>
+          <button
+            className="btn"
+            style={{
+              position: "absolute", top: 10, right: 13, fontWeight: 700, fontSize: 15,
+              background: "var(--primary)", color: "#fff", borderRadius: 14, padding: "2px 13px"
+            }}
+            aria-label="Hang up call"
+            onClick={onClose}
+            tabIndex={0}
+            type="button"
+          >×</button>
+        </div>
+        <div style={{
+          width: 74, height: 74, borderRadius: "50%", margin: "18px 0 7px 0",
+          background: "rgba(0,168,150,0.07)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 37, color: "var(--primary)", boxShadow: "0 4px 18px #0077B61b"
+        }}>
+          <span role="img" aria-label="driver avatar">🧑‍✈️</span>
+        </div>
+        <div style={{
+          fontWeight: 600, fontSize: 16, color: "var(--text-secondary)", marginBottom: 3
+        }}>
+          Ongoing call…
+        </div>
+        <div style={{ fontSize: 14.2, fontWeight: 700, color: "var(--accent)", marginBottom: 12 }}>
+          {String(Math.floor(seconds / 60)).padStart(2, "0")}:{String(seconds % 60).padStart(2, "0")}
+        </div>
+        <button
+          className="btn"
+          style={{
+            borderRadius: 16, fontWeight: 600, background: "#d40037", color: "#fff",
+            minWidth: 80, fontSize: 15
+          }}
+          onClick={onClose}
+          tabIndex={0}
+          type="button"
+        >
+          Hang up
+        </button>
+        <div style={{
+          color: "var(--text-secondary)", fontSize: 12, marginTop: 8, fontStyle: "italic"
+        }}>
+          Calls are encrypted (mocked).
+        </div>
+      </div>
     </div>
   );
 }
