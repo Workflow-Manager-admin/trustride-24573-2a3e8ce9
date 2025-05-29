@@ -34,6 +34,10 @@ function formatDate(time) {
 export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   // Local state: Checkbox for rules, feedback on confirm interaction
   const [agreed, setAgreed] = useState(false);
+
+  // New: Explicit review/confirmation for ETA and Fare
+  const [etaFareReviewed, setEtaFareReviewed] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
