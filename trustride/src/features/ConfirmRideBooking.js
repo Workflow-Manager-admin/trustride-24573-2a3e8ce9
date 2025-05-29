@@ -877,7 +877,116 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
       }}>
         Your seat is reserved. For any changes or cancellations, contact TrustRide support.
       </div>
+      {/* --- Inline: Payment icon button component for accessible payment row --- */}
+      {/* This must go below to be available for render above */}
+      <style>
+      {`
+        .tr-pm-row-btn {
+          border: 2.4px solid var(--color-border);
+          background: #fafdfe;
+          border-radius: 17px;
+          padding: 9px 12px;
+          margin: 0;
+          outline: none;
+          display: flex;
+          align-items: center;
+          cursor: pointer;
+          transition: border-color 0.17s, background 0.17s;
+          box-shadow: 0 1.5px 9px rgba(0,168,150,0.04);
+          position: relative;
+          min-width: 44px;
+          min-height: 44px;
+        }
+        .tr-pm-row-btn[aria-checked="true"], .tr-pm-row-btn:focus-visible {
+          border: 2.4px solid var(--color-accent);
+          z-index: 2;
+        }
+        .tr-pm-row-btn:hover,
+        .tr-pm-row-btn:active {
+          border: 2.4px solid var(--color-primary);
+          background: #ecfcf7;
+        }
+        .tr-pm-row-btn .pm-tooltip {
+          pointer-events: none;
+          position: absolute;
+          left: 50%;
+          top: 104%;
+          transform: translateX(-50%);
+          opacity: 0;
+          background: #053b3eef;
+          color: #f4fbf9;
+          font-size: 14px;
+          font-weight: 700;
+          border-radius: 10px;
+          padding: 6px 12px;
+          white-space: nowrap;
+          z-index: 99;
+          transition: opacity 0.16s;
+          box-shadow: 0 3px 14px #65c3f630;
+        }
+        .tr-pm-row-btn:focus .pm-tooltip, .tr-pm-row-btn:active .pm-tooltip,
+        .tr-pm-row-btn:hover .pm-tooltip, .tr-pm-row-btn.touch-tooltip .pm-tooltip  {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        @media (max-width: 580px) {
+          .tr-pm-row-btn {
+            min-width: 38px;
+            min-height: 38px;
+            padding: 7px 6px;
+          }
+        }
+      `}
+      </style>
     </div>
+  );
+}
+
+// Payment method icon button – tooltip/overlay on hover, focus, tap. Accessible.
+function PaymentMethodIconButton({ method, icon, selected, setSelected, label }) {
+  // For accessibility: handle both keyboard focus and mouse/tap/touch for tooltip.
+  const [showTooltip, setShowTooltip] = React.useState(false);
+  // Touch handler for mobile: show tooltip briefly on tap and select
+  const handleTouchStart = (e) => {
+    setShowTooltip(true);
+    setTimeout(() => setShowTooltip(false), 800); // show for 800ms
+    setSelected();
+    // prevent double-activation
+    e.preventDefault();
+  };
+  return (
+    <button
+      type="button"
+      className={`tr-pm-row-btn${showTooltip ? ' touch-tooltip' : ''}`}
+      role="radio"
+      aria-checked={selected}
+      aria-label={label}
+      aria-describedby={method + "-desc"}
+      tabIndex={0}
+      onClick={setSelected}
+      onFocus={() => setShowTooltip(true)}
+      onBlur={() => setShowTooltip(false)}
+      onMouseEnter={() => setShowTooltip(true)}
+      onMouseLeave={() => setShowTooltip(false)}
+      onTouchStart={handleTouchStart}
+      style={{
+        borderColor: selected ? "var(--color-accent)" : "var(--color-border)",
+        background: selected ? "#e3f3ff" : "#fafdfe"
+      }}
+    >
+      <span aria-hidden="true">
+        {icon}
+      </span>
+      <span
+        id={method + "-desc"}
+        className="pm-tooltip"
+        role="tooltip"
+        aria-live="polite"
+        style={{ opacity: showTooltip || selected ? 1 : undefined, zIndex: 10 }}
+      >
+        {label}
+      </span>
+    </button>
   );
 }
 
