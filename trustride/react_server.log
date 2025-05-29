@@ -22,3 +22,14 @@ Compiling...
 Compiled successfully!
 webpack compiled successfully
 Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Failed to compile.
+
+Module not found: Error: Can't resolve './theme' in '/home/kavia/workspace/code-generation/trustride-24573-2a3e8ce9/trustride/src'
+ERROR in ./src/index.js 8:0-40
+Module not found: Error: Can't resolve './theme' in '/home/kavia/workspace/code-generation/trustride-24573-2a3e8ce9/trustride/src'
+
+webpack compiled with 1 error
+Compiling...
