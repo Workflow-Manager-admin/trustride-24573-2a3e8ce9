@@ -352,6 +352,29 @@ export default function RideDiscovery() {
   const [pickupLatLng, setPickupLatLng] = useState(undefined);
   const [destLatLng, setDestLatLng] = useState(undefined);
 
+  // Commonly visited/used addresses (in real app: fetched/tracked; here: mock)
+  const COMMON_LOCATIONS = [
+    { label: "Campus", address: "Greenwood University Hostel Gate" },
+    { label: "Office", address: "Downtown Tech Park, Block B" },
+    { label: "Hostel", address: "Sunrise Hostel, West Wing" },
+    { label: "Library", address: "Central City Library" },
+  ];
+  // Simple in-memory 'recent' demo; in real app, would persist
+  const [recentAddresses, setRecentAddresses] = useState([
+    "City Center Plaza",
+    "Greenwood Sports Complex",
+    "Main Bus Stand",
+  ]);
+
+  // Add address to recent (called after user sets one as pickup/dest)
+  function addRecentAddress(addr) {
+    if (!addr || recentAddresses.includes(addr)) return;
+    setRecentAddresses((prev) => [
+      addr,
+      ...prev.slice(0, 3).filter((a) => a !== addr)
+    ]);
+  }
+
   const institutions = ["All", ...getInstitutions(rides)];
 
   const filteredRides =
