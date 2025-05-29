@@ -528,16 +528,153 @@ function RideStatusScreen() {
   // Chat/call modals
   const [showChat, setShowChat] = useState(false);
   const [showCall, setShowCall] = useState(false);
+
+  // Emergency features: Fake Call, Silent SOS, Ride Deviation Alert states
+  const [showFakeCall, setShowFakeCall] = useState(false);
+  const [showSilentSOS, setShowSilentSOS] = useState(false);
+  const [showDeviation, setShowDeviation] = useState(false);
+  const [showToast, setShowToast] = useState(null); // for quick effect notification
+
   // Always call the hook at the top
-  useModalLock(showChat || showCall);
+  useModalLock(showChat || showCall || showFakeCall || showSilentSOS || showDeviation);
+
+  // Toast for quick feedback
+  useEffect(() => {
+    let t;
+    if (showToast) t = setTimeout(() => setShowToast(null), 2100);
+    return () => t && clearTimeout(t);
+  }, [showToast]);
+
+  // Helper for emergency button styling
+  const emergBtnStyle = {
+    minWidth: 109,
+    minHeight: 44,
+    fontSize: 15,
+    fontWeight: 700,
+    borderRadius: 32,
+    border: "none",
+    boxShadow: "0 1.5px 8px #0077B609",
+    outline: "none",
+    background: "var(--background)",
+    color: "var(--primary)",
+    transition: "background .12s,color .12s",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 10, cursor: "pointer",
+    padding: "8.5px 20px",
+  };
 
   // ...rest of component...
+
+      {/* Emergency Safety Features */}
+      <section className="rounded-card" style={{ ...sectionCardStyle, textAlign: 'center', border: '2px solid var(--accent)', background: 'rgba(0,168,150,0.028)' }}>
+        <div className="heading-2" style={{ marginBottom: 7, fontSize: 17, color: "var(--accent)", fontWeight: 700, letterSpacing: 0.1 }}>
+          Emergency Safety Tools
+        </div>
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center", marginTop: 14, marginBottom: 8
+        }}>
+          <button
+            type="button"
+            style={{ ...emergBtnStyle, background: "#e9f8fc", color: "#0078c2" }}
+            onClick={() => setShowFakeCall(true)}
+            aria-label="Trigger Fake Call"
+            tabIndex={0}
+          >
+            <span role="img" aria-label="Fake Call" style={{ fontSize: 19 }}>📱</span>
+            Fake Call
+          </button>
+          <button
+            type="button"
+            style={{ ...emergBtnStyle, background: "#f5fcf7", color: "#00A896" }}
+            onClick={() => setShowSilentSOS(true)}
+            aria-label="Send Silent SOS"
+            tabIndex={0}
+          >
+            <span role="img" aria-label="Silent SOS" style={{ fontSize: 19 }}>🤫</span>
+            Silent SOS
+          </button>
+          <button
+            type="button"
+            style={{ ...emergBtnStyle, background: "#fcf5eb", color: "#b49a00" }}
+            onClick={() => setShowDeviation(true)}
+            aria-label="Alert Ride Deviation"
+            tabIndex={0}
+          >
+            <span role="img" aria-label="Deviation Alert" style={{ fontSize: 19 }}>⚠️</span>
+            Ride Deviation
+          </button>
+        </div>
+        <div style={{ color: 'var(--text-secondary)', fontSize: 13.7, fontStyle: "italic", marginTop: 4 }}>
+          These features help you discreetly manage emergencies and alert for deviations in route.
+        </div>
+      </section>
 
       {/* Mock Chat Modal */}
       {showChat && <ChatModal driverName={driverName} onClose={() => setShowChat(false)} />}
       {/* Mock Call Modal */}
       {showCall && <CallModal driverName={driverName} onClose={() => setShowCall(false)} />}
-      {/* Modal lock logic removed from JSX */}
+      {/* Emergency: Fake Call Modal */}
+      {showFakeCall &&
+        <ModalPopup
+          emoji="📱"
+          title="Fake Call Incoming"
+          description="A fake call ring plays (mock)—handset vibrates. Use this as a discreet pretext in distress. No real call is placed."
+          actionName="Dismiss"
+          onClose={() => {
+            setShowFakeCall(false);
+            setShowToast("Fake Call popup was shown for emergency privacy.");
+          }}
+        />
+      }
+      {/* Emergency: Silent SOS Modal */}
+      {showSilentSOS &&
+        <ModalPopup
+          emoji="🤫"
+          title="Silent SOS Sent"
+          description="A silent SOS alert was sent to guardians and security (mocked)—driver is not notified. Your location is shared for your safety."
+          actionName="OK"
+          onClose={() => {
+            setShowSilentSOS(false);
+            setShowToast("Silent SOS alert (mock) triggered.");
+          }}
+        />
+      }
+      {/* Emergency: Ride Deviation Alert Modal */}
+      {showDeviation &&
+        <ModalPopup
+          emoji="⚠️"
+          title="Route Deviation Alert"
+          description="Your chosen contacts are alerted about a route deviation. They will track your vehicle for safety (mock demonstration)."
+          actionName="Understood"
+          onClose={() => {
+            setShowDeviation(false);
+            setShowToast("Ride Deviation alert shown (mocked).");
+          }}
+        />
+      }
+      {/* Emergency feature toast popup */}
+      {showToast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 98,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#fff",
+            color: "var(--primary)",
+            borderRadius: 10,
+            padding: "12px 26px",
+            fontWeight: 700,
+            fontSize: 16,
+            boxShadow: "0 8px 44px rgba(0,168,150,0.17)",
+            border: "2px solid var(--accent)",
+            zIndex: 9005,
+            transition: "opacity .22s",
+            opacity: showToast ? 1 : 0,
+            pointerEvents: "none"
+          }}>
+          {showToast}
+        </div>
+      )}
 
       {/* Persistent/floating SOS */}
       <button
@@ -572,6 +709,61 @@ function RideStatusScreen() {
         <button className="btn" style={{borderRadius:16, minWidth:100}} onClick={handleBackHome}>Done / Back Home</button>
       </div>
       */}
+    </div>
+  );
+}
+
+/**
+ * PUBLIC_INTERFACE
+ * ModalPopup – Generic, minimalist modal for emergency feature illustrations.
+ * Used for Fake Call, Silent SOS, Ride Deviation in RideStatusScreen.
+ */
+function ModalPopup({ emoji, title, description, actionName = "Close", onClose }) {
+  useModalLock(true);
+  return (
+    <div
+      style={{
+        position: "fixed",
+        zIndex: 9100,
+        left: 0, top: 0, width: "100vw", height: "100vh",
+        background: "rgba(30,40,58,0.20)",
+        display: "flex", alignItems: "center", justifyContent: "center"
+      }}
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        style={{
+          background: "#fff",
+          borderRadius: 21,
+          minWidth: 280,
+          maxWidth: "92vw",
+          boxShadow: "0 6px 40px rgba(0,168,150, 0.19)",
+          padding: "2.1rem 1.4rem 1.25rem 1.4rem",
+          border: "2px solid var(--accent)",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          position: "relative"
+        }}
+      >
+        <span style={{ fontSize: 41, marginBottom: 13 }}>{emoji}</span>
+        <div className="heading-2" style={{ fontWeight: 700, fontSize: 19, marginBottom: 7, color: "var(--primary)" }}>{title}</div>
+        <div style={{ color: "var(--text-secondary)", marginBottom: 18, textAlign: "center", fontSize: 15.5 }}>
+          {description}
+        </div>
+        <button
+          className="btn"
+          style={{
+            borderRadius: 22, padding: "12px 36px", fontSize: 15,
+            fontWeight: 700, background: "var(--accent)", color: "#fff", minWidth: 96
+          }}
+          onClick={onClose}
+        >
+          {actionName}
+        </button>
+      </div>
     </div>
   );
 }
