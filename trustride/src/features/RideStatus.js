@@ -38,12 +38,55 @@ const userIcon = new L.Icon({
   shadowSize: [38, 38]
 });
 
-// PUBLIC_INTERFACE
+/** FEEDBACK & RATING ADDITION **/
+
 // RIDE STATUS COMPONENT, vertical arrangement of pickup ETA, ride status, map, and SOS button with modals
 export default function RideStatus({ ride, onSOS }) {
-  // For the inline SOS modal demo
+  // Inline modal and state as above
   const [showSOSModal, setShowSOSModal] = useState(false);
 
+  // ---- FEEDBACK STATE ----
+  // Is this ride complete? We'll add a boolean: ride?.status === "complete" means show feedback
+  // For this demo, if ride.status === "complete" or ride.complete, show feedback
+  const rideIsComplete = ride && (ride.status === "complete" || ride.complete);
+
+  // Feedback: rating state
+  const [selectedRating, setSelectedRating] = useState(null); // integer/index of emoji
+  const [showThankYou, setShowThankYou] = useState(false);
+
+  // For navigation: since we don't have react-router, emulate Home navigation
+  function goHome() {
+    // Simulate Home redirect in parent by using the bottom tab logic
+    if (typeof window !== "undefined" && window.dispatchEvent) {
+      // Raise a custom event or use a global function (App uses setActiveTab)
+      if (typeof window._navigateToHome === "function") {
+        window._navigateToHome(); // Custom, not in original code.
+      } else {
+        // Simulate tab click: for this template, just reload
+        window.location.reload();
+      }
+    }
+  }
+  // On rating selection, show thank you, then redirect after 2s
+  function handleRating(idx) {
+    setSelectedRating(idx);
+    setShowThankYou(true);
+    setTimeout(() => {
+      setShowThankYou(false);
+      goHome();
+    }, 2000);
+  }
+
+  // Emojis: 5 options, classic rating row (angry to happy)
+  const FEEDBACK_EMOJIS = [
+    { emoji: "😡", label: "Very Bad" },
+    { emoji: "🙁", label: "Bad" },
+    { emoji: "😐", label: "Okay" },
+    { emoji: "🙂", label: "Good" },
+    { emoji: "😍", label: "Excellent" },
+  ];
+
+  // -- rest of states below remain unchanged --
   // Mock ride if none is passed
   const mockRide = {
     driver: "Priya Shah",
@@ -216,7 +259,7 @@ export default function RideStatus({ ride, onSOS }) {
   return (
     <div style={{
       paddingTop: 38,
-      paddingBottom: 34,
+      paddingBottom: rideIsComplete ? 12 : 34,
       maxWidth: 430,
       margin: "0 auto",
       display: "flex",
@@ -298,10 +341,13 @@ export default function RideStatus({ ride, onSOS }) {
             boxShadow: "0 1.5px 10px #acfff440"
           }}
         >
-          En Route
+          {rideIsComplete ? "Complete" : "En Route"}
         </span>
         <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15 }}>
-          Your verified driver is on the way!
+          {rideIsComplete
+            ? "Your ride has ended. Please rate your experience:"
+            : "Your verified driver is on the way!"
+          }
         </div>
         <div
           style={{
@@ -354,6 +400,120 @@ export default function RideStatus({ ride, onSOS }) {
         >
           Pickup Point: <span style={{ color: "#0077B6" }}>{r.depPoint}</span>
         </div>
+
+        {/* --- FEEDBACK SECTION (if ride complete) --- */}
+        {rideIsComplete && (
+          <div
+            style={{
+              marginTop: 22,
+              marginBottom: 3,
+              padding: "12px 3px 8px",
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              borderTop: "1.3px dashed var(--color-border)",
+            }}
+          >
+            {/* Feedback row or thank you */}
+            {!showThankYou ? (
+              <>
+                <div style={{
+                  marginBottom: 8,
+                  fontWeight: 600,
+                  color: "var(--color-text-secondary)",
+                  fontSize: 15.5
+                }}>
+                  How was your ride?
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: 14,
+                    marginBottom: 7,
+                    marginTop: 0
+                  }}
+                  aria-label="Rate your ride"
+                  role="radiogroup"
+                >
+                  {FEEDBACK_EMOJIS.map((item, idx) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      aria-label={item.label}
+                      aria-checked={selectedRating === idx}
+                      role="radio"
+                      tabIndex={0}
+                      onClick={() => handleRating(idx)}
+                      style={{
+                        background: selectedRating === idx ? "linear-gradient(90deg, #eaf9ff 90%, #f7fafd 100%)" : "#fff",
+                        border: selectedRating === idx
+                          ? "2.2px solid var(--color-accent)"
+                          : "2px solid var(--color-border)",
+                        borderRadius: 15,
+                        fontSize: 31,
+                        padding: "9px 9px",
+                        outline: "none",
+                        transition: "border 0.17s, background 0.17s",
+                        boxShadow: selectedRating === idx ? "0 1.5px 7px #ecfcf7" : "none",
+                        cursor: "pointer",
+                        filter: selectedRating === idx ? "none" : "grayscale(0.13)",
+                        position: "relative",
+                        minWidth: 44
+                      }}
+                    >
+                      <span aria-hidden="true">{item.emoji}</span>
+                    </button>
+                  ))}
+                </div>
+                <div style={{
+                  fontSize: 13.2,
+                  color: "var(--color-muted)",
+                  fontWeight: 500,
+                  marginTop: 3,
+                  minHeight: 16
+                }}>
+                  {selectedRating !== null &&
+                    <>Selected: <span style={{ color: "var(--color-accent)", fontWeight: 600 }}>{FEEDBACK_EMOJIS[selectedRating].label}</span></>
+                  }
+                </div>
+              </>
+            ) : (
+              <div
+                style={{
+                  margin: "12px 0 4px 0",
+                  padding: "22px 16px",
+                  borderRadius: 13,
+                  background: "linear-gradient(90deg,#f4fbf9 60%,#eaf9ff 100%)",
+                  color: "#00A896",
+                  fontWeight: 820,
+                  fontSize: 19,
+                  textAlign: "center",
+                  border: "1.4px solid var(--color-border)",
+                  boxShadow: "0 2.5px 14px #b9efe936",
+                  minWidth: 150,
+                  maxWidth: 290,
+                  letterSpacing: "-0.03em"
+                }}
+                aria-live="polite"
+                tabIndex={-1}
+              >
+                Thank you for your feedback!
+                <div style={{
+                  color: "#45566E",
+                  marginTop: 4,
+                  fontWeight: 600,
+                  fontSize: 15.5
+                }}>
+                  Redirecting to Home...
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
       </section>
 
       {/* 3. Live Map Card */}
