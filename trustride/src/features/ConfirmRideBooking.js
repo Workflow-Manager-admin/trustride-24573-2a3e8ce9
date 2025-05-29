@@ -20,6 +20,33 @@ const DEFAULT_RULES = [
   "Be punctual at the pickup point.",
   "TrustRide is a verified community. Report issues to support promptly.",
 ];
+/**
+ * Payment method icon SVGs (minimalist to match theme, self-contained)
+ */
+const PAYMENT_METHOD_ICONS = {
+  UPI: (
+    <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      {/* UPI styled triangle (motif) */}
+      <polygon points="16,40 42,8 26,8 8,40" fill="#00A896" />
+      <rect x="16" y="36" width="19" height="4" rx="2" fill="#0077B6" />
+    </svg>
+  ),
+  Cash: (
+    <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <rect x="8" y="14" width="32" height="20" rx="6" fill="#F4FBF9" stroke="#00A896" strokeWidth="2"/>
+      <circle cx="24" cy="24" r="6" fill="#00A896" opacity="0.7"/>
+      <text x="24" y="27" textAnchor="middle" fontSize="10" fill="#0077B6" fontWeight="700">₹</text>
+    </svg>
+  ),
+  Card: (
+    <svg width="36" height="36" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+      <rect x="8" y="14" width="32" height="20" rx="6" fill="#ecfcf7" stroke="#0077B6" strokeWidth="2"/>
+      <rect x="13" y="28" width="10" height="3" rx="1.5" fill="#00A896" />
+      <rect x="30" y="28" width="7" height="3" rx="1.5" fill="#00A896" opacity="0.55"/>
+      <rect x="8" y="20" width="32" height="4" fill="#00A896" opacity="0.13"/>
+    </svg>
+  )
+};
 // Example payment methods — in real app these would come from backend/ride object
 const DEFAULT_PAYMENT_METHODS = ["UPI", "Cash", "Card"];
 
