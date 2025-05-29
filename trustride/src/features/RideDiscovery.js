@@ -46,11 +46,11 @@ export default function RideDiscovery() {
   const [timeFlex, setTimeFlex] = useState(TIME_FLEX_OPTIONS[0]);
 
   // Handlers for suggestion chips
-  function usePickupChip(addr) {
+  function handlePickupChip(addr) {
     setPickup(addr);
     rememberRecent(addr);
   }
-  function useDestChip(addr) {
+  function handleDestChip(addr) {
     setDestination(addr);
     rememberRecent(addr);
   }
@@ -430,8 +430,14 @@ export default function RideDiscovery() {
           onClick={() => {
             // In the actual app, would show search or next page. For now, just a dialog
             window.alert(
-              `Find rides from:\n\n• Pickup: ${pickup.trim()}\n• Destination: ${destination.trim()}\n• When: ${scheduleType === "now" ?
-                "Now" : `${scheduledDate} ${scheduledTime} (±${timeFlex} min)`}\n\n(This is a demo - booking not implemented)`
+              `Find rides from:
+
+• Pickup: ${pickup.trim()}
+• Destination: ${destination.trim()}
+• When: ${scheduleType === "now" ?
+                "Now" : `${scheduledDate} ${scheduledTime} (±${timeFlex} min)`}
+
+(This is a demo - booking not implemented)`
             );
             // Store these as 'recent' addresses
             rememberRecent(pickup.trim());
