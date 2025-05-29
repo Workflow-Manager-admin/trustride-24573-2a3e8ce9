@@ -40,34 +40,32 @@ const userIcon = new L.Icon({
 
 /** FEEDBACK & RATING ADDITION **/
 
-// RIDE STATUS COMPONENT, vertical arrangement of pickup ETA, ride status, map, and SOS button with modals
+/**
+ * PUBLIC_INTERFACE
+ * RideStatus: TrustRide live status screen.
+ * Now arranges ETA, ride status, and SOS in a horizontal row above the map.
+ * Feedback rating is always reliably shown at the bottom when ride is complete.
+ */
+
 export default function RideStatus({ ride, onSOS }) {
-  // Inline modal and state as above
+  // SOS modal state and feedback states
   const [showSOSModal, setShowSOSModal] = useState(false);
 
-  // ---- FEEDBACK STATE ----
-  // Is this ride complete? We'll add a boolean: ride?.status === "complete" means show feedback
-  // For this demo, if ride.status === "complete" or ride.complete, show feedback
+  // Feedback: only show on ride completion
   const rideIsComplete = ride && (ride.status === "complete" || ride.complete);
-
-  // Feedback: rating state
-  const [selectedRating, setSelectedRating] = useState(null); // integer/index of emoji
+  const [selectedRating, setSelectedRating] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
 
-  // For navigation: since we don't have react-router, emulate Home navigation
+  // Navigation: redirect to home after feedback
   function goHome() {
-    // Simulate Home redirect in parent by using the bottom tab logic
     if (typeof window !== "undefined" && window.dispatchEvent) {
-      // Raise a custom event or use a global function (App uses setActiveTab)
       if (typeof window._navigateToHome === "function") {
-        window._navigateToHome(); // Custom, not in original code.
+        window._navigateToHome();
       } else {
-        // Simulate tab click: for this template, just reload
         window.location.reload();
       }
     }
   }
-  // On rating selection, show thank you, then redirect after 2s
   function handleRating(idx) {
     setSelectedRating(idx);
     setShowThankYou(true);
@@ -76,8 +74,6 @@ export default function RideStatus({ ride, onSOS }) {
       goHome();
     }, 2000);
   }
-
-  // Emojis: 5 options, classic rating row (angry to happy)
   const FEEDBACK_EMOJIS = [
     { emoji: "😡", label: "Very Bad" },
     { emoji: "🙁", label: "Bad" },
@@ -86,8 +82,7 @@ export default function RideStatus({ ride, onSOS }) {
     { emoji: "😍", label: "Excellent" },
   ];
 
-  // -- rest of states below remain unchanged --
-  // Mock ride if none is passed
+  // Mock ride fallback
   const mockRide = {
     driver: "Priya Shah",
     vehicle: "Hyundai Verna - Blue",
@@ -96,17 +91,15 @@ export default function RideStatus({ ride, onSOS }) {
     pickupLatLng: [19.1167, 72.8333],
   };
 
-  // Calculate ETA minutes: use real value if provided, else mock (6-12 min)
+  // ETA logic
   const etaMins = useMemo(() => {
     if (ride && ride.estPickup) {
       const minFromNow = Math.max(1, Math.ceil((new Date(ride.estPickup) - new Date()) / 60000));
       return minFromNow;
     } else {
-      return Math.floor(6 + Math.random() * 7); // 6-12 min
+      return Math.floor(6 + Math.random() * 7);
     }
   }, [ride && ride.estPickup]);
-
-  // Calculate the estimated pickup time object
   const estPickup = useMemo(() => {
     if (ride && ride.estPickup) return new Date(ride.estPickup);
     const now = new Date();
@@ -114,58 +107,19 @@ export default function RideStatus({ ride, onSOS }) {
     now.setMinutes(now.getMinutes() + etaMins);
     return now;
   }, [ride && ride.estPickup, etaMins]);
-
-  const r = {
-    ...mockRide,
-    ...(ride || {}),
-    estPickup
-  };
-
-  // Time difference for ETA
+  const r = { ...mockRide, ...(ride || {}), estPickup };
   const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date()) / 60000));
   const clockStr = new Date(r.estPickup).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
 
-  // Prominently styled ETA box (branded, pulsing)
-  const etaBoxStyle = {
-    margin: "0 auto 24px",
-    fontWeight: 900,
-    fontSize: "2.1rem",
-    color: "var(--color-accent)",
-    background: "linear-gradient(90deg, #faffeb 60%, #eaf9ff 100%)",
-    borderRadius: 20,
-    border: "2.7px solid var(--color-accent)",
-    boxShadow: "0 8px 33px #a7f2eb25",
-    padding: "18px 28px 16px 24px",
-    textAlign: "center",
-    letterSpacing: ".9px",
-    display: "block",
-    lineHeight: 1.22,
-    textShadow: "0 2px 4px #00A89611",
-    animation: "pulseEtaTime 1.2s infinite alternate",
-    zIndex: 13,
-    position: "relative",
-    transition: "background 0.2s"
-  };
-  const etaPulseKeyframesStyle = `
-    @keyframes pulseEtaTime {
-      0% { box-shadow: 0 0 0 rgba(0,168,150,0.09); background-size: 100% 100%; }
-      100% { box-shadow: 0 6px 21px 5px #a7f2eb44; background-size: 120% 115%; }
-    }
-  `;
-
-  // Map route
+  // Map logic
   const route = [r.driverLatLng, r.pickupLatLng];
-
-  // Responsive map height helper
   const getMapHeight = () => window.innerWidth < 420 ? 180 : 210;
 
-  // SOS click handler: open modal
+  // SOS
   function handleSOS() {
     if (onSOS) return onSOS();
     setShowSOSModal(true);
   }
-
-  // Renders the modal for SOS confirmation
   function SOSSafetyModal({ open, onClose }) {
     if (!open) return null;
     return (
@@ -255,268 +209,173 @@ export default function RideStatus({ ride, onSOS }) {
     );
   }
 
-  // Main render: vertical stack, minimalist, with enhanced section spacing
+  // Styles for the new horizontal status row
+  const statusRowStyles = {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "space-between",
+    gap: "11px",
+    width: "100%",
+    maxWidth: 430,
+    margin: "0 auto 19px auto",
+    paddingTop: 30,
+    paddingBottom: 8,
+    flexWrap: "wrap",
+  };
+  const statusEtaBox = {
+    flex: "1 1 120px",
+    minWidth: 110,
+    margin: 0,
+    fontWeight: 900,
+    fontSize: "1.38rem",
+    color: "var(--color-accent)",
+    background: "linear-gradient(90deg, #faffeb 60%, #eaf9ff 100%)",
+    borderRadius: 15,
+    border: "2px solid var(--color-accent)",
+    boxShadow: "0 2px 11px #a7f2eb18",
+    padding: "11px 11px",
+    textAlign: "center",
+    letterSpacing: ".7px",
+    lineHeight: 1.13,
+    textShadow: "0 1.5px 4px #00A89610",
+    animation: "pulseEtaTime 1.1s infinite alternate",
+    transition: "background 0.2s"
+  };
+  const statusRideState = {
+    flex: "1 1 120px",
+    minWidth: 100,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "3px"
+  };
+  const statusRideText = {
+    fontWeight: 800,
+    fontSize: "1.11rem",
+    color: "var(--color-accent)",
+    background: "#ecfcf7",
+    borderRadius: 16,
+    padding: "4px 15px",
+    border: "1.4px solid var(--color-accent)",
+    textTransform: "uppercase",
+    marginBottom: 1,
+    letterSpacing: ".06em"
+  };
+  const statusSOS = {
+    flex: "1 1 110px",
+    minWidth: 102,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  };
+  const etaPulseKeyframesStyle = `
+    @keyframes pulseEtaTime {
+      0% { box-shadow: 0 0 0 rgba(0,168,150,0.09); background-size: 100% 100%; }
+      100% { box-shadow: 0 4px 14px 2px #a7f2eb34; background-size: 115% 110%; }
+    }
+  `;
+
+  // Main render (horizontal status row at top, map, ride details, then feedback at bottom if complete)
   return (
-    <div style={{
-      paddingTop: 38,
-      paddingBottom: rideIsComplete ? 12 : 34,
-      maxWidth: 430,
-      margin: "0 auto",
-      display: "flex",
-      flexDirection: "column",
-      gap: 0
-    }}>
+    <div
+      style={{
+        maxWidth: 430,
+        margin: "0 auto",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: rideIsComplete ? "82vh" : "78vh",
+        background: "transparent",
+        position: "relative"
+      }}
+    >
       <style>{etaPulseKeyframesStyle}</style>
       <SOSSafetyModal open={showSOSModal} onClose={() => setShowSOSModal(false)} />
 
-      {/* 1. Estimated Pickup Time */}
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        style={etaBoxStyle}
-      >
-        {timeDiff <= 1
-          ? (<span>Arriving now <span style={{
-            marginLeft: 9,
-            fontWeight: 800,
-            color: "#129083",
-            fontSize: "1rem",
-            background: "rgba(0,168,150,0.09)", padding: "5px 13px", borderRadius: 12,
-            border: "1.1px solid #00A896",
-            boxShadow: "0 1px 8px #b9efe925",
-            verticalAlign: "middle"
-          }}>
-            &#x23F1; {clockStr}
-          </span></span>)
-          : (<span>Arriving in <span style={{ color: "var(--color-primary)", fontWeight: 900 }}>{timeDiff} min</span>
-            <span style={{
-              marginLeft: 11,
-              fontWeight: 800,
-              color: "#129083",
-              fontSize: "1.09rem",
-              background: "rgba(0,168,150,0.09)", padding: "5px 13px", borderRadius: 12,
-              border: "1.1px solid #00A896",
-              boxShadow: "0 1px 8px #b9efe925",
-              verticalAlign: "middle"
-            }}>
-              &#x23F1; {clockStr}
-            </span>
-          </span>)
-        }
-      </div>
-
-      {/* 2. Ride Status Section */}
+      {/* -------- Top Horizontal Ride Status Row -------- */}
       <section
-        className="card"
-        aria-label="Ride Status"
-        style={{
-          borderRadius: "var(--radius-main)",
-          boxShadow: "0 2px 23px rgba(0,168,150,0.09)",
-          border: "2px solid var(--color-accent)",
-          padding: "28px 20px 15px 20px",
-          marginBottom: 19,
-          background: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 9,
-          textAlign: "center",
-        }}
+        aria-label="Ride Info Status Row"
+        style={statusRowStyles}
       >
-        <div className="subtitle" style={{ color: "var(--color-accent)", fontWeight: 700, marginBottom: 1 }}>
-          Ride Status
-        </div>
-        <span
-          style={{
-            fontWeight: 800,
-            color: "var(--color-accent)",
-            fontSize: 21,
-            padding: "5px 17px",
-            background: "#ecfcf7",
-            border: "1.5px solid var(--color-accent)",
-            borderRadius: 19,
-            marginBottom: 5,
-            textTransform: "uppercase",
-            letterSpacing: ".1em",
-            boxShadow: "0 1.5px 10px #acfff440"
-          }}
-        >
-          {rideIsComplete ? "Complete" : "En Route"}
-        </span>
-        <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15 }}>
-          {rideIsComplete
-            ? "Your ride has ended. Please rate your experience:"
-            : "Your verified driver is on the way!"
+        {/* ETA */}
+        <div style={statusEtaBox} aria-live="polite" aria-atomic="true">
+          {timeDiff <= 1
+            ? (<span>Arriving now<br />
+                <span style={{
+                  display: "inline-block",
+                  marginTop: 4,
+                  fontWeight: 800,
+                  color: "#129083",
+                  fontSize: ".94em",
+                  background: "rgba(0,168,150,0.075)", padding: "3px 8px", borderRadius: 9,
+                  border: "1px solid #00A896",
+                  verticalAlign: "middle"
+                }}>
+                  &#x23F1; {clockStr}
+                </span>
+            </span>)
+            : (<span>ETA <span style={{ color: "var(--color-primary)", fontWeight: 900 }}>{timeDiff} min</span>
+                <br />
+                <span style={{
+                  display: "inline-block",
+                  marginTop: 4,
+                  fontWeight: 800,
+                  color: "#129083",
+                  fontSize: ".96em",
+                  background: "rgba(0,168,150,0.07)", padding: "4px 10px", borderRadius: 9,
+                  border: "1px solid #00A896",
+                  verticalAlign: "middle"
+                }}>
+                  &#x23F1; {clockStr}
+                </span>
+            </span>)
           }
         </div>
-        <div
-          style={{
-            marginTop: 2,
-            marginBottom: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            flexWrap: "wrap",
-            justifyContent: "center",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 15,
-              background: "#eaf9ff",
-              color: "var(--color-primary)",
-              borderRadius: 11,
-              padding: "2px 11px",
-              fontWeight: 700,
-              border: "1.2px solid var(--color-border)",
-            }}
-            aria-label="Driver"
-          >
-            Driver: {r.driver}
-          </span>
-          <span
-            style={{
-              fontSize: 13.2,
-              background: "#f4fbf9",
-              color: "#00A896",
-              borderRadius: 11,
-              padding: "2px 10px",
-              fontWeight: 600,
-              border: "1.2px solid var(--color-border)",
-            }}
-            aria-label="Vehicle"
-          >
-            {r.vehicle}
-          </span>
-        </div>
-        <div
-          style={{
-            fontSize: 13,
-            color: "var(--color-muted)",
-            marginTop: 5,
-            marginBottom: 0,
-            fontWeight: 500,
-          }}
-        >
-          Pickup Point: <span style={{ color: "#0077B6" }}>{r.depPoint}</span>
-        </div>
-
-        {/* --- FEEDBACK SECTION (if ride complete) --- */}
-        {rideIsComplete && (
-          <div
-            style={{
-              marginTop: 22,
-              marginBottom: 3,
-              padding: "12px 3px 8px",
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              borderTop: "1.3px dashed var(--color-border)",
-            }}
-          >
-            {/* Feedback row or thank you */}
-            {!showThankYou ? (
-              <>
-                <div style={{
-                  marginBottom: 8,
-                  fontWeight: 600,
-                  color: "var(--color-text-secondary)",
-                  fontSize: 15.5
-                }}>
-                  How was your ride?
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "center",
-                    gap: 14,
-                    marginBottom: 7,
-                    marginTop: 0
-                  }}
-                  aria-label="Rate your ride"
-                  role="radiogroup"
-                >
-                  {FEEDBACK_EMOJIS.map((item, idx) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      aria-label={item.label}
-                      aria-checked={selectedRating === idx}
-                      role="radio"
-                      tabIndex={0}
-                      onClick={() => handleRating(idx)}
-                      style={{
-                        background: selectedRating === idx ? "linear-gradient(90deg, #eaf9ff 90%, #f7fafd 100%)" : "#fff",
-                        border: selectedRating === idx
-                          ? "2.2px solid var(--color-accent)"
-                          : "2px solid var(--color-border)",
-                        borderRadius: 15,
-                        fontSize: 31,
-                        padding: "9px 9px",
-                        outline: "none",
-                        transition: "border 0.17s, background 0.17s",
-                        boxShadow: selectedRating === idx ? "0 1.5px 7px #ecfcf7" : "none",
-                        cursor: "pointer",
-                        filter: selectedRating === idx ? "none" : "grayscale(0.13)",
-                        position: "relative",
-                        minWidth: 44
-                      }}
-                    >
-                      <span aria-hidden="true">{item.emoji}</span>
-                    </button>
-                  ))}
-                </div>
-                <div style={{
-                  fontSize: 13.2,
-                  color: "var(--color-muted)",
-                  fontWeight: 500,
-                  marginTop: 3,
-                  minHeight: 16
-                }}>
-                  {selectedRating !== null &&
-                    <>Selected: <span style={{ color: "var(--color-accent)", fontWeight: 600 }}>{FEEDBACK_EMOJIS[selectedRating].label}</span></>
-                  }
-                </div>
-              </>
-            ) : (
-              <div
-                style={{
-                  margin: "12px 0 4px 0",
-                  padding: "22px 16px",
-                  borderRadius: 13,
-                  background: "linear-gradient(90deg,#f4fbf9 60%,#eaf9ff 100%)",
-                  color: "#00A896",
-                  fontWeight: 820,
-                  fontSize: 19,
-                  textAlign: "center",
-                  border: "1.4px solid var(--color-border)",
-                  boxShadow: "0 2.5px 14px #b9efe936",
-                  minWidth: 150,
-                  maxWidth: 290,
-                  letterSpacing: "-0.03em"
-                }}
-                aria-live="polite"
-                tabIndex={-1}
-              >
-                Thank you for your feedback!
-                <div style={{
-                  color: "#45566E",
-                  marginTop: 4,
-                  fontWeight: 600,
-                  fontSize: 15.5
-                }}>
-                  Redirecting to Home...
-                </div>
-              </div>
-            )}
+        {/* Ride Status Text */}
+        <div style={statusRideState}>
+          <div style={statusRideText}>{rideIsComplete ? "Complete" : "En Route"}</div>
+          <div style={{
+            fontSize: 13.1,
+            color: "var(--color-text-secondary)",
+            fontWeight: 600,
+            letterSpacing: ".01em"
+          }}>
+            {rideIsComplete ? "Ride ended" : "Driver en route"}
           </div>
-        )}
-
+        </div>
+        {/* SOS Button */}
+        <div style={statusSOS}>
+          <button
+            className="btn btn-large"
+            style={{
+              background: "linear-gradient(90deg, #e22b38, #ff5e67)",
+              color: "#fff",
+              fontWeight: 750,
+              fontSize: "1.06rem",
+              padding: "12px 14px",
+              borderRadius: 12,
+              border: "none",
+              minWidth: 100,
+              boxShadow: "0 3px 13px rgba(226,43,56,0.10)",
+              outline: "none",
+              letterSpacing: "0.7px",
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              transition: "background 0.12s cubic-bezier(0.4,0,0.2,1)"
+            }}
+            onClick={handleSOS}
+            aria-label="Emergency SOS"
+            tabIndex={0}
+          >
+            <span role="img" aria-label="siren" style={{ fontSize: 21, marginRight: 5 }}>🚨</span>
+            SOS
+          </button>
+        </div>
       </section>
 
-      {/* 3. Live Map Card */}
+      {/* -------- Live Map Card -------- */}
       <section
         className="card"
         aria-label="Live Map"
@@ -526,7 +385,8 @@ export default function RideStatus({ ride, onSOS }) {
           background: "#f8fafb",
           boxShadow: "0 1.5px 10px rgba(0,119,182,0.045)",
           padding: "18px 10px 13px 10px",
-          marginBottom: 25,
+          marginBottom: rideIsComplete ? 32 : 30,
+          marginTop: 0,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -537,12 +397,12 @@ export default function RideStatus({ ride, onSOS }) {
             fontWeight: 800,
             color: "var(--color-primary)",
             fontSize: 17,
-            marginBottom: 10,
+            marginBottom: 9,
             textAlign: "center",
             letterSpacing: "-0.3px"
           }}
         >
-          <span style={{ marginRight: 7, fontSize: 23 }}>🗺️</span>
+          <span style={{ marginRight: 7, fontSize: 22 }}>🗺️</span>
           Live Map: Driver & Route
         </div>
         <div style={{
@@ -611,42 +471,141 @@ export default function RideStatus({ ride, onSOS }) {
         </div>
       </section>
 
-      {/* 4. SOS Button as bottom card-style group */}
-      <section
-        aria-label="Emergency SOS"
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          marginBottom: 0,
-        }}
-      >
-        <button
-          className="btn btn-large"
+      {/* -------- Feedback Section fixed at bottom when ride is complete -------- */}
+      {rideIsComplete && (
+        <section
+          aria-label="Feedback"
           style={{
-            background: "linear-gradient(90deg, #e22b38, #ff5e67)",
-            color: "#fff",
-            fontWeight: 750,
-            fontSize: "1.13rem",
-            padding: "15px 38px",
-            borderRadius: 15,
-            border: "none",
-            boxShadow: "0 4px 18px rgba(226,43,56,0.11)",
-            outline: "none",
-            letterSpacing: "0.7px",
+            width: "100%",
+            background: "none",
             display: "flex",
-            alignItems: "center",
-            gap: 12,
-            transition: "background 0.12s cubic-bezier(0.4,0,0.2,1)"
+            alignItems: "stretch",
+            justifyContent: "center",
+            position: "fixed",
+            left: "0",
+            right: "0",
+            bottom: "0",
+            zIndex: 300,
+            padding: "24px 0 0 0",
+            backgroundColor: "rgba(255,255,255,0.91)",
+            boxShadow: "0 -2px 12px 0 #b9efe94c"
           }}
-          onClick={handleSOS}
-          aria-label="Emergency SOS"
-          tabIndex={0}
         >
-          <span role="img" aria-label="siren" style={{ fontSize: 26, marginRight: 6 }}>🚨</span>
-          Emergency SOS
-        </button>
-      </section>
+          <div
+            style={{
+              maxWidth: 430,
+              width: "100%",
+              margin: "auto",
+              background: "#fff",
+              borderTopLeftRadius: 23,
+              borderTopRightRadius: 23,
+              borderTop: "2px solid var(--color-border)",
+              minHeight: 110,
+              boxShadow: "0 -2px 16px #b9efe93a",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              padding: "19px 12px 11px 12px"
+            }}
+          >
+            {!showThankYou ? (
+              <>
+                <div style={{
+                  marginBottom: 7,
+                  fontWeight: 700,
+                  color: "var(--color-accent)",
+                  fontSize: 16.5
+                }}>
+                  How was your ride?
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "center",
+                    gap: 14,
+                    marginBottom: 6,
+                    marginTop: 0
+                  }}
+                  aria-label="Rate your ride"
+                  role="radiogroup"
+                >
+                  {FEEDBACK_EMOJIS.map((item, idx) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      aria-label={item.label}
+                      aria-checked={selectedRating === idx}
+                      role="radio"
+                      tabIndex={0}
+                      onClick={() => handleRating(idx)}
+                      style={{
+                        background: selectedRating === idx ? "linear-gradient(90deg, #eaf9ff 92%, #f7fafd 100%)" : "#fff",
+                        border: selectedRating === idx
+                          ? "2.3px solid var(--color-accent)"
+                          : "2px solid var(--color-border)",
+                        borderRadius: 15,
+                        fontSize: 32,
+                        padding: "8px 11px 7px 11px",
+                        outline: "none",
+                        transition: "border 0.16s, background 0.16s",
+                        boxShadow: selectedRating === idx ? "0 1.5px 7px #ecfcf7" : "none",
+                        cursor: "pointer",
+                        filter: selectedRating === idx ? "none" : "grayscale(0.11)",
+                        position: "relative",
+                        minWidth: 45
+                      }}
+                    >
+                      <span aria-hidden="true">{item.emoji}</span>
+                    </button>
+                  ))}
+                </div>
+                <div style={{
+                  fontSize: 13.2,
+                  color: "var(--color-muted)",
+                  fontWeight: 500,
+                  marginTop: 2,
+                  minHeight: 16
+                }}>
+                  {selectedRating !== null &&
+                    <>Selected: <span style={{ color: "var(--color-accent)", fontWeight: 600 }}>{FEEDBACK_EMOJIS[selectedRating].label}</span></>
+                  }
+                </div>
+              </>
+            ) : (
+              <div
+                style={{
+                  margin: "11px 0 2px 0",
+                  padding: "18px 11px",
+                  borderRadius: 15,
+                  background: "linear-gradient(90deg,#f4fbf9 60%,#eaf9ff 100%)",
+                  color: "#00A896",
+                  fontWeight: 800,
+                  fontSize: 18,
+                  textAlign: "center",
+                  border: "1.3px solid var(--color-border)",
+                  boxShadow: "0 2.5px 14px #b9efe934",
+                  minWidth: 140,
+                  maxWidth: 250,
+                  letterSpacing: "-0.03em"
+                }}
+                aria-live="polite"
+                tabIndex={-1}
+              >
+                Thank you for your feedback!
+                <div style={{
+                  color: "#45566E",
+                  marginTop: 4,
+                  fontWeight: 600,
+                  fontSize: 14.8
+                }}>
+                  Redirecting to Home...
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
