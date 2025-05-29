@@ -3,7 +3,7 @@ import React from 'react';
 /**
  * PUBLIC_INTERFACE
  * Eco Score screen for TrustRide –
- * Modern minimalist container, rounded cards, eco metrics and leaderboard stubs.
+ * Minimalist container with rounded cards, eco metrics, leaderboard stubs, all visually demarcated.
  */
 const EcoScoreScreen = () => (
   <div className="container" style={{ paddingTop: 84, paddingBottom: 70 }}>
@@ -16,6 +16,7 @@ const EcoScoreScreen = () => (
     <section className="rounded-card" style={{ marginBottom: 24, textAlign: 'center' }}>
       <span role="img" aria-label="Leaf" style={{ fontSize: 38, display: 'block', marginBottom: 7 }}>🌱</span>
       <div className="heading-2" style={{ marginBottom: 6 }}>Your Carbon Savings</div>
+      {/* Placeholder for CO₂ metric */}
       <div style={{ fontWeight: 700, fontSize: 25, color: 'var(--accent)', marginBottom: 10 }}>
         0 kg CO₂ saved
       </div>
@@ -30,6 +31,17 @@ const EcoScoreScreen = () => (
       </div>
       <div style={{ color: 'var(--text-secondary)', fontSize: 15, fontStyle: 'italic', marginTop: 8 }}>
         Rankings for top eco-savers at your institution will show here.
+      </div>
+      <div style={{
+        border: '1px dashed var(--accent)',
+        borderRadius: '10px',
+        padding: '10px 5px',
+        textAlign: 'center',
+        marginTop: 12,
+        color: 'var(--text-secondary)',
+        fontSize: 15
+      }}>
+        Leaderboard placeholder – coming soon!
       </div>
     </section>
   </div>
