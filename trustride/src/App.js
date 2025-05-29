@@ -1,11 +1,36 @@
 import React, { useState } from 'react';
 import './App.css';
 import BottomTabBar from './components/BottomTabBar';
+import Login from './components/Login';
 
 // PUBLIC_INTERFACE
 function App() {
+  // Manage login state
+  const [user, setUser] = useState(null);
+
   // Navigation state (simulate routing)
   const [activeTab, setActiveTab] = useState('home');
+
+  // Show Login until an institution-verified user logs in
+  if (!user || !user.verified) {
+    return (
+      <div className="app">
+        <nav className="navbar" role="navigation">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="logo" aria-label="TrustRide Logo">
+              <span className="logo-symbol">🚗</span>
+              TrustRide
+            </span>
+          </div>
+        </nav>
+        <main style={{ flex: 1 }}>
+          <div className="container">
+            <Login onLogin={setUser} />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   // Simple minimal page content for each tab
   function renderTabContent(tab) {
