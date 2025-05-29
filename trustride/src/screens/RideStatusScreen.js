@@ -98,6 +98,8 @@ function RideStatusScreen() {
 
   // Mock driver animation progress
   const [driverProgress, setDriverProgress] = useState(0);
+  // Live ETA value which decrements as route/driver progresses
+  const [liveEta, setLiveEta] = useState(etaMinutes);
 
   // --- Feedback (emoji rating) state ----
   // Feedback is REQUIRED and modal/dialog must ALWAYS appear on completion, with robust redirect after.
@@ -219,6 +221,13 @@ function RideStatusScreen() {
     if (driverProgress < MOCK_ROUTE.length - 1 && rideStatus !== "Completed") {
       timer = setTimeout(() => {
         setDriverProgress((p) => Math.min(MOCK_ROUTE.length - 1, p + 1));
+        // decrease ETA as driver progresses, if not already 0 or below
+        setLiveEta(prev => {
+          if (prev > 0) {
+            return prev - Math.ceil(etaMinutes / (MOCK_ROUTE.length - 1));
+          }
+          return prev;
+        });
       }, Math.max(1000, (etaMinutes * 60 * 1000) / MOCK_ROUTE.length));
     }
     return () => clearTimeout(timer);
