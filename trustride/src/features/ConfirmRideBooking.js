@@ -130,37 +130,30 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   }
 
   // Show full confirmation replacement after booking success
+  // NEW: Instead of static confirmation, immediately show RideStatus page after a short success flash
+  const [redirectToRideStatus, setRedirectToRideStatus] = useState(false);
+  React.useEffect(() => {
+    if (success) {
+      // Show success for a short moment, then "redirect" to RideStatus
+      const t = setTimeout(() => setRedirectToRideStatus(true), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [success]);
+
+  if (redirectToRideStatus && ride) {
+    // Dynamically import RideStatus to avoid circular imports
+    const RideStatus = require('./RideStatus').default;
+    return <RideStatus ride={ride} />;
+  }
+
   if (success) {
-    // Determine confirmation message: open pooling = auto-match, otherwise notify driver/host.
-    // TrustRide's minimalist, branded, visible confirmation.
-
-    // Preferred signal: ride.openPooling (boolean) takes precedence if present.
-    const isOpenPooling =
-      (typeof ride.openPooling === "boolean" && ride.openPooling) ||
-      (String(ride.rideType || "").toLowerCase().includes("open")) ||
-      (String(ride.rideType || "").toLowerCase().includes("instant")) ||
-      !ride.driver; // fallback if no driver object (common in open pooling demo/mock)
-
-    let confirmTitle = isOpenPooling
-      ? "You’ve Been Auto‑Matched! 🎯"
-      : "Booking Confirmed! 🚗";
-
-    // Main confirmation message (notification to driver or auto‑match)
-    let confirmMsg = isOpenPooling
-      ? "Your ride is instantly confirmed. You’ve been auto‑matched in a TrustRide open pooling ride."
-      : "Notification sent to driver/ride host for approval.";
-
-    // Additional subdesc (consistent TrustRide guidance)
-    let subDesc = isOpenPooling
-      ? "Ride details and pickup instructions are below. Proceed to your meeting point. You can chat or cancel anytime via ‘Active Rides’."
-      : "Await the driver’s confirmation—when accepted, you’ll be notified right away.";
-
+    // Quick visible confirmation, then proceed to RideStatus automatically.
     return (
       <div
         style={{
-          paddingTop: 44,
-          paddingBottom: 36,
-          maxWidth: 430,
+          paddingTop: 77,
+          paddingBottom: 60,
+          maxWidth: 420,
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
@@ -168,245 +161,67 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         }}
         aria-live="polite"
       >
-        {/* Confirmation Card with prominent message */}
-        <section
-          className="card"
+        <span
+          className="logo-symbol"
+          aria-label="TrustRide"
           style={{
-            background: "#fff",
-            borderRadius: "var(--radius-main)",
-            boxShadow: "0 3px 22px rgba(0,119,182,0.13)",
-            border: "2.2px solid " + (isOpenPooling ? "var(--color-accent)" : "var(--color-primary)"),
-            padding: "38px 28px 31px 28px",
-            marginBottom: 26,
-            marginTop: 15,
-            width: "100%",
-            maxWidth: 420,
-            textAlign: "center",
-            display: "flex",
-            flexDirection: "column",
-            gap: 14,
-            alignItems: "center",
-            position: "relative",
-            zIndex: 1,
+            fontSize: 54,
+            color: "var(--color-accent)",
+            marginBottom: 19,
+            marginTop: -11,
+            display: "inline-block",
+            transform: "rotate(-16deg)",
+            letterSpacing: -1.5,
+            userSelect: "none",
           }}
         >
-          <span
-            className="logo-symbol"
-            aria-label="TrustRide"
-            style={{
-              fontSize: 44,
-              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
-              marginBottom: 10,
-              marginTop: -11,
-              display: "inline-block",
-              transform: "rotate(-16deg)",
-              letterSpacing: -1.5,
-              userSelect: "none",
-            }}
-          >
-            🚗
-          </span>
-          <div
-            className="subtitle"
-            style={{
-              fontWeight: 870,
-              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
-              fontSize: 23,
-              letterSpacing: "-1px",
-              marginBottom: 2,
-              marginTop: 2,
-              userSelect: "none",
-            }}
-          >
-            {confirmTitle}
-          </div>
-          {/* Main prominent confirmation message */}
-          <div
-            className="description"
-            style={{
-              background: isOpenPooling
-                ? "linear-gradient(90deg, #f2faf7 50%, #e3f3ff 100%)"
-                : "linear-gradient(90deg, #f4fbf9 60%, #eaf9ff 100%)",
-              fontWeight: 800,
-              color: isOpenPooling ? "#00A896" : "#0077B6",
-              fontSize: 18.5,
-              margin: "9px 0 10px 0",
-              padding: "15px 11px",
-              borderRadius: 13,
-              border: "1.4px solid var(--color-border)",
-              boxShadow: "0 2.5px 12px 0 rgba(0,168,150,0.05)",
-              textAlign: "center",
-              lineHeight: 1.45,
-              letterSpacing: "-0.5px",
-            }}
-          >
-            {confirmMsg}
-          </div>
-
-          {/* Card: stat summary below */}
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              gap: 12,
-              alignItems: "center",
-              background: "#f8fafb",
-              borderRadius: 16,
-              border: "1px solid var(--color-border)",
-              boxShadow: "0 1.4px 11px rgba(0,168,150,0.03)",
-              padding: "14px 8px 10px 8px",
-              marginTop: 3,
-              marginBottom: 6,
-            }}
-          >
-            {/* Ride/driver summary */}
-            <div
-              style={{
-                fontSize: 17.3,
-                fontWeight: 700,
-                color: "var(--color-primary)",
-                marginBottom: 2,
-                wordBreak: "break-word",
-                marginTop: 0,
-                textShadow: "0 1px 7px #f3ffff69",
-              }}
-            >
-              {ride.driver
-                ? `${ride.driver} (Verified Driver)`
-                : isOpenPooling
-                  ? "Open Pooling"
-                  : "Ride"}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                justifyContent: "center",
-                gap: 21,
-                marginBottom: 3,
-              }}
-            >
-              <StatBox
-                icon="⏰"
-                label="Departure"
-                value={
-                  <span>
-                    {formatDate(ride.departure)}
-                    {" "}
-                    {formatTime(ride.departure)}
-                  </span>
-                }
-                color="var(--color-primary)"
-              />
-              <StatBox
-                icon="💸"
-                label="Fare"
-                value={
-                  <span>
-                    <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>
-                      ₹{typeof ride.price === "number" ? ride.price.toLocaleString("en-IN") : ride.price}
-                    </span>
-                    <span
-                      style={{
-                        color: "#7ec9c9",
-                        fontWeight: 500,
-                        fontSize: 13.2,
-                        marginLeft: 2,
-                      }}
-                    >
-                      /seat
-                    </span>
-                  </span>
-                }
-                color="#00A896"
-              />
-            </div>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 13,
-                marginBottom: 0,
-              }}
-            >
-              <Badge
-                label="Trust Index"
-                value={ride.trustIndex}
-                icon="🛡️"
-                color="var(--color-accent)"
-              />
-              <Badge
-                label="Eco Score"
-                value={ride.ecoScore}
-                icon="🍃"
-                color="var(--color-primary)"
-              />
-            </div>
-          </div>
-          {/* Subdesc: guidance/tip */}
-          <div
-            className="description"
-            style={{
-              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
-              fontWeight: 750,
-              fontSize: 16.7,
-              marginBottom: 5,
-              marginTop: 11,
-              textAlign: "center",
-              letterSpacing: "-0.3px",
-            }}
-          >
-            {subDesc}
-          </div>
-          {/* Minimal instructions for next action */}
-          <div
-            className="description"
-            style={{
-              marginTop: 12,
-              marginBottom: 0,
-              fontSize: 14,
-              color: "var(--color-muted)",
-              textAlign: "center",
-              fontWeight: 500,
-            }}
-          >
-            <div>
-              <strong>Instructions:</strong>
-            </div>
-            <ul
-              style={{
-                listStyle: "disc inside",
-                margin: 0,
-                padding: 0,
-                textAlign: "left",
-                color: "var(--color-text-secondary)",
-                fontSize: 14,
-                fontWeight: 500,
-                lineHeight: 1.42,
-                maxWidth: 320,
-                marginLeft: "auto",
-                marginRight: "auto",
-              }}
-            >
-              <li>
-                Arrive <b>on time</b> at the pickup point.
-              </li>
-              {!isOpenPooling && (
-                <li><b>Await approval:</b> You’ll receive a notification if the driver/host confirms your booking.</li>
-              )}
-              {isOpenPooling && (
-                <li>
-                  Auto-match successful — proceed to pickup. Check your ‘Active Rides’ for details.
-                </li>
-              )}
-              <li>
-                For support or changes, contact <span style={{ color: "#00A896" }}>TrustRide</span>.
-              </li>
-            </ul>
-          </div>
-        </section>
+          🚗
+        </span>
+        <div
+          className="subtitle"
+          style={{
+            fontWeight: 870,
+            color: "var(--color-accent)",
+            fontSize: 23,
+            letterSpacing: "-1px",
+            marginBottom: 6,
+            marginTop: 6,
+            userSelect: "none",
+          }}
+        >
+          Booking Confirmed!
+        </div>
+        <div
+          className="description"
+          style={{
+            background: "linear-gradient(90deg, #f4fbf9 60%, #eaf9ff 100%)",
+            fontWeight: 800,
+            color: "#00A896",
+            fontSize: 18.5,
+            margin: "9px 0 10px 0",
+            padding: "15px 11px",
+            borderRadius: 13,
+            border: "1.4px solid var(--color-border)",
+            boxShadow: "0 2.5px 12px 0 rgba(0,168,150,0.05)",
+            textAlign: "center",
+            lineHeight: 1.45,
+            letterSpacing: "-0.5px",
+          }}
+        >
+          Your ride is scheduled — loading live status...
+        </div>
+        <div
+          style={{
+            width: "100%",
+            textAlign: "center",
+            marginTop: 18,
+            color: "#75b48a",
+            fontWeight: 700,
+            fontSize: 15,
+          }}
+        >
+          Redirecting you to live ride status...
+        </div>
       </div>
     );
   }
