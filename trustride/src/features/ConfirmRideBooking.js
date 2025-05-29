@@ -104,6 +104,38 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
 
   // Show full confirmation replacement after booking success
   if (success) {
+    // Determine booking/message type: open pooling (auto-match) or driver confirm (hosted ride).
+    // We assume ride.rideType can be either "open-pooling" | "pooled" | "hosted" | "driver-confirm" | "instant" | undefined.
+    // If ride.rideType is "open-pooling" or "instant", auto-match; otherwise, driver is notified.
+    let bookingMsgType = "driver-confirm";
+    if (
+      String(ride.rideType || "")
+        .toLowerCase()
+        .includes("open")
+      || String(ride.rideType || "")
+        .toLowerCase()
+        .includes("instant")
+    ) {
+      bookingMsgType = "auto-match";
+    }
+    // Heuristic: fallback to "auto-match" if the ride has no driver (possible in pure pooling); fallback to "driver-confirm" if "driver" exists.
+    if (!ride.driver) bookingMsgType = "auto-match";
+
+    let confirmTitle =
+      bookingMsgType === "auto-match"
+        ? "You’re Auto-Matched! 🎯"
+        : "Booking Sent! 🚗";
+
+    let confirmDesc =
+      bookingMsgType === "auto-match"
+        ? "Your TrustRide seat is instantly secured in an open ride pool. See you at the pickup point!"
+        : "We've sent your booking request to the verified driver. When confirmed, you'll receive a notification and ride contact details.";
+
+    let subDesc =
+      bookingMsgType === "auto-match"
+        ? "Ride details and pickup instructions are available below. You can chat or cancel anytime via your ‘Active Rides’."
+        : "Await the driver's confirmation—if accepted, you’ll be notified right away.";
+
     return (
       <div
         style={{
@@ -132,7 +164,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             textAlign: "center",
             display: "flex",
             flexDirection: "column",
-            gap: 14,
+            gap: 16,
             alignItems: "center",
           }}
         >
@@ -140,7 +172,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             className="logo-symbol"
             aria-label="TrustRide"
             style={{
-              fontSize: 40,
+              fontSize: 42,
               color: "var(--color-accent)",
               marginBottom: 8,
               marginTop: -5,
@@ -148,47 +180,35 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               transform: "rotate(-14deg)",
               letterSpacing: -1,
             }}
-          >🚗</span>
+          >
+            🚗
+          </span>
           <div
             className="subtitle"
             style={{
               fontWeight: 800,
               color: "var(--color-accent)",
-              fontSize: 20,
+              fontSize: 21,
               letterSpacing: -0.5,
               marginBottom: 2,
+              marginTop: 2,
             }}
           >
-            Booking Confirmed
+            {confirmTitle}
           </div>
-          <h2
-            className="title"
-            style={{
-              fontSize: "2.1rem",
-              fontWeight: 800,
-              background:
-                "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              margin: "0 0 5px 0",
-              lineHeight: 1.2,
-            }}
-          >
-            Your TrustRide is Ready!
-          </h2>
           <div
             className="description"
             style={{
+              fontWeight: 750,
+              color: "#00A896",
               fontSize: 16.5,
-              color: "var(--color-text-secondary)",
-              maxWidth: 310,
-              margin: "0 auto 5px",
-              fontWeight: 500,
+              marginTop: 0,
+              marginBottom: 5,
             }}
           >
-            Thank you! Your ride is confirmed and your seat is reserved.
+            {confirmDesc}
           </div>
+
           <div
             style={{
               width: "100%",
@@ -201,20 +221,24 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               border: "1px solid var(--color-border)",
               boxShadow: "0 1.4px 12px rgba(0,168,150,0.03)",
               padding: "19px 6px",
-              marginTop: 8,
-              marginBottom: 6,
+              marginTop: 5,
+              marginBottom: 7,
             }}
           >
-            {/* Prominent summary of ride details */}
+            {/* Ride/driver summary */}
             <div
               style={{
                 fontSize: 18,
                 fontWeight: 700,
                 color: "var(--color-primary)",
                 marginBottom: 2,
+                wordBreak: "break-word",
+                marginTop: 0,
               }}
             >
-              {ride.driver} (Verified Driver)
+              {ride.driver
+                ? `${ride.driver} (Verified Driver)`
+                : "Pooled Ride — Auto Match"}
             </div>
             <div
               style={{
@@ -289,22 +313,24 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               color: "var(--color-accent)",
               fontWeight: 740,
               fontSize: 17,
-              marginBottom: 0,
+              marginBottom: (bookingMsgType === "auto-match" ? 2 : 7),
               marginTop: 0,
+              textAlign: "center",
             }}
           >
-            🎉 You're all set!
+            {subDesc}
           </div>
           <div
             className="description"
             style={{
-              marginTop: 13,
+              marginTop: 12,
               marginBottom: 0,
-              fontSize: 14.5,
-              color: "var(--color-text-secondary)",
+              fontSize: 14.2,
+              color: "var(--color-muted)",
+              textAlign: "center",
             }}
           >
-            <div style={{ marginBottom: 2 }}>
+            <div>
               <strong>Instructions:</strong>
             </div>
             <ul
@@ -316,7 +342,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
                 color: "var(--color-text-secondary)",
                 fontSize: 14,
                 fontWeight: 500,
-                lineHeight: 1.4,
+                lineHeight: 1.42,
                 maxWidth: 320,
                 marginLeft: "auto",
                 marginRight: "auto",
@@ -325,13 +351,18 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               <li>
                 Arrive <b>on time</b> at the pickup point.
               </li>
+              {bookingMsgType === "driver-confirm" && (
+                <li>
+                  Await driver <b>confirmation</b> for seat allocation.
+                </li>
+              )}
+              {bookingMsgType === "auto-match" && (
+                <li>
+                  Your <b>auto-match</b> is successful; you may proceed directly to the meeting point.
+                </li>
+              )}
               <li>
-                Contact your driver <b>{ride.driver}</b> if needed.
-              </li>
-              <li>
-                <span style={{ color: "#00A896" }}>
-                  For support or changes, contact TrustRide support.
-                </span>
+                For support or changes, contact <span style={{ color: "#00A896" }}>TrustRide</span>.
               </li>
             </ul>
           </div>
