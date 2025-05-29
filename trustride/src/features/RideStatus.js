@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -48,14 +48,39 @@ export default function RideStatus({ ride, onSOS }) {
     driver: "Priya Shah",
     vehicle: "Hyundai Verna - Blue",
     depPoint: "Greenwood University Main Gate",
-    estPickup: new Date(Date.now() + 6 * 60000), // 6 min demo/prompt
+    // Note: estPickup will be set below for realism
     driverLatLng: [19.103, 72.87],               // sample "on the way" location
     pickupLatLng: [19.1167, 72.8333],            // fixed mock pickup (Mumbai)
   };
-  const r = ride || mockRide;
+  // Calculate a random or mock ETA (between 3-8 min) each render and set pickup time
+  const etaMins = useMemo(() => {
+    // If ride.estPickup provided, use the real diff, else randomize
+    if (ride && ride.estPickup) {
+      const minFromNow = Math.max(1, Math.ceil((new Date(ride.estPickup) - new Date()) / 60000));
+      return minFromNow;
+    } else {
+      // Demo: random between 3–8 minutes
+      return Math.floor(3 + Math.random() * 6);
+    }
+  }, [ride && ride.estPickup]);
 
-  // For "Arriving in X min" logic
-  const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date())/60000));
+  // Set estPickup to now + etaMins
+  const estPickup = useMemo(() => {
+    if (ride && ride.estPickup) return new Date(ride.estPickup);
+    const now = new Date();
+    now.setSeconds(0, 0);
+    now.setMinutes(now.getMinutes() + etaMins);
+    return now;
+  }, [ride && ride.estPickup, etaMins]);
+
+  const r = {
+    ...mockRide,
+    ...(ride || {}),
+    estPickup
+  };
+
+  // For "Arriving in X min" logic -- always based on estPickup
+  const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date()) / 60000));
   const timeStr = timeDiff <= 1
     ? "Arriving now"
     : `Arriving in ${timeDiff} min`;
@@ -80,26 +105,37 @@ export default function RideStatus({ ride, onSOS }) {
     );
   }
 
-  // Style for ETA display
+  // Style for ETA display (high attention, animated pulse to catch user's eye)
   const etaBoxStyle = {
     margin: "18px auto 8px",
-    fontWeight: 850,
-    fontSize: "1.33rem",
+    fontWeight: 900,
+    fontSize: "1.62rem",
     color: "var(--color-accent)",
-    background: "linear-gradient(90deg, #ecfcf7 70%, #eaf9ff 100%)",
-    borderRadius: 13,
-    border: "2px solid var(--color-accent)",
-    boxShadow: "0 2.5px 11px #a7f2eb33",
-    padding: "10px 18px 7px 14px",
+    background: "linear-gradient(90deg, #faffeb 60%, #eaf9ff 100%)",
+    borderRadius: 17,
+    border: "2.7px solid var(--color-accent)",
+    boxShadow: "0 6px 22px #a7f2eb32",
+    padding: "13px 27px 12px 22px",
     textAlign: "center",
-    letterSpacing: "0.7px",
+    letterSpacing: "1.2px",
     display: "inline-block",
-    lineHeight: 1.2,
+    lineHeight: 1.13,
+    textShadow: "0 1.7px 1.5px #00A89612",
+    animation: "pulseEtaTime 1.35s infinite alternate"
   };
+
+  // Add keyframes animation inline (safe as this is a small effect for attention)
+  const etaPulseKeyframesStyle = `
+    @keyframes pulseEtaTime {
+      0% { box-shadow: 0 0 0 rgba(0,168,150,0.07); background-size: 100% 100%; }
+      100% { box-shadow: 0 4px 23px 2px #a7f2eb44; background-size: 120% 110%; }
+    }
+  `;
 
   // Main component render
   return (
     <div style={{ paddingTop: 48, paddingBottom: 30, maxWidth: 430, margin: "0 auto" }}>
+      <style>{etaPulseKeyframesStyle}</style>
       {/* Status Card */}
       <section
         className="card"
@@ -144,10 +180,15 @@ export default function RideStatus({ ride, onSOS }) {
           aria-atomic="true"
           style={etaBoxStyle}
         >
-          {timeStr} &middot;&nbsp;
-          <span style={{ color: "var(--color-primary)", fontWeight: 800, marginLeft: 4, letterSpacing: ".6px" }}>
-            {fmtClock(r.estPickup)}
-          </span>
+          {timeStr} <span style={{
+            margin: "0 8px",
+            fontSize: "1.12rem",
+            color: "#129083",
+            fontWeight: 800,
+            background: "rgba(0,168,150,0.09)",
+            padding: "4px 10px",
+            borderRadius: 9
+          }}>&#x23F1; {fmtClock(r.estPickup)}</span>
         </div>
         <div
           style={{
