@@ -34,10 +34,8 @@ function formatDate(time) {
 export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   // Local state: Checkbox for rules, feedback on confirm interaction
   const [agreed, setAgreed] = useState(false);
-
   // New: Explicit review/confirmation for ETA and Fare
   const [etaFareReviewed, setEtaFareReviewed] = useState(false);
-
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
@@ -328,10 +326,129 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           Confirm Your Ride
         </h1>
         <div className="description" style={{ color: "var(--color-muted)", marginTop: 3, fontSize: 15.5 }}>
-          Please review your ride details and agree to conduct rules before booking.
+          Please review ETA, fare, ride details, and agree to conduct rules before booking.
         </div>
       </header>
-      {/* Ride Details Summary */}
+
+      {/* ---------- ETA & Fare Review Card (MANDATORY REVIEW STEP) ---------- */}
+      <section
+        className="card"
+        aria-label="Review ETA & Fare"
+        style={{
+          borderRadius: "var(--radius-main)",
+          border: "2px solid var(--color-accent)",
+          boxShadow: "0 4px 22px rgba(0,168,150,0.07)",
+          marginBottom: 19,
+          background: "#f4fbf9",
+          padding: "22px 17px 17px 19px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+        }}
+      >
+        <div style={{
+          fontWeight: 700,
+          fontSize: 17.1,
+          color: "var(--color-accent)",
+          marginBottom: 8,
+          display: "flex",
+          alignItems: "center",
+          gap: 7
+        }}>
+          <span role="img" aria-label="review">🔎</span>
+          Please confirm your Estimated Time of Arrival and Fare
+        </div>
+        <div style={{
+          display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap", marginBottom: 2
+        }}>
+          {/* ETA */}
+          <StatBox
+            icon="🕓"
+            label="ETA"
+            value={
+              typeof ride.eta === 'string'
+                ? ride.eta
+                : (ride.eta instanceof Date
+                  ? formatTime(ride.eta)
+                  : (ride.eta ? String(ride.eta) : 'N/A')
+                )
+            }
+            color="var(--color-accent)"
+          />
+          {/* Fare */}
+          <StatBox
+            icon="💸"
+            label="Fare"
+            value={
+              <span>
+                <span style={{
+                  fontWeight: 800,
+                  color: "#00A896",
+                  fontSize: 18
+                }}>
+                  ₹{typeof ride.price === "number" ? ride.price.toLocaleString("en-IN") : ride.price}
+                </span>
+                <span style={{
+                  color: "#7ec9c9",
+                  fontWeight: 500,
+                  fontSize: 13.2,
+                  marginLeft: 2
+                }}>/seat</span>
+              </span>
+            }
+            color="#00A896"
+          />
+        </div>
+        <div style={{
+          marginTop: 13,
+          display: "flex",
+          alignItems: "center",
+          gap: 8
+        }}>
+          <input
+            id="review-eta-fare-checkbox"
+            type="checkbox"
+            checked={etaFareReviewed}
+            onChange={() => setEtaFareReviewed((prev) => !prev)}
+            style={{
+              width: 20,
+              height: 20,
+              accentColor: "var(--color-accent)",
+            }}
+          />
+          <label
+            htmlFor="review-eta-fare-checkbox"
+            style={{
+              fontWeight: 650,
+              fontSize: 15.5,
+              color: etaFareReviewed ? "var(--color-accent)" : "#8da2a8",
+              cursor: "pointer"
+            }}
+          >
+            I have reviewed and confirm the ETA & Fare above.
+          </label>
+        </div>
+        {!etaFareReviewed && (
+          <div
+            style={{
+              color: "#e22b38",
+              fontWeight: 600,
+              fontSize: 13.3,
+              marginTop: 2,
+              marginLeft: 2,
+              background: "#fff7f8",
+              padding: "4px 11px",
+              borderRadius: 7,
+              maxWidth: 370
+            }}
+            aria-live="polite"
+          >
+            Please review and confirm ETA & Fare to continue.
+          </div>
+        )}
+      </section>
+
+      {/* Ride Details Summary (unmodified for secondary context) */}
       <section
         className="card"
         style={{
@@ -393,7 +510,6 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             icon="🕓"
             label="ETA"
             value={
-              // Defensive: gracefully handle both string and Date types
               typeof ride.eta === 'string'
                 ? ride.eta
                 : (ride.eta instanceof Date
