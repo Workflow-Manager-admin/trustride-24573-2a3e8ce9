@@ -5,6 +5,11 @@ import React from "react";
  * RideResults: Page listing ride pool matches after a ride search.
  * Shows: Driver name, Departure time, ETA, Price, Trust Index, Eco Score (mock data).
  * Minimalist card list, TrustRide branding (blue/accent/white, soft cards).
+ *
+ * Now supports "Choose Ride" for booking: calls onChooseRide(ride) when selected.
+ *
+ * @param {function} onBack - Called to return to previous page.
+ * @param {function} onChooseRide - Called with (ride) when user selects a ride to book.
  */
 const mockRides = [
   {
@@ -42,7 +47,8 @@ function fmtTime(date) {
   return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-export default function RideResults({ onBack }) {
+// PUBLIC_INTERFACE
+export default function RideResults({ onBack, onChooseRide }) {
   return (
     <div style={{ paddingTop: 38, paddingBottom: 33, maxWidth: 460, margin: "0 auto" }}>
       <header style={{ marginBottom: 29 }}>
@@ -154,6 +160,27 @@ export default function RideResults({ onBack }) {
               barColor="#0077B6"
               max={34}
             />
+          </div>
+          <div style={{ marginTop: 9, display: "flex", gap: 18, alignItems: "center" }}>
+            <button
+              className="btn"
+              style={{
+                minWidth: 112,
+                fontWeight: 700,
+                fontSize: "1.05rem",
+                borderRadius: 10,
+                background: "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
+                color: "#fff",
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(0,119,182,0.12)",
+                outline: "none"
+              }}
+              type="button"
+              onClick={() => onChooseRide && onChooseRide(ride)}
+              aria-label={`Choose ride with ${ride.driver}`}
+            >
+              Choose Ride
+            </button>
           </div>
         </section>
       ))}
