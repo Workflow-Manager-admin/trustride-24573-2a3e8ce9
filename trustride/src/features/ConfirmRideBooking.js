@@ -87,6 +87,15 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
   }
 
+  // Fix: Always call hooks at the top-level, not conditionally
+  const [redirectToRideStatus, setRedirectToRideStatus] = useState(false);
+  React.useEffect(() => {
+    if (success) {
+      const t = setTimeout(() => setRedirectToRideStatus(true), 1000);
+      return () => clearTimeout(t);
+    }
+  }, [success]);
+
   if (!ride) {
     // Defensive: No ride selected
     return (
@@ -128,17 +137,6 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
       onConfirm && onConfirm({ paymentMethod: selectedPayment || paymentMethods[0] });
     }, 1100);
   }
-
-  // Fix: Always call hooks at the top-level, not conditionally
-  const [redirectToRideStatus, setRedirectToRideStatus] = useState(false);
-
-  React.useEffect(() => {
-    if (success) {
-      // Show success for a short moment, then "redirect" to RideStatus
-      const t = setTimeout(() => setRedirectToRideStatus(true), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [success]);
 
   // Render RideStatus if redirecting, not inside a conditional
   if (redirectToRideStatus && ride) {
@@ -182,20 +180,6 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         >
           🚗
         </span>
-        <div
-          className="subtitle"
-          style={{
-            fontWeight: 870,
-            color: "var(--color-accent)",
-            fontSize: 23,
-            letterSpacing: "-1px",
-            marginBottom: 6,
-            marginTop: 6,
-            userSelect: "none",
-          }}
-        >
-          Booking Confirmed!
-        </div>
         <div
           className="description"
           style={{
