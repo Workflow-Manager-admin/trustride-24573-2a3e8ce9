@@ -575,59 +575,90 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           <Badge label="Eco Score" value={ride.ecoScore} icon="🍃" color="var(--color-primary)" />
         </div>
       </section>
-      {/* Conduct Rules */}
+      {/* Conduct Agreement - moved above payment, visually prominent */}
       <section
         className="card"
         style={{
-          marginBottom: 26,
+          marginBottom: 23,
           borderRadius: "var(--radius-main)",
-          padding: "20px 17px 19px 17px",
+          padding: "22px 18px 20px 18px",
           background: "#fafdfc",
-          border: "1px solid var(--color-border)",
-          boxShadow: "0 2px 14px rgba(0, 168, 150, 0.03)",
+          border: "1.4px solid var(--color-border)",
+          boxShadow: "0 3px 16px rgba(0, 168, 150, 0.045)",
         }}
+        aria-label="Ride Conduct Agreement"
       >
         <div style={{
-          fontWeight: 700,
-          fontSize: 17,
+          fontWeight: 740,
+          fontSize: 17.2,
           color: "var(--color-accent)",
           marginBottom: 8,
           display: "flex",
           alignItems: "center",
-          gap: 7
+          gap: 8,
+          letterSpacing: "-0.02em"
         }}>
           <span role="img" aria-label="rules">📃</span>
-          Ride Conduct Rules
+          Passenger Conduct Agreement
         </div>
-        <ol style={{ margin: 0, paddingLeft: 23, color: "var(--color-text-secondary)", fontSize: 15.1, fontWeight: 500 }}>
+        <div className="description"
+          style={{
+            fontSize: 15.6,
+            color: "var(--color-text-secondary)",
+            fontWeight: 500,
+            marginBottom: 11,
+            lineHeight: 1.5
+          }}
+        >
+          To confirm a ride, you must agree to abide by the following community rules:
+        </div>
+        <ol style={{ margin: 0, paddingLeft: 22, color: "var(--color-text-secondary)", fontSize: 15.1, fontWeight: 500 }}>
           {DEFAULT_RULES.map((rule, idx) => (
             <li key={idx} style={{ marginBottom: 3 }}>{rule}</li>
           ))}
         </ol>
-        <div style={{ marginTop: 17, display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{ marginTop: 19, display: "flex", alignItems: "center", gap: 8 }}>
           <input
             id="accept-rules-checkbox"
             type="checkbox"
             checked={agreed}
             onChange={() => setAgreed((a) => !a)}
             style={{
-              width: 20,
-              height: 20,
+              width: 21,
+              height: 21,
               accentColor: "var(--color-accent)"
             }}
           />
           <label
             htmlFor="accept-rules-checkbox"
             style={{
-              fontWeight: 600,
-              fontSize: 15.2,
+              fontWeight: 650,
+              fontSize: 15.5,
               color: "var(--color-accent)",
-              cursor: "pointer"
+              cursor: "pointer",
+              userSelect: "none"
             }}
           >
-            I agree to follow these rules
+            I have read and <u>agree to follow</u> these rules
           </label>
         </div>
+        {!agreed && (
+          <div
+            style={{
+              color: "#e22b38",
+              fontWeight: 600,
+              fontSize: 13.2,
+              marginTop: 6,
+              background: "#fff7f8",
+              padding: "4px 12px",
+              borderRadius: 8,
+              maxWidth: 355
+            }}
+            aria-live="polite"
+          >
+            You must accept the rules to proceed with the booking.
+          </div>
+        )}
       </section>
       {/* Payment Method Selection UI */}
       <section
