@@ -629,6 +629,74 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           </label>
         </div>
       </section>
+      {/* Payment Method Selection UI */}
+      <section
+        className="card"
+        style={{
+          marginBottom: 22,
+          borderRadius: "var(--radius-main)",
+          border: "1.4px solid var(--color-border)",
+          background: "#fff",
+          boxShadow: "0 1px 10px rgba(0,168,150,0.04)",
+          padding: "19px 19px 12px 17px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+          alignItems: "flex-start"
+        }}
+        aria-label="Payment Method Selection"
+      >
+        <div style={{ fontWeight: 700, fontSize: 16.3, color: "var(--color-primary)", marginBottom: 7, display: "flex", alignItems: "center", gap: 8 }}>
+          <span role="img" aria-label="payment" style={{ fontSize: 17 }}>💳</span>
+          Select Payment Method
+        </div>
+        {multiplePayments ? (
+          <>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {paymentMethods.map((m, idx) => (
+                <label
+                  key={m}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    fontWeight: 600,
+                    color: "var(--color-accent)",
+                    gap: 9,
+                    fontSize: 15
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="payment-method"
+                    value={m}
+                    checked={selectedPayment === m}
+                    onChange={(e) => {
+                      setSelectedPayment(e.target.value);
+                      setTouchedPayment(true);
+                    }}
+                    style={{
+                      accentColor: "var(--color-accent)",
+                      width: 18, height: 18,
+                      marginRight: 8
+                    }}
+                    required
+                  />
+                  {m}
+                </label>
+              ))}
+            </div>
+            {touchedPayment && !selectedPayment && (
+              <div style={{ color: "#e22b38", fontSize: 13.2, fontWeight: 500, marginTop: 4 }}>
+                Please select a payment method to continue.
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ fontWeight: 600, color: "var(--color-muted)", fontSize: 15.1 }}>
+            {paymentMethods[0]} (only available)
+          </div>
+        )}
+      </section>
       {/* Confirm action area */}
       <div style={{ display: "flex", justifyContent: "center", gap: 19 }}>
         <button
@@ -650,24 +718,32 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         <button
           className="btn btn-large"
           style={{
-            background: etaFareReviewed && agreed
+            background: etaFareReviewed && agreed && (!multiplePayments || !!selectedPayment)
               ? "linear-gradient(90deg, var(--color-primary), var(--color-accent))"
               : "#e8eeee",
-            color: etaFareReviewed && agreed ? "#fff" : "#aac7c6",
+            color: etaFareReviewed && agreed && (!multiplePayments || !!selectedPayment) ? "#fff" : "#aac7c6",
             fontWeight: 700,
             fontSize: "1.09rem",
             borderRadius: 10,
             minWidth: 160,
-            boxShadow: etaFareReviewed && agreed
+            boxShadow: etaFareReviewed && agreed && (!multiplePayments || !!selectedPayment)
               ? "0 2px 8px rgba(0,119,182,0.10)"
               : "none",
             outline: "none",
             transition: "background 0.18s cubic-bezier(0.4,0,0.2,1)",
-            cursor: etaFareReviewed && agreed ? "pointer" : "not-allowed"
+            cursor: etaFareReviewed && agreed && (!multiplePayments || !!selectedPayment) ? "pointer" : "not-allowed"
           }}
           type="button"
-          disabled={!etaFareReviewed || !agreed || submitting || success}
-          aria-disabled={!etaFareReviewed || !agreed || submitting || success}
+          disabled={
+            !etaFareReviewed || !agreed ||
+            submitting || success ||
+            (multiplePayments && !selectedPayment)
+          }
+          aria-disabled={
+            !etaFareReviewed || !agreed ||
+            submitting || success ||
+            (multiplePayments && !selectedPayment)
+          }
           onClick={handleConfirm}
         >
           {submitting ? "Booking..." : success ? "Confirmed!" : "Confirm Booking"}
