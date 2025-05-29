@@ -39,6 +39,8 @@ function getIcon(mode) {
 function BookingDetailsScreen(props) {
   // Get transportMode from props (preferred), or from navigation state
   const location = useLocation();
+  const navigate = useNavigate(); // Needed for correct navigation between screens
+
   let transportMode = props.transportMode;
   if (!transportMode && location && location.state && location.state.transportMode) {
     transportMode = location.state.transportMode;
@@ -67,6 +69,20 @@ function BookingDetailsScreen(props) {
       setRides(MOCK_RIDES[modeLabel] ? [...MOCK_RIDES[modeLabel]] : []);
       setLoading(false);
     }, 1000);
+  }
+
+  // PUBLIC_INTERFACE
+  // Navigates to /add-guardian-contact with booking data in state
+  function handleBook(ride) {
+    navigate('/add-guardian-contact', {
+      state: {
+        selectedRide: ride,
+        pickup,
+        destination,
+        mode: modeLabel,
+        modeIcon: modeIcon,
+      },
+    });
   }
 
   return (
