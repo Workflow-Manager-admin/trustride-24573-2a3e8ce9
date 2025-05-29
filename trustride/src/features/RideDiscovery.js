@@ -1,6 +1,275 @@
 import React, { useState } from "react";
 import RideDetailsCard from "./RideDetailsCard";
 
+/* MapPicker: Minimalist, brand-aligned static mock map component for pinning Pickup/Destination.
+   API: 
+      - onLocationChange({ type: "pickup"|"destination", lat, lng, address })
+      - Expects current positions via props.
+      - Click map to place/move pin.
+*/
+function MapPicker({
+  pickupLatLng,
+  destLatLng,
+  onLocationChange,
+  style = {},
+}) {
+  // Internal for simulating draggable markers
+  const [activePin, setActivePin] = useState(null); // "pickup" | "destination" | null
+
+  // Mock: Center, bounds, and display element style (not actual geocoordinates)
+  const MAP_WIDTH = 340, MAP_HEIGHT = 170;
+  // Center of the "map"
+  const CENTER = { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 + 6 };
+  // Pin positions in component coords: default, else use state/props
+  const pickupXY = pickupLatLng
+    ? {
+        x: pickupLatLng._mockX ?? MAP_WIDTH / 3.2,
+        y: pickupLatLng._mockY ?? MAP_HEIGHT / 2.6,
+      }
+    : { x: MAP_WIDTH / 3.2, y: MAP_HEIGHT / 2.6 };
+  const destXY = destLatLng
+    ? {
+        x: destLatLng._mockX ?? (MAP_WIDTH * 2.2) / 3,
+        y: destLatLng._mockY ?? (MAP_HEIGHT * 2) / 3 + 10,
+      }
+    : { x: (MAP_WIDTH * 2.2) / 3, y: (MAP_HEIGHT * 2) / 3 + 10 };
+
+  // Handles placing or moving a pin on click
+  function handleMapClick(e) {
+    // Place whichever pin is active; default to pickup if none
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left,
+      y = e.clientY - rect.top;
+    if (activePin === "pickup" || (!activePin && !pickupLatLng)) {
+      onLocationChange?.({
+        type: "pickup",
+        lat: 37.77 + (x - CENTER.x) * 0.0006,
+        lng: -122.4 + (y - CENTER.y) * 0.0006,
+        address: "", // Could reverse geocode
+        _mockX: x,
+        _mockY: y,
+      });
+    } else if (activePin === "destination" || (!activePin && !destLatLng)) {
+      onLocationChange?.({
+        type: "destination",
+        lat: 37.78 + (x - CENTER.x) * 0.0006,
+        lng: -122.38 + (y - CENTER.y) * 0.0006,
+        address: "",
+        _mockX: x,
+        _mockY: y,
+      });
+    }
+  }
+
+  // UI: Minimal "map" mock with two possible draggable pins; map is non-real but visually matches style.
+  return (
+    <div
+      aria-label="Map picker for selecting pickup/destination"
+      style={{
+        ...style,
+        border: "1.3px solid var(--color-accent)",
+        borderRadius: 14,
+        overflow: "hidden",
+        width: MAP_WIDTH,
+        height: MAP_HEIGHT,
+        background: "linear-gradient(120deg, #e3f3ff 65%, #e0faf7 99%)",
+        boxShadow: "0 1px 9px rgba(0,168,150,0.07)",
+        position: "relative",
+        margin: "0 auto 0 0",
+        cursor: "crosshair",
+        userSelect: "none"
+      }}
+      onClick={handleMapClick}
+      tabIndex={0}
+    >
+      {/* Mock geography - muted grid lines */}
+      <svg
+        width={MAP_WIDTH}
+        height={MAP_HEIGHT}
+        style={{
+          position: "absolute",
+          left: 0,
+          top: 0,
+          opacity: 0.18,
+          zIndex: 1,
+        }}
+        aria-hidden="true"
+      >
+        <rect x="0" y="0" width={MAP_WIDTH} height={MAP_HEIGHT} fill="#d7f5f3" />
+        {[1, 2, 3, 4].map((ix) => (
+          <line
+            key={"vl" + ix}
+            x1={ix * MAP_WIDTH / 5}
+            y1={0}
+            x2={ix * MAP_WIDTH / 5}
+            y2={MAP_HEIGHT}
+            stroke="#8ad2cd"
+            strokeDasharray="6,3"
+            strokeWidth="1.2"
+          />
+        ))}
+        {[1, 2].map((iy) => (
+          <line
+            key={"hl" + iy}
+            y1={iy * MAP_HEIGHT / 3}
+            x1={0}
+            y2={iy * MAP_HEIGHT / 3}
+            x2={MAP_WIDTH}
+            stroke="#8ad2cd"
+            strokeDasharray="8,3"
+            strokeWidth="1"
+          />
+        ))}
+      </svg>
+      {/* Pins: Pickup (green), Destination (blue). Order: dest under pickup. */}
+      {/* Destination pin */}
+      <Pin
+        label="Destination"
+        color="var(--color-primary)"
+        bg="#e3f3ff"
+        xy={destXY}
+        active={activePin === "destination"}
+        onClick={e => {
+          e.stopPropagation();
+          setActivePin("destination");
+        }}
+      />
+      {/* Pickup pin */}
+      <Pin
+        label="Pickup"
+        color="var(--color-accent)"
+        bg="#ecfcf7"
+        xy={pickupXY}
+        active={activePin === "pickup"}
+        onClick={e => {
+          e.stopPropagation();
+          setActivePin("pickup");
+        }}
+      />
+      {/* Legend and instructions (bottom right, minimalist) */}
+      <div
+        style={{
+          position: "absolute",
+          right: 12,
+          bottom: 4,
+          fontSize: 13.5,
+          color: "var(--color-text-secondary)",
+          background: "rgba(255,255,255,0.85)",
+          borderRadius: 8,
+          padding: "1.5px 9px",
+          fontWeight: 500,
+          zIndex: 99,
+        }}
+      >
+        <span
+          style={{
+            color: "var(--color-accent)",
+            marginRight: 3,
+            fontWeight: 700,
+          }}
+        >
+          •
+        </span>
+        Pickup
+        <span
+          style={{
+            margin: "0 7px 0 10px",
+            color: "#00A896",
+            fontSize: 11.5,
+          }}
+        >
+          |
+        </span>
+        <span
+          style={{
+            color: "var(--color-primary)",
+            marginRight: 3,
+            fontWeight: 700,
+          }}
+        >
+          •
+        </span>
+        Destination
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 7,
+          bottom: 7,
+          fontSize: 13.1,
+          color: "#90bda1",
+          fontWeight: 600,
+          zIndex: 99,
+          opacity: 0.8
+        }}
+      >
+        Click to move active pin
+      </div>
+    </div>
+  );
+}
+
+// Pin: visual for either pickup/destination in the mock map
+function Pin({ label, color, bg, xy, active, onClick }) {
+  return (
+    <button
+      style={{
+        position: "absolute",
+        left: xy.x - 18,
+        top: xy.y - 32,
+        width: 36,
+        height: 42,
+        background: "none",
+        border: "none",
+        padding: 0,
+        margin: 0,
+        outline: "none",
+        cursor: "pointer",
+        zIndex: 10,
+      }}
+      aria-label={`Move ${label} pin`}
+      tabIndex={0}
+      onClick={onClick}
+    >
+      <span
+        style={{
+          display: "inline-block",
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          background: bg,
+          border: `2.5px solid ${color}`,
+          boxShadow: active
+            ? `0 0 0 2.5px ${color}44`
+            : "0 2.5px 12px #b1dfcd80",
+          fontSize: 22,
+          color,
+          fontWeight: 700,
+          textAlign: "center",
+          lineHeight: "36px",
+          transition: "box-shadow 0.18s",
+        }}
+      >
+        {label === "Pickup" ? "⬆️" : "⬇️"}
+      </span>
+      {/* Small caption for accessibility */}
+      <div
+        style={{
+          marginTop: -1,
+          fontSize: 11.1,
+          color: color,
+          fontWeight: 600,
+          background: "none",
+          textShadow: "0 1px 2px #fff, 0 0px 1px #ddd",
+          opacity: active ? 1 : 0.65,
+        }}
+      >
+        {label}
+      </div>
+    </button>
+  );
+}
+
 /**
  * PUBLIC_INTERFACE
  * RideDiscovery: Home tab to browse institution ride pools (rounded cards, filters, booking interaction).
