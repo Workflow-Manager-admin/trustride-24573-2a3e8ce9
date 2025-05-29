@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 /**
  * PUBLIC_INTERFACE
@@ -15,12 +16,21 @@ const TRANSPORT_MODES = [
 // PUBLIC_INTERFACE
 function RideBookingScreen() {
   const [selected, setSelected] = useState(null);
+  const navigate = useNavigate();
 
   const handleSelect = idx => {
     setSelected(idx);
   };
 
   const selectedMode = selected !== null ? TRANSPORT_MODES[selected] : null;
+
+  // PUBLIC_INTERFACE
+  // Navigates to booking details, passing the chosen mode as router state
+  const handleContinue = () => {
+    if (selectedMode) {
+      navigate('/booking-details', { state: { transportMode: selectedMode } });
+    }
+  };
 
   return (
     <div className="container" style={{ paddingTop: 90, paddingBottom: 70 }}>
@@ -50,20 +60,42 @@ function RideBookingScreen() {
           ))}
         </div>
         {selectedMode && (
-          <div style={{
-            marginTop: 18,
-            color: "var(--accent)",
-            fontWeight: 600,
-            fontSize: 17,
-            letterSpacing: 1,
-            background: 'rgba(0,168,150,0.06)',
-            borderRadius: 14,
-            padding: '11px 0',
-          }}>
-            <span style={{ fontSize: 22 }}>{selectedMode.icon}</span>
-            {' '}
-            You chose <span style={{ fontWeight: 700 }}>{selectedMode.label}</span>
-          </div>
+          <>
+            <div style={{
+              marginTop: 18,
+              color: "var(--accent)",
+              fontWeight: 600,
+              fontSize: 17,
+              letterSpacing: 1,
+              background: 'rgba(0,168,150,0.06)',
+              borderRadius: 14,
+              padding: '11px 0',
+            }}>
+              <span style={{ fontSize: 22 }}>{selectedMode.icon}</span>
+              {' '}
+              You chose <span style={{ fontWeight: 700 }}>{selectedMode.label}</span>
+            </div>
+            <button
+              className="btn btn-large"
+              style={{
+                marginTop: 22,
+                fontWeight: 700,
+                borderRadius: 21,
+                fontSize: 16,
+                minWidth: 150,
+                background: "var(--primary)",
+                color: "#fff",
+                boxShadow: "var(--card-shadow)",
+                transition: 'background .18s',
+                cursor: "pointer"
+              }}
+              type="button"
+              onClick={handleContinue}
+              tabIndex={0}
+            >
+              Continue
+            </button>
+          </>
         )}
       </section>
     </div>
