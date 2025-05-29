@@ -25,9 +25,10 @@ function RideBookingScreen() {
   const selectedMode = selected !== null ? TRANSPORT_MODES[selected] : null;
 
   // PUBLIC_INTERFACE
-  // Navigates to booking details, passing the chosen mode as router state
+  // Navigates to booking details, passing the chosen mode as router state or URL param
   const handleContinue = () => {
     if (selectedMode) {
+      // Pass via navigation state; BookingDetailsScreen can read location.state.transportMode
       navigate('/booking-details', { state: { transportMode: selectedMode } });
     }
   };
