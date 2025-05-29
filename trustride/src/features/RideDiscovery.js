@@ -114,7 +114,7 @@ export default function RideDiscovery() {
                 padding: "6px 17px",
                 cursor: "pointer"
               }}
-              onClick={() => usePickupChip(loc.address)}
+              onClick={() => handlePickupChip(loc.address)}
               type="button"
               tabIndex={0}
               aria-label={`Pickup: ${loc.label}`}
@@ -137,7 +137,7 @@ export default function RideDiscovery() {
                 borderRadius: 17,
                 cursor: "pointer"
               }}
-              onClick={() => useDestChip(addr)}
+              onClick={() => handleDestChip(addr)}
               type="button"
               tabIndex={0}
               aria-label={`Destination: ${addr}`}
