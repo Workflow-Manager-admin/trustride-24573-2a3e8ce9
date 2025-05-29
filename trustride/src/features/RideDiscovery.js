@@ -1,544 +1,163 @@
 import React, { useState } from "react";
-import RideDetailsCard from "./RideDetailsCard";
-
-/* MapPicker: Minimalist, brand-aligned static mock map component for pinning Pickup/Destination.
-   API: 
-      - onLocationChange({ type: "pickup"|"destination", lat, lng, address })
-      - Expects current positions via props.
-      - Click map to place/move pin.
-*/
-function MapPicker({
-  pickupLatLng,
-  destLatLng,
-  onLocationChange,
-  style = {},
-}) {
-  // Internal for simulating draggable markers
-  const [activePin, setActivePin] = useState(null); // "pickup" | "destination" | null
-
-  // Mock: Center, bounds, and display element style (not actual geocoordinates)
-  const MAP_WIDTH = 340, MAP_HEIGHT = 170;
-  // Center of the "map"
-  const CENTER = { x: MAP_WIDTH / 2, y: MAP_HEIGHT / 2 + 6 };
-  // Pin positions in component coords: default, else use state/props
-  const pickupXY = pickupLatLng
-    ? {
-        x: pickupLatLng._mockX ?? MAP_WIDTH / 3.2,
-        y: pickupLatLng._mockY ?? MAP_HEIGHT / 2.6,
-      }
-    : { x: MAP_WIDTH / 3.2, y: MAP_HEIGHT / 2.6 };
-  const destXY = destLatLng
-    ? {
-        x: destLatLng._mockX ?? (MAP_WIDTH * 2.2) / 3,
-        y: destLatLng._mockY ?? (MAP_HEIGHT * 2) / 3 + 10,
-      }
-    : { x: (MAP_WIDTH * 2.2) / 3, y: (MAP_HEIGHT * 2) / 3 + 10 };
-
-  // Handles placing or moving a pin on click
-  function handleMapClick(e) {
-    // Place whichever pin is active; default to pickup if none
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left,
-      y = e.clientY - rect.top;
-    if (activePin === "pickup" || (!activePin && !pickupLatLng)) {
-      onLocationChange?.({
-        type: "pickup",
-        lat: 37.77 + (x - CENTER.x) * 0.0006,
-        lng: -122.4 + (y - CENTER.y) * 0.0006,
-        address: "", // Could reverse geocode
-        _mockX: x,
-        _mockY: y,
-      });
-    } else if (activePin === "destination" || (!activePin && !destLatLng)) {
-      onLocationChange?.({
-        type: "destination",
-        lat: 37.78 + (x - CENTER.x) * 0.0006,
-        lng: -122.38 + (y - CENTER.y) * 0.0006,
-        address: "",
-        _mockX: x,
-        _mockY: y,
-      });
-    }
-  }
-
-  // UI: Minimal "map" mock with two possible draggable pins; map is non-real but visually matches style.
-  return (
-    <div
-      aria-label="Map picker for selecting pickup/destination"
-      style={{
-        ...style,
-        border: "1.3px solid var(--color-accent)",
-        borderRadius: 14,
-        overflow: "hidden",
-        width: MAP_WIDTH,
-        height: MAP_HEIGHT,
-        background: "linear-gradient(120deg, #e3f3ff 65%, #e0faf7 99%)",
-        boxShadow: "0 1px 9px rgba(0,168,150,0.07)",
-        position: "relative",
-        margin: "0 auto 0 0",
-        cursor: "crosshair",
-        userSelect: "none"
-      }}
-      onClick={handleMapClick}
-      tabIndex={0}
-    >
-      {/* Mock geography - muted grid lines */}
-      <svg
-        width={MAP_WIDTH}
-        height={MAP_HEIGHT}
-        style={{
-          position: "absolute",
-          left: 0,
-          top: 0,
-          opacity: 0.18,
-          zIndex: 1,
-        }}
-        aria-hidden="true"
-      >
-        <rect x="0" y="0" width={MAP_WIDTH} height={MAP_HEIGHT} fill="#d7f5f3" />
-        {[1, 2, 3, 4].map((ix) => (
-          <line
-            key={"vl" + ix}
-            x1={ix * MAP_WIDTH / 5}
-            y1={0}
-            x2={ix * MAP_WIDTH / 5}
-            y2={MAP_HEIGHT}
-            stroke="#8ad2cd"
-            strokeDasharray="6,3"
-            strokeWidth="1.2"
-          />
-        ))}
-        {[1, 2].map((iy) => (
-          <line
-            key={"hl" + iy}
-            y1={iy * MAP_HEIGHT / 3}
-            x1={0}
-            y2={iy * MAP_HEIGHT / 3}
-            x2={MAP_WIDTH}
-            stroke="#8ad2cd"
-            strokeDasharray="8,3"
-            strokeWidth="1"
-          />
-        ))}
-      </svg>
-      {/* Pins: Pickup (green), Destination (blue). Order: dest under pickup. */}
-      {/* Destination pin */}
-      <Pin
-        label="Destination"
-        color="var(--color-primary)"
-        bg="#e3f3ff"
-        xy={destXY}
-        active={activePin === "destination"}
-        onClick={e => {
-          e.stopPropagation();
-          setActivePin("destination");
-        }}
-      />
-      {/* Pickup pin */}
-      <Pin
-        label="Pickup"
-        color="var(--color-accent)"
-        bg="#ecfcf7"
-        xy={pickupXY}
-        active={activePin === "pickup"}
-        onClick={e => {
-          e.stopPropagation();
-          setActivePin("pickup");
-        }}
-      />
-      {/* Legend and instructions (bottom right, minimalist) */}
-      <div
-        style={{
-          position: "absolute",
-          right: 12,
-          bottom: 4,
-          fontSize: 13.5,
-          color: "var(--color-text-secondary)",
-          background: "rgba(255,255,255,0.85)",
-          borderRadius: 8,
-          padding: "1.5px 9px",
-          fontWeight: 500,
-          zIndex: 99,
-        }}
-      >
-        <span
-          style={{
-            color: "var(--color-accent)",
-            marginRight: 3,
-            fontWeight: 700,
-          }}
-        >
-          •
-        </span>
-        Pickup
-        <span
-          style={{
-            margin: "0 7px 0 10px",
-            color: "#00A896",
-            fontSize: 11.5,
-          }}
-        >
-          |
-        </span>
-        <span
-          style={{
-            color: "var(--color-primary)",
-            marginRight: 3,
-            fontWeight: 700,
-          }}
-        >
-          •
-        </span>
-        Destination
-      </div>
-      <div
-        style={{
-          position: "absolute",
-          left: 7,
-          bottom: 7,
-          fontSize: 13.1,
-          color: "#90bda1",
-          fontWeight: 600,
-          zIndex: 99,
-          opacity: 0.8
-        }}
-      >
-        Click to move active pin
-      </div>
-    </div>
-  );
-}
-
-// Pin: visual for either pickup/destination in the mock map
-function Pin({ label, color, bg, xy, active, onClick }) {
-  return (
-    <button
-      style={{
-        position: "absolute",
-        left: xy.x - 18,
-        top: xy.y - 32,
-        width: 36,
-        height: 42,
-        background: "none",
-        border: "none",
-        padding: 0,
-        margin: 0,
-        outline: "none",
-        cursor: "pointer",
-        zIndex: 10,
-      }}
-      aria-label={`Move ${label} pin`}
-      tabIndex={0}
-      onClick={onClick}
-    >
-      <span
-        style={{
-          display: "inline-block",
-          width: 36,
-          height: 36,
-          borderRadius: "50%",
-          background: bg,
-          border: `2.5px solid ${color}`,
-          boxShadow: active
-            ? `0 0 0 2.5px ${color}44`
-            : "0 2.5px 12px #b1dfcd80",
-          fontSize: 22,
-          color,
-          fontWeight: 700,
-          textAlign: "center",
-          lineHeight: "36px",
-          transition: "box-shadow 0.18s",
-        }}
-      >
-        {label === "Pickup" ? "⬆️" : "⬇️"}
-      </span>
-      {/* Small caption for accessibility */}
-      <div
-        style={{
-          marginTop: -1,
-          fontSize: 11.1,
-          color: color,
-          fontWeight: 600,
-          background: "none",
-          textShadow: "0 1px 2px #fff, 0 0px 1px #ddd",
-          opacity: active ? 1 : 0.65,
-        }}
-      >
-        {label}
-      </div>
-    </button>
-  );
-}
 
 /**
  * PUBLIC_INTERFACE
- * RideDiscovery: Home tab to browse institution ride pools (rounded cards, filters, booking interaction).
- * Features:
- *  - Filter bar (institution, soon: gender, time)
- *  - List available ride pools (mock data)
- *  - Card UI, minimalist/modern, verification/safety visual cues
- *  - Book/Request ride interaction (mock)
+ * RideDiscovery home/dashboard for TrustRide: entry point for requesting/pooling rides.
+ * Provides a modern UI: pickup and destination entry, location suggestion chips,
+ * minimalist date/time scheduling (now/later flex), TrustRide card styling.
  */
-const MOCK_RIDES = [
-  {
-    id: "a1",
-    time: new Date(Date.now() + 60 * 60 * 1000), // +1h
-    institution: "Greenwood University",
-    genderPref: "female",
-    seatsAvailable: 2,
-    totalSeats: 4,
-    driverName: "Alice W.",
-    verificationLevel: "verified",
-  },
-  {
-    id: "b2",
-    time: new Date(Date.now() + 2.3 * 60 * 60 * 1000), // +2h20m
-    institution: "Central College",
-    genderPref: "any",
-    seatsAvailable: 1,
-    totalSeats: 3,
-    driverName: "Brian P.",
-    verificationLevel: "verified",
-  },
-  {
-    id: "c3",
-    time: new Date(Date.now() + 4.4 * 60 * 60 * 1000), // +4h25m
-    institution: "Greenwood University",
-    genderPref: "any",
-    seatsAvailable: 0,
-    totalSeats: 4,
-    driverName: "Priya S.",
-    verificationLevel: "verified",
-  },
-  {
-    id: "d4",
-    time: new Date(Date.now() + 5.9 * 60 * 60 * 1000),
-    institution: "City Business School",
-    genderPref: "female",
-    seatsAvailable: 3,
-    totalSeats: 4,
-    driverName: "Fatima H.",
-    verificationLevel: "verified",
-  },
-  {
-    id: "e5",
-    time: new Date(Date.now() + 9 * 60 * 60 * 1000),
-    institution: "Central College",
-    genderPref: "any",
-    seatsAvailable: 2,
-    totalSeats: 3,
-    driverName: "Robin T.",
-    verificationLevel: "verified",
-  },
+const COMMON_LOCATIONS = [
+  { label: "Campus", address: "Greenwood University Main Gate" },
+  { label: "Office", address: "Downtown Tech Park, Block B" },
+  { label: "Hostel", address: "Sunrise Hostel, West Wing" },
+  { label: "Library", address: "Central City Library" },
 ];
 
-/**
- * Utility to get unique list of institutions.
- */
-function getInstitutions(rides) {
-  const unique = Array.from(new Set(rides.map((r) => r.institution)));
-  unique.sort();
-  return unique;
+const TIME_FLEX_OPTIONS = [15, 30];
+
+function getTodayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+function getNextHalfHourISOTime() {
+  // Returns "HH:MM" string for next 0/30 minute time
+  const now = new Date();
+  const min = now.getMinutes();
+  now.setSeconds(0, 0);
+  if (min < 30) {
+    now.setMinutes(30);
+  } else {
+    now.setMinutes(0);
+    now.setHours(now.getHours() + 1);
+  }
+  return now.toISOString().slice(11, 16);
 }
 
 export default function RideDiscovery() {
-  const [selectedInstitution, setSelectedInstitution] = useState("All");
-  const [rides, setRides] = useState(MOCK_RIDES);
-
-  // Pickup & Destination state (now enhanced for map pin support)
+  // Input fields
   const [pickup, setPickup] = useState("");
   const [destination, setDestination] = useState("");
-  // Store pin mock map states: {lat, lng, address, _mockX, _mockY}
-  const [pickupLatLng, setPickupLatLng] = useState(undefined);
-  const [destLatLng, setDestLatLng] = useState(undefined);
+  // Quick chips: track last four used for suggestions (in real: recent search etc)
+  const [recent, setRecent] = useState(["City Center Plaza", "Greenwood Sports Complex", "Main Bus Stand"]);
 
-  // --- NEW: Ride time picker states ---
-  // "now" or "later"
-  const [rideTimeType, setRideTimeType] = useState("now");
-  // If "later", store date + time (initialize to today, next half hour)
-  const today = new Date().toISOString().slice(0, 10);
-  function getNextHalfHour() {
-    const now = new Date();
-    const cur = now.getMinutes();
-    now.setMinutes(cur < 30 ? 30 : 0, 0, 0);
-    if (cur >= 30) now.setHours(now.getHours() + 1);
-    return now.toISOString().slice(11, 16);
+  // Date/Time scheduling
+  const [scheduleType, setScheduleType] = useState("now"); // "now" or "later"
+  const [scheduledDate, setScheduledDate] = useState(getTodayISO());
+  const [scheduledTime, setScheduledTime] = useState(getNextHalfHourISOTime());
+  const [timeFlex, setTimeFlex] = useState(TIME_FLEX_OPTIONS[0]);
+
+  // Handlers for suggestion chips
+  function usePickupChip(addr) {
+    setPickup(addr);
+    rememberRecent(addr);
   }
-  const [scheduledDate, setScheduledDate] = useState(today);
-  const [scheduledTime, setScheduledTime] = useState(getNextHalfHour());
-  // Flexible range: ±15/±30 min (default 15)
-  const [timeFlex, setTimeFlex] = useState(15);
-
-  // Commonly visited/used addresses (in real app: fetched/tracked; here: mock)
-  const COMMON_LOCATIONS = [
-    { label: "Campus", address: "Greenwood University Hostel Gate" },
-    { label: "Office", address: "Downtown Tech Park, Block B" },
-    { label: "Hostel", address: "Sunrise Hostel, West Wing" },
-    { label: "Library", address: "Central City Library" },
-  ];
-  // Simple in-memory 'recent' demo; in real app, would persist
-  const [recentAddresses, setRecentAddresses] = useState([
-    "City Center Plaza",
-    "Greenwood Sports Complex",
-    "Main Bus Stand",
-  ]);
-
-  // Add address to recent (called after user sets one as pickup/dest)
-  function addRecentAddress(addr) {
-    if (!addr || recentAddresses.includes(addr)) return;
-    setRecentAddresses((prev) => [
-      addr,
-      ...prev.slice(0, 3).filter((a) => a !== addr)
-    ]);
+  function useDestChip(addr) {
+    setDestination(addr);
+    rememberRecent(addr);
+  }
+  function rememberRecent(addr) {
+    setRecent(prev => !addr || prev.includes(addr) ? prev : [addr, ...prev.slice(0, 3)]);
+  }
+  // Swaps pickup/dest (small arrow shortcut)
+  function swapPickupDest() {
+    setPickup(destination);
+    setDestination(pickup);
   }
 
-  const institutions = ["All", ...getInstitutions(rides)];
-
-  const filteredRides =
-    selectedInstitution === "All"
-      ? rides
-      : rides.filter((r) => r.institution === selectedInstitution);
-
-  // PUBLIC_INTERFACE
-  function handleBook(ride) {
-    // In a real app, open details/modal or perform booking; here show an alert
-    window.alert(
-      `You've requested to join this ride:
-
-• Institution: ${ride.institution}
-• Driver: ${ride.driverName}
-• Departure: ${new Date(
-        ride.time
-      ).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-
-A confirmation will be sent (mock).`
-    );
-  }
-
-  // Handle MapPicker location updates
-  function handleMapLocationChange(loc) {
-    if (loc.type === "pickup") {
-      setPickupLatLng(loc);
-      setPickup(""); // Could trigger reverse-geocode for address string
-    } else if (loc.type === "destination") {
-      setDestLatLng(loc);
-      setDestination("");
-    }
-  }
-
-  // UI minimalist filter bar, Pickup/Destination inputs, card grid, empty state if none
+  // UI main render
   return (
-    <div style={{ paddingTop: 16, paddingBottom: 28, maxWidth: 480, margin: "0 auto" }}>
-      {/* Pickup/Destination input section */}
+    <div style={{
+      paddingTop: 22,
+      paddingBottom: 22,
+      maxWidth: 440,
+      margin: "0 auto"
+    }}>
+      {/* Card: Pickup/Destination + Suggestions */}
       <section
         className="card"
-        aria-label="Pickup and Destination Entry"
+        aria-label="Pickup & Destination"
         style={{
-          margin: "0 0 18px 0",
+          marginBottom: 19,
           borderRadius: "var(--radius-main)",
-          boxShadow: "0 2px 14px rgba(0,119,182,0.06)",
+          boxShadow: "0 2px 14px rgba(0,119,182,0.05)",
           border: "1.5px solid var(--color-border)",
-          padding: "22px 14px 22px 14px",
+          padding: "24px 16px 19px 16px",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          gap: 8, // slightly less vertical gap for a tighter look w/ suggestions
+          gap: 12,
         }}
       >
-        <div style={{ fontWeight: 700, fontSize: 17, color: "var(--color-primary)", marginBottom: 5, display: "flex", gap: 8, alignItems: "center" }}>
-          <span role="img" aria-label="car" style={{ fontSize: 18, marginRight: 1 }}>🚗</span>
-          Enter Pickup & Destination
+        <div style={{
+          fontWeight: 700, fontSize: 18, color: "var(--color-primary)",
+          display: "flex", alignItems: "center", gap: 8, marginBottom: 3
+        }}>
+          <span role="img" aria-label="car" style={{ fontSize: 20 }}>🚗</span>
+          Where to?
         </div>
 
-        {/* SUGGESTION CHIPS UI */}
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 9,
-            marginBottom: 7,
-            marginTop: 4,
-          }}
-          aria-label="Common location suggestions"
-        >
-          {COMMON_LOCATIONS.map(loc => (
+        {/* Suggestion chips */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 9, marginBottom: 2
+        }}>
+          {/* Quick common locations */}
+          {COMMON_LOCATIONS.map(loc =>
             <button
               key={loc.label}
               className="tr-chip"
-              type="button"
               style={{
-                background: "linear-gradient(90deg, #e3f3ff, #ecfcf7 99%)",
+                background: "linear-gradient(90deg,#e3f3ff, #ecfcf7 92%)",
                 color: "var(--color-accent)",
                 border: "1.1px solid var(--color-border)",
                 borderRadius: 17,
                 fontWeight: 670,
                 fontSize: 14.2,
                 padding: "6px 17px",
-                marginRight: 0,
-                outline: "none",
-                cursor: "pointer",
-                boxShadow: "0 1.7px 7px rgba(0,168,150,0.03)",
-                letterSpacing: "-0.06px",
-                lineHeight: 1,
-                transition: "background 0.13s",
+                cursor: "pointer"
               }}
-              onClick={() => {
-                setPickup(loc.address);
-                addRecentAddress(loc.address);
-              }}
+              onClick={() => usePickupChip(loc.address)}
+              type="button"
               tabIndex={0}
-              aria-label={`Set pickup: ${loc.label}`}
-            >
-              {loc.label}
-            </button>
-          ))}
-          {recentAddresses.length > 0 &&
-            recentAddresses.map(addr => (
-              <button
-                key={addr}
-                className="tr-chip"
-                type="button"
-                style={{
-                  background: "linear-gradient(90deg, #ecfcf7 65%, #e3f3ff 99%)",
-                  color: "var(--color-primary)",
-                  border: "1.1px solid var(--color-border)",
-                  borderRadius: 17,
-                  fontWeight: 600,
-                  fontSize: 13.5,
-                  padding: "5px 13px",
-                  marginRight: 0,
-                  outline: "none",
-                  cursor: "pointer",
-                  opacity: 0.98,
-                  lineHeight: 1,
-                  marginLeft: 0,
-                }}
-                onClick={() => {
-                  setDestination(addr);
-                  addRecentAddress(addr);
-                }}
-                tabIndex={0}
-                aria-label={`Set destination: ${addr}`}
-                title="Recently used"
-              >
-                {addr.length < 22 ? addr : addr.slice(0, 20) + "…"}
-              </button>
-            ))
-          }
+              aria-label={`Pickup: ${loc.label}`}
+            >{loc.label}</button>
+          )}
+          {recent.map(addr =>
+            <button
+              key={addr}
+              className="tr-chip"
+              style={{
+                background: "linear-gradient(90deg, #ecfcf7 65%, #e3f3ff 99%)",
+                color: "var(--color-primary)",
+                border: "1.1px solid var(--color-border)",
+                fontWeight: 600,
+                fontSize: 13.5,
+                padding: "5px 13px",
+                marginLeft: 0,
+                marginRight: 0,
+                opacity: 0.98,
+                borderRadius: 17,
+                cursor: "pointer"
+              }}
+              onClick={() => useDestChip(addr)}
+              type="button"
+              tabIndex={0}
+              aria-label={`Destination: ${addr}`}
+              title="Recently used"
+            >{addr.length < 22 ? addr : addr.slice(0, 20) + "…"}</button>
+          )}
         </div>
 
-        {/* Input fields & integrated map mock, minimalist UI */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-          {/* Pickup Field with icon */}
+        {/* Input Row: Pickup (icon), Swap, Destination (icon) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
+          {/* Pickup */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            marginBottom: 2,
+            gap: 8,
+            marginBottom: 3,
             background: "#f8fafb",
             borderRadius: 8,
-            border: "1.35px solid var(--color-border)",
-            padding: "2px 0"
+            border: "1.34px solid var(--color-border)",
+            padding: "3px 0"
           }}>
             <span
               aria-label="pickup icon"
@@ -546,82 +165,61 @@ A confirmation will be sent (mock).`
                 background: "#ecfcf7",
                 color: "var(--color-accent)",
                 borderRadius: 10,
-                padding: "6px 8px 5px",
-                fontSize: 22,
+                padding: "6px 9px 5px",
+                fontSize: 20,
+                marginLeft: 7, marginRight: 4,
                 display: "inline-flex",
-                marginLeft: 6,
-                marginRight: 2
               }}
               role="img"
-            >
-              ⬆️
-            </span>
+            >⬆️</span>
             <div style={{ flex: 1 }}>
               <label
-                htmlFor="pickup-address"
+                htmlFor="pickup-input"
                 style={{
-                  fontSize: 13.7,
-                  color: "var(--color-text-secondary)",
-                  fontWeight: 600,
-                  marginBottom: 1,
-                  letterSpacing: "0.2px",
-                  display: "block"
-                }}
-              >
-                Pickup
-              </label>
+                  fontSize: 13.4, color: "var(--color-text-secondary)",
+                  fontWeight: 600, display: "block", marginBottom: 1, letterSpacing: "0.04em"
+                }}>Pickup</label>
               <input
-                id="pickup-address"
+                id="pickup-input"
                 type="text"
+                placeholder="Enter pickup point"
                 className="input"
-                placeholder="Enter pickup address or drop a pin"
-                style={{
-                  width: "100%",
-                  padding: "9px 11px",
-                  fontSize: "1.06rem",
-                  border: "none",
-                  borderRadius: 7,
-                  background: "none",
-                  color: "var(--color-text-primary)"
-                }}
-                value={pickup}
-                onChange={e => setPickup(e.target.value)}
                 autoComplete="off"
                 autoFocus
+                value={pickup}
+                onChange={e => setPickup(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "9px 9px",
+                  fontSize: "1.05rem",
+                  border: "none",
+                  background: "none",
+                  borderRadius: 6,
+                  color: "var(--color-text-primary)"
+                }}
               />
             </div>
-            {/* Pin picker: active when clicking map or in future on this button */}
-            <span
-              aria-label="toggle pickup pin"
-              style={{
-                color: "#00A896",
-                marginRight: 13,
-                marginLeft: 4,
-                fontSize: 22,
-                opacity: 0.86,
-                cursor: "pointer"
-              }}
-              role="img"
-              title="Pin on map"
+            {/* Mini swap arrow - between fields */}
+            <button
+              onClick={swapPickupDest}
+              aria-label="Swap pickup and destination"
+              type="button"
               tabIndex={0}
-              onClick={() => {
-                // In a real app, focus the pickup pin on the map
-                document.activeElement.blur();
-              }}
-            >
-              📍
-            </span>
+              style={{
+                background: "none", border: "none", padding: 0, margin: "0 4px",
+                fontSize: 19, color: "#90bda1", cursor: "pointer", opacity: 0.70
+              }}>⇅</button>
           </div>
-          {/* Destination Field with icon */}
+          {/* Destination */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            marginBottom: 2,
+            gap: 8,
+            marginBottom: 0,
             background: "#f8fafb",
             borderRadius: 8,
-            border: "1.35px solid var(--color-border)",
-            padding: "2px 0"
+            border: "1.33px solid var(--color-border)",
+            padding: "3px 0"
           }}>
             <span
               aria-label="destination icon"
@@ -629,146 +227,102 @@ A confirmation will be sent (mock).`
                 background: "#e3f3ff",
                 color: "var(--color-primary)",
                 borderRadius: 10,
-                padding: "6px 8px 5px",
-                fontSize: 22,
-                display: "inline-flex",
-                marginLeft: 6,
-                marginRight: 2
+                padding: "6px 9px 5px",
+                fontSize: 20,
+                marginLeft: 7, marginRight: 4,
+                display: "inline-flex"
               }}
               role="img"
-            >
-              ⬇️
-            </span>
+            >⬇️</span>
             <div style={{ flex: 1 }}>
               <label
-                htmlFor="dest-address"
+                htmlFor="dest-input"
                 style={{
-                  fontSize: 13.7,
-                  color: "var(--color-text-secondary)",
-                  fontWeight: 600,
-                  marginBottom: 1,
-                  letterSpacing: "0.2px",
-                  display: "block"
-                }}
-              >
-                Destination
-              </label>
+                  fontSize: 13.4, color: "var(--color-text-secondary)",
+                  fontWeight: 600, display: "block", marginBottom: 1, letterSpacing: "0.04em"
+                }}>Destination</label>
               <input
-                id="dest-address"
+                id="dest-input"
                 type="text"
+                placeholder="Enter destination"
                 className="input"
-                placeholder="Enter destination address or drop a pin"
-                style={{
-                  width: "100%",
-                  padding: "9px 11px",
-                  fontSize: "1.06rem",
-                  border: "none",
-                  borderRadius: 7,
-                  background: "none",
-                  color: "var(--color-text-primary)"
-                }}
+                autoComplete="off"
                 value={destination}
                 onChange={e => setDestination(e.target.value)}
-                autoComplete="off"
+                style={{
+                  width: "100%",
+                  padding: "9px 9px",
+                  fontSize: "1.05rem",
+                  border: "none",
+                  background: "none",
+                  borderRadius: 6,
+                  color: "var(--color-text-primary)"
+                }}
               />
             </div>
-            {/* Pin picker: as with pickup */}
-            <span
-              aria-label="toggle destination pin"
-              style={{
-                color: "#0077B6",
-                marginRight: 13,
-                marginLeft: 4,
-                fontSize: 22,
-                opacity: 0.86,
-                cursor: "pointer"
-              }}
-              role="img"
-              title="Pin on map"
-              tabIndex={0}
-              onClick={() => {
-                document.activeElement.blur();
-              }}
-            >
-              📍
-            </span>
-          </div>
-          {/* MapPicker (interactive) */}
-          <div style={{ marginTop: 7, marginBottom: 2, display: "flex", justifyContent: "center" }}>
-            <MapPicker
-              pickupLatLng={pickupLatLng}
-              destLatLng={destLatLng}
-              onLocationChange={handleMapLocationChange}
-            />
           </div>
         </div>
       </section>
 
-      {/* DATE/TIME PICKER SECTION */}
+      {/* Card: Date/Time scheduling picker */}
       <section
         className="card"
-        aria-label="Schedule ride time"
+        aria-label="Date & Time Selection"
         style={{
-          margin: "0 0 20px 0",
+          marginBottom: 21,
           borderRadius: "var(--radius-main)",
-          boxShadow: "0 2px 10px rgba(0,168,150,0.05)",
+          boxShadow: "0 2px 14px rgba(0, 168, 150, 0.04)",
           border: "1.2px solid var(--color-border)",
-          padding: "21px 15px 17px 15px",
+          padding: "23px 16px 13px 16px",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          gap: 9,
+          gap: 10,
         }}
       >
         <div style={{
-          fontWeight: 700,
-          fontSize: 16.5,
-          color: "var(--color-primary)",
-          marginBottom: 3,
-          display: "flex",
-          gap: 8,
-          alignItems: "center"
+          fontWeight: 700, fontSize: 16.5, color: "var(--color-primary)",
+          display: "flex", alignItems: "center", gap: 8
         }}>
-          <span role="img" aria-label="clock" style={{ fontSize: 17, marginRight: 2 }}>⏰</span>
-          Ride Timing
+          <span role="img" aria-label="clock" style={{ fontSize: 18 }}>⏰</span>
+          Choose Time
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 19, marginBottom: 4 }}>
+        {/* Type toggle */}
+        <div style={{ display: "flex", alignItems: "center", gap: 22, marginBottom: 4 }}>
           <label style={{
-            fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)",
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 7
+            fontWeight: 620, fontSize: 14.1, color: "var(--color-text-secondary)", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 7
           }}>
             <input
               type="radio"
-              name="ride-time-type"
-              checked={rideTimeType === "now"}
-              onChange={() => setRideTimeType("now")}
+              name="sched-time-type"
+              checked={scheduleType === "now"}
+              onChange={() => setScheduleType("now")}
               style={{ accentColor: "var(--color-accent)" }}
-            />
-            Now
+            /> Now
           </label>
           <label style={{
-            fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)",
-            cursor: "pointer", display: "flex", alignItems: "center", gap: 7
+            fontWeight: 620, fontSize: 14.1, color: "var(--color-text-secondary)", cursor: "pointer",
+            display: "flex", alignItems: "center", gap: 7
           }}>
             <input
               type="radio"
-              name="ride-time-type"
-              checked={rideTimeType === "later"}
-              onChange={() => setRideTimeType("later")}
+              name="sched-time-type"
+              checked={scheduleType === "later"}
+              onChange={() => setScheduleType("later")}
               style={{ accentColor: "var(--color-primary)" }}
-            />
-            Schedule for Later
+            /> Schedule later
           </label>
         </div>
-        {/* Only show the picker/±range if "later" */}
-        {rideTimeType === "later" && (
-          <div style={{ display: "flex", gap: 13, alignItems: "center", flexWrap: "wrap" }}>
+        {/* Picker if later */}
+        {scheduleType === "later" && (
+          <div style={{ display: "flex", alignItems: "center", gap: 13, flexWrap: "wrap" }}>
             <label htmlFor="date-picker"
               style={{
                 fontWeight: 500,
                 fontSize: 13.4,
                 color: "var(--color-muted)",
-                marginBottom: 0, marginRight: 3,
+                marginRight: 3,
               }}>
               Date
             </label>
@@ -776,12 +330,12 @@ A confirmation will be sent (mock).`
               id="date-picker"
               type="date"
               value={scheduledDate}
-              min={today}
+              min={getTodayISO()}
               onChange={e => setScheduledDate(e.target.value)}
               style={{
                 border: "1.08px solid var(--color-border)",
                 borderRadius: 7,
-                padding: "7px",
+                padding: "7px 8px",
                 fontSize: "1em",
                 color: "var(--color-text-primary)",
                 background: "#f8fafb",
@@ -791,10 +345,8 @@ A confirmation will be sent (mock).`
             />
             <label htmlFor="time-picker"
               style={{
-                fontWeight: 500,
-                fontSize: 13.4,
-                color: "var(--color-muted)",
-                marginRight: 3, marginLeft: 5,
+                fontWeight: 500, fontSize: 13.4, color: "var(--color-muted)",
+                marginLeft: 7, marginRight: 2
               }}>
               Time
             </label>
@@ -806,7 +358,7 @@ A confirmation will be sent (mock).`
               style={{
                 border: "1.08px solid var(--color-border)",
                 borderRadius: 7,
-                padding: "7px",
+                padding: "7px 8px",
                 fontSize: "1em",
                 color: "var(--color-text-primary)",
                 background: "#f8fafb",
@@ -814,124 +366,92 @@ A confirmation will be sent (mock).`
                 fontWeight: 500,
               }}
             />
-            <div style={{ marginLeft: 7 }}>
+            <div style={{ marginLeft: 10 }}>
               <span style={{ fontSize: 13.1, color: "var(--color-text-secondary)", marginRight: 4 }}>
                 Flexibility:
               </span>
-              <button
-                type="button"
-                className="tr-chip"
-                style={{
-                  padding: "4px 12px",
-                  fontSize: 13.2,
-                  color: timeFlex === 15 ? "var(--color-accent)" : "var(--color-primary)",
-                  background: timeFlex === 15
-                    ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
-                    : "linear-gradient(90deg, #e3f3ff 70%, #ecfcf7 99%)",
-                  border: "1px solid var(--color-border)",
-                  marginLeft: 0,
-                  marginRight: 2,
-                  opacity: 1,
-                  fontWeight: 600,
-                }}
-                onClick={() => setTimeFlex(15)}
-                tabIndex={0}
-                aria-label="±15 min"
-              >±15 min</button>
-              <button
-                type="button"
-                className="tr-chip"
-                style={{
-                  padding: "4px 12px",
-                  fontSize: 13.2,
-                  color: timeFlex === 30 ? "var(--color-accent)" : "var(--color-primary)",
-                  background: timeFlex === 30
-                    ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
-                    : "linear-gradient(90deg, #e3f3ff 70%, #ecfcf7 99%)",
-                  border: "1px solid var(--color-border)",
-                  marginLeft: 0,
-                  opacity: 1,
-                  fontWeight: 600,
-                }}
-                onClick={() => setTimeFlex(30)}
-                tabIndex={0}
-                aria-label="±30 min"
-              >±30 min</button>
+              {/* FLEX OPTION CHIPS */}
+              {TIME_FLEX_OPTIONS.map(opt =>
+                <button
+                  key={opt}
+                  type="button"
+                  className="tr-chip"
+                  style={{
+                    padding: "4px 14px",
+                    fontSize: 13.3,
+                    color: timeFlex === opt ? "var(--color-accent)" : "var(--color-primary)",
+                    background: timeFlex === opt ?
+                      "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
+                      : "linear-gradient(90deg, #e3f3ff 70%, #ecfcf7 99%)",
+                    border: "1px solid var(--color-border)",
+                    marginLeft: 0,
+                    marginRight: 4,
+                    fontWeight: 600,
+                    opacity: 1
+                  }}
+                  onClick={() => setTimeFlex(opt)}
+                  tabIndex={0}
+                  aria-label={`±${opt} min`}
+                >±{opt} min</button>
+              )}
             </div>
+          </div>
+        )}
+        {scheduleType === "now" && (
+          <div style={{
+            color: "var(--color-muted)",
+            fontWeight: 500,
+            fontSize: 13.3,
+            marginLeft: 2
+          }}>
+            Ride ASAP – A driver will be matched instantly.
           </div>
         )}
       </section>
 
-      {/* Filter bar */}
-      <div
-        role="region"
-        aria-label="Ride Pool Filters"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginBottom: 14,
-          marginTop: 5,
-          justifyContent: "flex-start",
-          flexWrap: "wrap",
-        }}
-      >
-        <label
-          htmlFor="inst-filter"
-          className="description"
+      {/* Call to action (find rides, disabled if fields are blank) */}
+      <div style={{
+        display: "flex", gap: 0, justifyContent: "center", alignItems: "center"
+      }}>
+        <button
+          className="btn btn-large"
           style={{
-            fontWeight: 600,
-            fontSize: "1.01em",
-            color: "var(--color-text-secondary)",
-            marginRight: 7,
+            minWidth: 165,
+            fontWeight: 700,
+            fontSize: "1.04rem",
+            borderRadius: 11,
+            background: "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
+            boxShadow: "0 2px 8px rgba(0,119,182,0.10)",
+            outline: "none"
+          }}
+          type="button"
+          tabIndex={0}
+          disabled={!pickup.trim() || !destination.trim()}
+          onClick={() => {
+            // In the actual app, would show search or next page. For now, just a dialog
+            window.alert(
+              `Find rides from:\n\n• Pickup: ${pickup.trim()}\n• Destination: ${destination.trim()}\n• When: ${scheduleType === "now" ?
+                "Now" : `${scheduledDate} ${scheduledTime} (±${timeFlex} min)`}\n\n(This is a demo - booking not implemented)`
+            );
+            // Store these as 'recent' addresses
+            rememberRecent(pickup.trim());
+            rememberRecent(destination.trim());
           }}
         >
-          Institution:
-        </label>
-        <select
-          id="inst-filter"
-          style={{
-            fontSize: "1.04em",
-            border: "1.3px solid var(--color-border)",
-            borderRadius: 7,
-            padding: "7px 16px 7px 11px",
-            background: "#f8fafb",
-            color: "var(--color-text-primary)",
-            outline: "none",
-            fontWeight: 500,
-            transition: "border 0.14s",
-          }}
-          value={selectedInstitution}
-          onChange={(e) => setSelectedInstitution(e.target.value)}
-        >
-          {institutions.map((inst) => (
-            <option value={inst} key={inst}>
-              {inst}
-            </option>
-          ))}
-        </select>
-        {/* In future: gender filter, time filter */}
+          Find available rides
+        </button>
       </div>
 
-      {/* List of available ride pools */}
-      {filteredRides.length === 0 ? (
-        <div
-          className="description"
-          style={{
-            marginTop: 38,
-            color: "var(--color-muted)",
-            textAlign: "center",
-            fontSize: "1.09em",
-          }}
-        >
-          No ride pools found for this filter.<br />
-          Try another institution or check back soon!
-        </div>
-      ) : (
-        filteredRides.map((ride) => (
-          <RideDetailsCard key={ride.id} ride={ride} onBook={handleBook} />
-        ))
-      )}
+      {/* Demo tip */}
+      <div className="description" style={{
+        marginTop: 18,
+        fontSize: "0.97em",
+        color: "var(--color-muted)",
+        textAlign: "center"
+      }}>
+        Only verified users can see rides. For demo, enter any addresses.<br />
+        (No map preview – just enter pickup & destination.)
+      </div>
     </div>
   );
 }
