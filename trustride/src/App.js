@@ -17,6 +17,7 @@ import RideBookingScreen from './screens/RideBookingScreen';
 import BookingDetailsScreen from './screens/BookingDetailsScreen';
 import AddGuardianContactScreen from './screens/AddGuardianContactScreen';
 import ConfirmBookingScreen from './screens/ConfirmBookingScreen';
+import RideStatusScreen from './screens/RideStatusScreen';
 
 /**
  * PUBLIC_INTERFACE
@@ -68,6 +69,7 @@ function AppContainer() {
           <Route path="/add-guardian-contact" element={<AddGuardianContactScreen />} />
           {/* KEY: Confirm booking step MUST exist! */}
           <Route path="/confirm-booking" element={<ConfirmBookingScreen />} />
+          <Route path="/ride-status" element={<RideStatusScreen />} />
           {/* Optionally: fallback for unknown routes */}
           {/* <Route path="*" element={<HomeScreen />} /> */}
         </Routes>
