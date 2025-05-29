@@ -36,17 +36,26 @@ function App() {
   function renderTabContent(tab) {
     switch (tab) {
       case 'home':
-        return (
-          <div className="hero">
-            <div className="subtitle">Your trusted, institution-ready ride sharing platform.</div>
-            <h1 className="title">Welcome to TrustRide</h1>
-            <div className="description">
-              RideCircle is a secure, verified ride-pooling app for students & professionals.
-              Verified communities, real-time guardians, <b>eco-impact</b> at every journey.
+        // Ride Discovery & Pooling
+        // Renders filter bar, ride pool cards, and booking (mock interaction)
+        // (Minimalist, modern card layout with TrustRide color/UX)
+        // Import lazy, falls back to hero on error
+        try {
+          const RideDiscovery = require('./features/RideDiscovery').default;
+          return <RideDiscovery />;
+        } catch (e) {
+          return (
+            <div className="hero">
+              <div className="subtitle">Your trusted, institution-ready ride sharing platform.</div>
+              <h1 className="title">Welcome to TrustRide</h1>
+              <div className="description">
+                RideCircle is a secure, verified ride-pooling app for students & professionals.
+                Verified communities, real-time guardians, <b>eco-impact</b> at every journey.
+              </div>
+              <button className="btn btn-large">Get Started</button>
             </div>
-            <button className="btn btn-large">Get Started</button>
-          </div>
-        );
+          );
+        }
       case 'eco':
         return (
           <div className="hero">
