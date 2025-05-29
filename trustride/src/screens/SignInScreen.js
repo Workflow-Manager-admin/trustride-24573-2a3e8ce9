@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 
 /**
  * PUBLIC_INTERFACE
- * SignInScreen – Institutional sign-in form (demo/mock, non-production).
+ * SignInScreen – Institutional sign-in form.
  * Validates institutional email domain, displays error/success, and redirects on success.
  */
-const INSTITUTION_DOMAIN = '@institution.edu'; // Replace as needed for institution checking
+const INSTITUTION_DOMAIN = '@institution.edu'; // Replace with actual institution domain as needed
 
 const SignInScreen = () => {
   const [email, setEmail] = useState('');
@@ -14,7 +14,6 @@ const SignInScreen = () => {
   const [successMsg, setSuccessMsg] = useState('');
   const navigate = useNavigate();
 
-  // Helper for basic institution domain validation
   // PUBLIC_INTERFACE
   function isInstitutionalEmail(email) {
     /** Simple institutional domain matching, e.g., endsWith institutional domain */
@@ -25,7 +24,6 @@ const SignInScreen = () => {
     );
   }
 
-  // Submit handler
   // PUBLIC_INTERFACE
   function handleSubmit(e) {
     e.preventDefault();
@@ -39,7 +37,7 @@ const SignInScreen = () => {
       setError(`Invalid institutional email. Must end with "${INSTITUTION_DOMAIN}"`);
       return;
     }
-    // Mock authentication; in production, call API here!
+    // Mock authentication success. (In production, call API here)
     setSuccessMsg('Sign in successful! Redirecting...');
     setTimeout(() => {
       navigate('/book-ride');
