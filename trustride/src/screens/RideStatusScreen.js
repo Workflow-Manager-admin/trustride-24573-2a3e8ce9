@@ -595,13 +595,12 @@ function RideStatusScreen() {
           These features help you discreetly manage emergencies and alert for deviations in route.
         </div>
       </section>
-
-      {/* Mock Chat Modal */}
+      {/* Toast/Modal Section for Emergency Buttons */}
       {showChat && <ChatModal driverName={driverName} onClose={() => setShowChat(false)} />}
-      {/* Mock Call Modal */}
       {showCall && <CallModal driverName={driverName} onClose={() => setShowCall(false)} />}
+
       {/* Emergency: Fake Call Modal */}
-      {showFakeCall &&
+      {showFakeCall && (
         <ModalPopup
           emoji="📱"
           title="Fake Call Incoming"
@@ -612,9 +611,9 @@ function RideStatusScreen() {
             setShowToast("Fake Call popup was shown for emergency privacy.");
           }}
         />
-      }
+      )}
       {/* Emergency: Silent SOS Modal */}
-      {showSilentSOS &&
+      {showSilentSOS && (
         <ModalPopup
           emoji="🤫"
           title="Silent SOS Sent"
@@ -625,9 +624,9 @@ function RideStatusScreen() {
             setShowToast("Silent SOS alert (mock) triggered.");
           }}
         />
-      }
+      )}
       {/* Emergency: Ride Deviation Alert Modal */}
-      {showDeviation &&
+      {showDeviation && (
         <ModalPopup
           emoji="⚠️"
           title="Route Deviation Alert"
@@ -638,8 +637,8 @@ function RideStatusScreen() {
             setShowToast("Ride Deviation alert shown (mocked).");
           }}
         />
-      }
-      {/* Emergency feature toast popup */}
+      )}
+      {/* Emergency feature toast popup for emergency buttons */}
       {showToast && (
         <div
           style={{
