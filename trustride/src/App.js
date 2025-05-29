@@ -15,6 +15,7 @@ import ProfileScreen from './screens/ProfileScreen';
 import SignInScreen from './screens/SignInScreen';
 import RideBookingScreen from './screens/RideBookingScreen';
 import BookingDetailsScreen from './screens/BookingDetailsScreen';
+import AddGuardianContactScreen from './screens/AddGuardianContactScreen';
 
 /**
  * PUBLIC_INTERFACE
@@ -61,6 +62,7 @@ function AppContainer() {
               BookingDetailsScreen gets mode from state. */}
           <Route path="/book-ride" element={<RideBookingScreen />} />
           <Route path="/booking-details" element={<BookingDetailsScreen />} />
+          <Route path="/add-guardian-contact" element={<AddGuardianContactScreen />} />
         </Routes>
       </main>
       <BottomTabNavigation />
