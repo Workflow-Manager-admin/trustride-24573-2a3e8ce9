@@ -165,6 +165,18 @@ function RideStatusScreen() {
   // Show emoji feedback modal as soon as status transitions to Completed, regardless of flow
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
 
+  // Effect: when ride is "In Progress" and ETA reaches 0, set status to Completed
+  useEffect(() => {
+    if (
+      rideStatus &&
+      (rideStatus === "In Progress" || rideStatus === "In Progress 🚗") &&
+      liveEta <= 0
+    ) {
+      setRideStatus("Completed");
+    }
+    // eslint-disable-next-line
+  }, [liveEta, rideStatus]);
+
   // NEW: ensure modal dialog always persists for feedback input when ride completes for the first time
   useEffect(() => {
     if (rideStatus === "Completed") {
@@ -421,7 +433,7 @@ function RideStatusScreen() {
         <div style={{ color: "var(--text-secondary)", fontSize: 14 }}>
           <b>Driver:</b> <span style={{ color: "var(--accent)" }}>{driverName}</span>
           {" • "}
-          ETA: <span style={{ color: "var(--primary)" }}>{etaMinutes} min</span>
+          ETA: <span style={{ color: "var(--primary)" }}>{Math.max(0, liveEta)} min</span>
         </div>
         <div style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 2 }}>
           <b>Fare:</b> {fare !== "—" ? <>₹{fare}</> : "—"}
