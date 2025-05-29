@@ -192,6 +192,61 @@ function RideStatusScreen() {
         </div>
       )}
 
+      {/* Ride Start Notification Modal */}
+      {showRideStartNotif && (
+        <div
+          style={{
+            position: "fixed",
+            zIndex: 4200,
+            inset: 0,
+            background: "rgba(0,119,182,0.12)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center"
+          }}
+          aria-modal="true"
+          role="dialog"
+        >
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 19,
+              boxShadow: "0 8px 44px rgba(0,119,182,.13)",
+              maxWidth: 355,
+              width: "92vw",
+              padding: "2.4rem 1.2rem 1.5rem 1.2rem",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              border: "2px solid var(--accent)"
+            }}
+          >
+            <span style={{ fontSize: 47, marginBottom: 7, color: "var(--primary)" }}>🚗</span>
+            <div className="heading-2" style={{ fontWeight: 700, fontSize: 22, color: "var(--accent)", marginBottom: 7, textAlign: "center" }}>
+              Your ride has started!
+            </div>
+            <div style={{ color: "var(--primary)", fontWeight: 600, fontSize: 16, marginBottom: 11, textAlign: "center" }}>
+              Stay seated and fasten your seatbelt. Wishing you a safe journey!
+            </div>
+            <button
+              className="btn btn-large"
+              style={{
+                borderRadius: 22,
+                minWidth: 110,
+                fontWeight: 600,
+                fontSize: 15,
+                background: "var(--primary)",
+                marginTop: 5,
+                marginBottom: -5
+              }}
+              onClick={() => setShowRideStartNotif(false)}
+              tabIndex={0}
+              type="button"
+            >OK</button>
+          </div>
+        </div>
+      )}
+
       {/* Section: Ride Status & Details */}
       <section style={sectionCardStyle}>
         <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 9 }}>
