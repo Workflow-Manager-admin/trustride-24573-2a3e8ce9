@@ -17,7 +17,7 @@ const mockRides = [
     driver: "Priya Shah",
     departure: new Date(Date.now() + 60 * 60000), // 1 hour from now
     eta: new Date(Date.now() + 90 * 60000), // e.g., 1.5hrs from now, set as Date
-    price: 3.50,
+    price: 210,
     trustIndex: 95,
     ecoScore: 28,
   },
@@ -26,7 +26,7 @@ const mockRides = [
     driver: "Fatima Hossain",
     departure: new Date(Date.now() + 100 * 60000), // 1h40m
     eta: new Date(Date.now() + 130 * 60000),
-    price: 2.90,
+    price: 180,
     trustIndex: 91,
     ecoScore: 32,
   },
@@ -35,7 +35,7 @@ const mockRides = [
     driver: "Robin Thomas",
     departure: new Date(Date.now() + 30 * 60000), // 30min
     eta: new Date(Date.now() + 70 * 60000),
-    price: 2.50,
+    price: 150,
     trustIndex: 88,
     ecoScore: 23,
   },
@@ -125,10 +125,10 @@ export default function RideResults({ onBack, onChooseRide }) {
             />
             <InfoBox
               icon="💸"
-              label="Price"
+              label="Fare"
               value={
                 <span>
-                  <span style={{ fontWeight: 650, color: "#00A896" }}>${ride.price.toFixed(2)}</span>
+                  <span style={{ fontWeight: 650, color: "#00A896" }}>₹{ride.price.toLocaleString("en-IN")}</span>
                   <span style={{
                     color: "#7ec9c9", fontWeight: 520, fontSize: 13.5, marginLeft: 2
                   }}>
