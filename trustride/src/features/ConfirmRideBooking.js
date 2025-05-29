@@ -104,44 +104,36 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
 
   // Show full confirmation replacement after booking success
   if (success) {
-    // Determine booking/message type: open pooling (auto-match) or driver confirm (hosted ride).
-    // We assume ride.rideType can be either "open-pooling" | "pooled" | "hosted" | "driver-confirm" | "instant" | undefined.
-    // If ride.rideType is "open-pooling" or "instant", auto-match; otherwise, driver is notified.
-    let bookingMsgType = "driver-confirm";
-    if (
-      String(ride.rideType || "")
-        .toLowerCase()
-        .includes("open")
-      || String(ride.rideType || "")
-        .toLowerCase()
-        .includes("instant")
-    ) {
-      bookingMsgType = "auto-match";
-    }
-    // Heuristic: fallback to "auto-match" if the ride has no driver (possible in pure pooling); fallback to "driver-confirm" if "driver" exists.
-    if (!ride.driver) bookingMsgType = "auto-match";
+    // Determine confirmation message: open pooling = auto-match, otherwise notify driver/host.
+    // TrustRide's minimalist, branded, visible confirmation.
 
-    let confirmTitle =
-      bookingMsgType === "auto-match"
-        ? "You’re Auto-Matched! 🎯"
-        : "Booking Sent! 🚗";
+    // Preferred signal: ride.openPooling (boolean) takes precedence if present.
+    const isOpenPooling =
+      (typeof ride.openPooling === "boolean" && ride.openPooling) ||
+      (String(ride.rideType || "").toLowerCase().includes("open")) ||
+      (String(ride.rideType || "").toLowerCase().includes("instant")) ||
+      !ride.driver; // fallback if no driver object (common in open pooling demo/mock)
 
-    let confirmDesc =
-      bookingMsgType === "auto-match"
-        ? "Your TrustRide seat is instantly secured in an open ride pool. See you at the pickup point!"
-        : "We've sent your booking request to the verified driver. When confirmed, you'll receive a notification and ride contact details.";
+    let confirmTitle = isOpenPooling
+      ? "You’ve Been Auto‑Matched! 🎯"
+      : "Booking Confirmed! 🚗";
 
-    let subDesc =
-      bookingMsgType === "auto-match"
-        ? "Ride details and pickup instructions are available below. You can chat or cancel anytime via your ‘Active Rides’."
-        : "Await the driver's confirmation—if accepted, you’ll be notified right away.";
+    // Main confirmation message (notification to driver or auto‑match)
+    let confirmMsg = isOpenPooling
+      ? "Your ride is instantly confirmed. You’ve been auto‑matched in a TrustRide open pooling ride."
+      : "Notification sent to driver/ride host for approval.";
+
+    // Additional subdesc (consistent TrustRide guidance)
+    let subDesc = isOpenPooling
+      ? "Ride details and pickup instructions are below. Proceed to your meeting point. You can chat or cancel anytime via ‘Active Rides’."
+      : "Await the driver’s confirmation—when accepted, you’ll be notified right away.";
 
     return (
       <div
         style={{
           paddingTop: 44,
-          paddingBottom: 35,
-          maxWidth: 435,
+          paddingBottom: 36,
+          maxWidth: 430,
           margin: "0 auto",
           display: "flex",
           flexDirection: "column",
@@ -149,36 +141,40 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         }}
         aria-live="polite"
       >
+        {/* Confirmation Card with prominent message */}
         <section
           className="card"
           style={{
             background: "#fff",
             borderRadius: "var(--radius-main)",
-            boxShadow: "0 2px 18px rgba(0,119,182,0.09)",
-            border: "1.6px solid var(--color-border)",
-            padding: "38px 28px",
-            marginBottom: 22,
-            marginTop: 12,
+            boxShadow: "0 3px 22px rgba(0,119,182,0.13)",
+            border: "2.2px solid " + (isOpenPooling ? "var(--color-accent)" : "var(--color-primary)"),
+            padding: "38px 28px 31px 28px",
+            marginBottom: 26,
+            marginTop: 15,
             width: "100%",
             maxWidth: 420,
             textAlign: "center",
             display: "flex",
             flexDirection: "column",
-            gap: 16,
+            gap: 14,
             alignItems: "center",
+            position: "relative",
+            zIndex: 1,
           }}
         >
           <span
             className="logo-symbol"
             aria-label="TrustRide"
             style={{
-              fontSize: 42,
-              color: "var(--color-accent)",
-              marginBottom: 8,
-              marginTop: -5,
+              fontSize: 44,
+              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
+              marginBottom: 10,
+              marginTop: -11,
               display: "inline-block",
-              transform: "rotate(-14deg)",
-              letterSpacing: -1,
+              transform: "rotate(-16deg)",
+              letterSpacing: -1.5,
+              userSelect: "none",
             }}
           >
             🚗
@@ -186,66 +182,81 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           <div
             className="subtitle"
             style={{
-              fontWeight: 800,
-              color: "var(--color-accent)",
-              fontSize: 21,
-              letterSpacing: -0.5,
+              fontWeight: 870,
+              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
+              fontSize: 23,
+              letterSpacing: "-1px",
               marginBottom: 2,
               marginTop: 2,
+              userSelect: "none",
             }}
           >
             {confirmTitle}
           </div>
+          {/* Main prominent confirmation message */}
           <div
             className="description"
             style={{
-              fontWeight: 750,
-              color: "#00A896",
-              fontSize: 16.5,
-              marginTop: 0,
-              marginBottom: 5,
+              background: isOpenPooling
+                ? "linear-gradient(90deg, #f2faf7 50%, #e3f3ff 100%)"
+                : "linear-gradient(90deg, #f4fbf9 60%, #eaf9ff 100%)",
+              fontWeight: 800,
+              color: isOpenPooling ? "#00A896" : "#0077B6",
+              fontSize: 18.5,
+              margin: "9px 0 10px 0",
+              padding: "15px 11px",
+              borderRadius: 13,
+              border: "1.4px solid var(--color-border)",
+              boxShadow: "0 2.5px 12px 0 rgba(0,168,150,0.05)",
+              textAlign: "center",
+              lineHeight: 1.45,
+              letterSpacing: "-0.5px",
             }}
           >
-            {confirmDesc}
+            {confirmMsg}
           </div>
 
+          {/* Card: stat summary below */}
           <div
             style={{
               width: "100%",
               display: "flex",
               flexDirection: "column",
-              gap: 15,
+              gap: 12,
               alignItems: "center",
               background: "#f8fafb",
               borderRadius: 16,
               border: "1px solid var(--color-border)",
-              boxShadow: "0 1.4px 12px rgba(0,168,150,0.03)",
-              padding: "19px 6px",
-              marginTop: 5,
-              marginBottom: 7,
+              boxShadow: "0 1.4px 11px rgba(0,168,150,0.03)",
+              padding: "14px 8px 10px 8px",
+              marginTop: 3,
+              marginBottom: 6,
             }}
           >
             {/* Ride/driver summary */}
             <div
               style={{
-                fontSize: 18,
+                fontSize: 17.3,
                 fontWeight: 700,
                 color: "var(--color-primary)",
                 marginBottom: 2,
                 wordBreak: "break-word",
                 marginTop: 0,
+                textShadow: "0 1px 7px #f3ffff69",
               }}
             >
               {ride.driver
                 ? `${ride.driver} (Verified Driver)`
-                : "Pooled Ride — Auto Match"}
+                : isOpenPooling
+                  ? "Open Pooling"
+                  : "Ride"}
             </div>
             <div
               style={{
                 display: "flex",
                 flexWrap: "wrap",
                 justifyContent: "center",
-                gap: 22,
+                gap: 21,
                 marginBottom: 3,
               }}
             >
@@ -289,7 +300,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                gap: 14,
+                gap: 13,
                 marginBottom: 0,
               }}
             >
@@ -307,27 +318,31 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               />
             </div>
           </div>
+          {/* Subdesc: guidance/tip */}
           <div
             className="description"
             style={{
-              color: "var(--color-accent)",
-              fontWeight: 740,
-              fontSize: 17,
-              marginBottom: (bookingMsgType === "auto-match" ? 2 : 7),
-              marginTop: 0,
+              color: isOpenPooling ? "var(--color-accent)" : "var(--color-primary)",
+              fontWeight: 750,
+              fontSize: 16.7,
+              marginBottom: 5,
+              marginTop: 11,
               textAlign: "center",
+              letterSpacing: "-0.3px",
             }}
           >
             {subDesc}
           </div>
+          {/* Minimal instructions for next action */}
           <div
             className="description"
             style={{
               marginTop: 12,
               marginBottom: 0,
-              fontSize: 14.2,
+              fontSize: 14,
               color: "var(--color-muted)",
               textAlign: "center",
+              fontWeight: 500,
             }}
           >
             <div>
@@ -351,14 +366,12 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
               <li>
                 Arrive <b>on time</b> at the pickup point.
               </li>
-              {bookingMsgType === "driver-confirm" && (
-                <li>
-                  Await driver <b>confirmation</b> for seat allocation.
-                </li>
+              {!isOpenPooling && (
+                <li><b>Await approval:</b> You’ll receive a notification if the driver/host confirms your booking.</li>
               )}
-              {bookingMsgType === "auto-match" && (
+              {isOpenPooling && (
                 <li>
-                  Your <b>auto-match</b> is successful; you may proceed directly to the meeting point.
+                  Auto-match successful — proceed to pickup. Check your ‘Active Rides’ for details.
                 </li>
               )}
               <li>
