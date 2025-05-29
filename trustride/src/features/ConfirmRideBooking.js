@@ -75,7 +75,245 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
     }, 1100);
   }
 
-  // Modern TrustRide card layout
+  // Show full confirmation replacement after booking success
+  if (success) {
+    return (
+      <div
+        style={{
+          paddingTop: 44,
+          paddingBottom: 35,
+          maxWidth: 435,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+        aria-live="polite"
+      >
+        <section
+          className="card"
+          style={{
+            background: "#fff",
+            borderRadius: "var(--radius-main)",
+            boxShadow: "0 2px 18px rgba(0,119,182,0.09)",
+            border: "1.6px solid var(--color-border)",
+            padding: "38px 28px",
+            marginBottom: 22,
+            marginTop: 12,
+            width: "100%",
+            maxWidth: 420,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            gap: 14,
+            alignItems: "center",
+          }}
+        >
+          <span
+            className="logo-symbol"
+            aria-label="TrustRide"
+            style={{
+              fontSize: 40,
+              color: "var(--color-accent)",
+              marginBottom: 8,
+              marginTop: -5,
+              display: "inline-block",
+              transform: "rotate(-14deg)",
+              letterSpacing: -1,
+            }}
+          >🚗</span>
+          <div
+            className="subtitle"
+            style={{
+              fontWeight: 800,
+              color: "var(--color-accent)",
+              fontSize: 20,
+              letterSpacing: -0.5,
+              marginBottom: 2,
+            }}
+          >
+            Booking Confirmed
+          </div>
+          <h2
+            className="title"
+            style={{
+              fontSize: "2.1rem",
+              fontWeight: 800,
+              background:
+                "linear-gradient(90deg, var(--color-primary), var(--color-accent))",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              margin: "0 0 5px 0",
+              lineHeight: 1.2,
+            }}
+          >
+            Your TrustRide is Ready!
+          </h2>
+          <div
+            className="description"
+            style={{
+              fontSize: 16.5,
+              color: "var(--color-text-secondary)",
+              maxWidth: 310,
+              margin: "0 auto 5px",
+              fontWeight: 500,
+            }}
+          >
+            Thank you! Your ride is confirmed and your seat is reserved.
+          </div>
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: 15,
+              alignItems: "center",
+              background: "#f8fafb",
+              borderRadius: 16,
+              border: "1px solid var(--color-border)",
+              boxShadow: "0 1.4px 12px rgba(0,168,150,0.03)",
+              padding: "19px 6px",
+              marginTop: 8,
+              marginBottom: 6,
+            }}
+          >
+            {/* Prominent summary of ride details */}
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 700,
+                color: "var(--color-primary)",
+                marginBottom: 2,
+              }}
+            >
+              {ride.driver} (Verified Driver)
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "center",
+                gap: 22,
+                marginBottom: 3,
+              }}
+            >
+              <StatBox
+                icon="⏰"
+                label="Departure"
+                value={
+                  <span>
+                    {formatDate(ride.departure)}
+                    {" "}
+                    {formatTime(ride.departure)}
+                  </span>
+                }
+                color="var(--color-primary)"
+              />
+              <StatBox
+                icon="💸"
+                label="Fare"
+                value={
+                  <span>
+                    <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>
+                      ${ride.price.toFixed(2)}
+                    </span>
+                    <span
+                      style={{
+                        color: "#7ec9c9",
+                        fontWeight: 500,
+                        fontSize: 13.2,
+                        marginLeft: 2,
+                      }}
+                    >
+                      /seat
+                    </span>
+                  </span>
+                }
+                color="#00A896"
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 14,
+                marginBottom: 0,
+              }}
+            >
+              <Badge
+                label="Trust Index"
+                value={ride.trustIndex}
+                icon="🛡️"
+                color="var(--color-accent)"
+              />
+              <Badge
+                label="Eco Score"
+                value={ride.ecoScore}
+                icon="🍃"
+                color="var(--color-primary)"
+              />
+            </div>
+          </div>
+          <div
+            className="description"
+            style={{
+              color: "var(--color-accent)",
+              fontWeight: 740,
+              fontSize: 17,
+              marginBottom: 0,
+              marginTop: 0,
+            }}
+          >
+            🎉 You're all set!
+          </div>
+          <div
+            className="description"
+            style={{
+              marginTop: 13,
+              marginBottom: 0,
+              fontSize: 14.5,
+              color: "var(--color-text-secondary)",
+            }}
+          >
+            <div style={{ marginBottom: 2 }}>
+              <strong>Instructions:</strong>
+            </div>
+            <ul
+              style={{
+                listStyle: "disc inside",
+                margin: 0,
+                padding: 0,
+                textAlign: "left",
+                color: "var(--color-text-secondary)",
+                fontSize: 14,
+                fontWeight: 500,
+                lineHeight: 1.4,
+                maxWidth: 320,
+                marginLeft: "auto",
+                marginRight: "auto",
+              }}
+            >
+              <li>
+                Arrive <b>on time</b> at the pickup point.
+              </li>
+              <li>
+                Contact your driver <b>{ride.driver}</b> if needed.
+              </li>
+              <li>
+                <span style={{ color: "#00A896" }}>
+                  For support or changes, contact TrustRide support.
+                </span>
+              </li>
+            </ul>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // Modern TrustRide card layout (default: pre-confirm UI)
   return (
     <div style={{ paddingTop: 44, paddingBottom: 35, maxWidth: 435, margin: "0 auto" }}>
       <header style={{ marginBottom: 23, textAlign: "center" }}>
@@ -268,21 +506,6 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           {submitting ? "Booking..." : success ? "Confirmed!" : "Confirm Booking"}
         </button>
       </div>
-      {/* Confirmation message */}
-      {success && (
-        <div
-          style={{
-            marginTop: 27,
-            color: "var(--color-accent)",
-            fontWeight: 770,
-            fontSize: 18,
-            textAlign: "center"
-          }}
-          aria-live="polite"
-        >
-          🎉 Your ride is confirmed!
-        </div>
-      )}
       <div className="description" style={{
         marginTop: 23,
         fontSize: 13,
