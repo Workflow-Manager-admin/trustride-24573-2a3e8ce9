@@ -4,6 +4,7 @@ import BottomTabBar from './components/BottomTabBar';
 import Login from './components/Login';
 import RideResults from './features/RideResults';
 import ConfirmRideBooking from './features/ConfirmRideBooking';
+import RideStatus from './features/RideStatus';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -39,11 +40,15 @@ function App() {
     setShowRideResults(true);
   };
 
-  // Handler after successful confirmation/booked ride (return to home tab after confirmation)
-  const handleRideConfirmed = () => {
+  // Handler after successful confirmation/booked ride (show RideStatus)
+  const [activeRide, setActiveRide] = useState(null);
+  const handleRideConfirmed = (rideDetails) => {
+    // Use latest ride as confirmed, move to RideStatus screen.
+    // rideDetails can be extra info, but always have selectedRide info as base.
+    setActiveRide(selectedRide ? { ...selectedRide, ...rideDetails } : null);
     setSelectedRide(null);
     setShowRideResults(false);
-    setActiveTab('home');
+    setActiveTab('ride-status'); // Use tab or a flag for status
   };
 
   // Show Login until an institution-verified user logs in
@@ -91,6 +96,36 @@ function App() {
         <BottomTabBar
           activeTab={activeTab}
           onTabChange={tab => {
+            setActiveTab(tab);
+            setShowRideResults(false);
+            setSelectedRide(null);
+          }}
+        />
+      </div>
+    );
+  }
+
+  // Show active RideStatus page if a ride is confirmed and "live"
+  if (activeTab === 'ride-status' && activeRide) {
+    return (
+      <div className="app">
+        <nav className="navbar" role="navigation">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="logo" aria-label="TrustRide Logo">
+              <span className="logo-symbol">🚗</span>
+              TrustRide
+            </span>
+          </div>
+        </nav>
+        <main style={{ flex: 1 }}>
+          <div className="container">
+            <RideStatus ride={activeRide} />
+          </div>
+        </main>
+        <BottomTabBar
+          activeTab={activeTab}
+          onTabChange={tab => {
+            // Preserve active ride if user wants to return to status
             setActiveTab(tab);
             setShowRideResults(false);
             setSelectedRide(null);
