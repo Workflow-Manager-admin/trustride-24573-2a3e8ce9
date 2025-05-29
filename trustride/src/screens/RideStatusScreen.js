@@ -3,9 +3,10 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 /**
  * PUBLIC_INTERFACE
- * RideStatusScreen — shows ride status (Scheduled/Enroute), estimated time, live (mock) driver tracker, and safety tools.
+ * RideStatusScreen — shows ride status (Scheduled/In Progress), estimated time, live (mock) driver tracker, and safety tools.
  * Features:
- *  - Displays ride status as "Scheduled" (can toggle to "Enroute" after brief delay).
+ *  - Displays ride status as "Scheduled" and auto-transitions to "In Progress" (with notification).
+ *  - Prominent visual notification when ride starts.
  *  - Shows booking, ride, and guardian details from navigation state robustly.
  *  - Mock driver/vehicle animated tracker with ETA.
  *  - If guardian is set, activates Buddy Safety—shows info that guardian has been notified and mock live GPS feed.
