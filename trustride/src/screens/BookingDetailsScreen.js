@@ -75,6 +75,7 @@ function BookingDetailsScreen(props) {
   // Navigates to /add-guardian-contact with booking data in state
   function handleBook(ride) {
     window.scrollTo(0, 0); // UX improvement on navigation
+    // pass key booking, ride, and mode data in state
     navigate('/add-guardian-contact', {
       state: {
         selectedRide: ride,
@@ -82,6 +83,11 @@ function BookingDetailsScreen(props) {
         destination,
         mode: modeLabel,
         modeIcon: modeIcon,
+        booking: {
+          pickup,
+          destination,
+        },
+        ride, // alias for selectedRide
       },
     });
   }

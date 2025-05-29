@@ -33,15 +33,38 @@ function AddGuardianContactScreen() {
     }
     // In prod: Save guardian contact in account/profile, session, or ride context.
     // For now: Pass along to next confirm screen in navigation state.
+    // Always preserve selectedRide, pickup, destination, and mode
+    // Guardian can be null or the valid contact
     navigate("/confirm-booking", {
-      state: { ...prevState, guardianContact: guardian },
+      state: {
+        ...prevState,
+        guardianContact: guardian || null,
+        // Optionally group main "booking" info for clarity
+        booking: {
+          pickup: prevState.pickup,
+          destination: prevState.destination,
+        },
+        ride: prevState.selectedRide,
+        mode: prevState.mode,
+        modeIcon: prevState.modeIcon,
+      },
     });
   }
 
   // User opts to skip guardian contact
   function handleSkip() {
     navigate("/confirm-booking", {
-      state: { ...prevState, guardianContact: null },
+      state: {
+        ...prevState,
+        guardianContact: null,
+        booking: {
+          pickup: prevState.pickup,
+          destination: prevState.destination,
+        },
+        ride: prevState.selectedRide,
+        mode: prevState.mode,
+        modeIcon: prevState.modeIcon,
+      },
     });
   }
 
