@@ -388,7 +388,15 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
           <StatBox
             icon="🕓"
             label="ETA"
-            value={ride.eta}
+            value={
+              // Defensive: gracefully handle both string and Date types
+              typeof ride.eta === 'string'
+                ? ride.eta
+                : (ride.eta instanceof Date
+                    ? formatTime(ride.eta)
+                    : (ride.eta ? String(ride.eta) : 'N/A')
+                  )
+            }
             color="var(--color-accent)"
           />
           <StatBox
@@ -396,7 +404,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
             label="Fare"
             value={
               <span>
-                <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>${ride.price.toFixed(2)}</span>
+                <span style={{ fontWeight: 800, color: "#00A896", fontSize: 17 }}>${typeof ride.price === "number" ? ride.price.toFixed(2) : ride.price}</span>
                 <span style={{ color: "#7ec9c9", fontWeight: 500, fontSize: 13.2, marginLeft: 2 }}>/seat</span>
               </span>
             }
