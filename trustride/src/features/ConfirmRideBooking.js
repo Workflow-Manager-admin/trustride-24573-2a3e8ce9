@@ -20,6 +20,8 @@ const DEFAULT_RULES = [
   "Be punctual at the pickup point.",
   "TrustRide is a verified community. Report issues to support promptly.",
 ];
+// Example payment methods — in real app these would come from backend/ride object
+const DEFAULT_PAYMENT_METHODS = ["UPI", "Cash", "Card"];
 
 function formatTime(time) {
   const d = new Date(time);
@@ -31,13 +33,25 @@ function formatDate(time) {
   return d.toLocaleDateString([], { year: "numeric", month: "short", day: "numeric" });
 }
 
+// PUBLIC_INTERFACE
 export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   // Local state: Checkbox for rules, feedback on confirm interaction
   const [agreed, setAgreed] = useState(false);
-    // New: Explicit review/confirmation for ETA and Fare (14.7hr/AMPM awareness)
+  // New: Explicit review/confirmation for ETA and Fare (14.7hr/AMPM awareness)
   const [etaFareReviewed, setEtaFareReviewed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // Payment method selection state
+  // Use ride.paymentMethods if available, else default to all
+  const paymentMethods = (ride && Array.isArray(ride.paymentMethods) && ride.paymentMethods.length > 0)
+    ? ride.paymentMethods
+    : DEFAULT_PAYMENT_METHODS;
+  const multiplePayments = paymentMethods.length > 1;
+  const [selectedPayment, setSelectedPayment] = useState(
+    multiplePayments ? "" : paymentMethods[0] // required if multiple, else defaulted/disabled
+  );
+  const [touchedPayment, setTouchedPayment] = useState(false);
 
   // Format time in 12-hour AM/PM for ETA block, fallback to string
   function formatTime12AMPM(time) {
@@ -75,12 +89,16 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
 
   // PUBLIC_INTERFACE
   function handleConfirm() {
+    setTouchedPayment(true);
+    // If multi and not picked, do not proceed
+    if (multiplePayments && !selectedPayment) return;
     setSubmitting(true);
     // Simulate a booking request (in a real app, async API here)
     setTimeout(() => {
       setSubmitting(false);
       setSuccess(true);
-      onConfirm && onConfirm();
+      // onConfirm is called with paymentMethod info (can be expanded as API evolves)
+      onConfirm && onConfirm({ paymentMethod: selectedPayment || paymentMethods[0] });
     }, 1100);
   }
 
