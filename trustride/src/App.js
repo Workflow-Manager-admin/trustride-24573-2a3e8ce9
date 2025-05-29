@@ -1,19 +1,18 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import './App.css';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
+  useNavigate,
 } from 'react-router-dom';
 
-import React, { useCallback } from 'react';
 import BottomTabNavigation from './navigation/BottomTabNavigation';
 import HomeScreen from './screens/HomeScreen';
 import EcoScoreScreen from './screens/EcoScoreScreen';
 import TrustSafetyScreen from './screens/TrustSafetyScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SignInScreen from './screens/SignInScreen';
-import { useNavigate } from 'react-router-dom';
 
 // Ride booking screen stub to redirect to after sign-in
 function BookRideScreen() {
@@ -45,6 +44,7 @@ function BookRideScreen() {
     </div>
   );
 }
+
 function TransportCard({icon, label}) {
   return (
     <div style={{
@@ -77,8 +77,7 @@ function TransportCard({icon, label}) {
  * PUBLIC_INTERFACE
  * The TrustRide App main entry – minimalist, on-brand layout, routing, and navigation.
  */
-function App() {
-  // Allows navbar Sign In button to navigate (must use <Routes location> context)
+function AppContainer() {
   const navigate = useNavigate();
   const handleNavSignIn = useCallback(() => navigate('/sign-in'), [navigate]);
 
@@ -109,6 +108,14 @@ function App() {
       </main>
       <BottomTabNavigation />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContainer />
+    </Router>
   );
 }
 
