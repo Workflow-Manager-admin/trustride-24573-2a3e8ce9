@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import BottomTabBar from './components/BottomTabBar';
 import Login from './components/Login';
+import RideResults from './features/RideResults';
 
 // PUBLIC_INTERFACE
 function App() {
@@ -10,6 +11,14 @@ function App() {
 
   // Navigation state (simulate routing)
   const [activeTab, setActiveTab] = useState('home');
+  // RideResults navigation flag
+  const [showRideResults, setShowRideResults] = useState(false);
+
+  // Provide navigation for RideDiscovery → RideResults
+  useEffect(() => {
+    window._navigateToRideResults = () => setShowRideResults(true);
+    return () => { window._navigateToRideResults = null; };
+  }, []);
 
   // Show Login until an institution-verified user logs in
   if (!user || !user.verified) {
@@ -28,6 +37,31 @@ function App() {
             <Login onLogin={setUser} />
           </div>
         </main>
+      </div>
+    );
+  }
+
+  // Handle RideResults special rendering
+  if (showRideResults) {
+    return (
+      <div className="app">
+        <nav className="navbar" role="navigation">
+          <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span className="logo" aria-label="TrustRide Logo">
+              <span className="logo-symbol">🚗</span>
+              TrustRide
+            </span>
+          </div>
+        </nav>
+        <main style={{ flex: 1 }}>
+          <div className="container">
+            <RideResults onBack={() => setShowRideResults(false)} />
+          </div>
+        </main>
+        <BottomTabBar activeTab={activeTab} onTabChange={tab => {
+          setActiveTab(tab);
+          setShowRideResults(false);
+        }} />
       </div>
     );
   }
