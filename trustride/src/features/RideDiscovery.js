@@ -352,6 +352,24 @@ export default function RideDiscovery() {
   const [pickupLatLng, setPickupLatLng] = useState(undefined);
   const [destLatLng, setDestLatLng] = useState(undefined);
 
+  // --- NEW: Ride time picker states ---
+  // "now" or "later"
+  const [rideTimeType, setRideTimeType] = useState("now");
+  // If scheduled, pick a date+time (default: today, next half-hour)
+  const today = new Date().toISOString().slice(0, 10);
+  const nowMinutes = new Date().getMinutes();
+  // Default: round up to next half-hour for nice prefill
+  function getNextHalfHour() {
+    const now = new Date();
+    now.setMinutes(nowMinutes < 30 ? 30 : 0, 0, 0);
+    if (nowMinutes >= 30) now.setHours(now.getHours() + 1);
+    return now.toISOString().slice(11, 16); // "HH:MM"
+  }
+  const [scheduledDate, setScheduledDate] = useState(today);
+  const [scheduledTime, setScheduledTime] = useState(getNextHalfHour());
+  // Flexible time range: ±15/±30min (default: 15)
+  const [timeFlex, setTimeFlex] = useState(15);
+
   // Commonly visited/used addresses (in real app: fetched/tracked; here: mock)
   const COMMON_LOCATIONS = [
     { label: "Campus", address: "Greenwood University Hostel Gate" },
@@ -685,6 +703,171 @@ A confirmation will be sent (mock).`
             />
           </div>
         </div>
+      </section>
+
+      {/* DATE/TIME PICKER SECTION */}
+      <section
+        className="card"
+        aria-label="Schedule ride time"
+        style={{
+          margin: "0 0 20px 0",
+          borderRadius: "var(--radius-main)",
+          boxShadow: "0 2px 10px rgba(0,168,150,0.05)",
+          border: "1.2px solid var(--color-border)",
+          padding: "19px 14px 19px 14px",
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          gap: 11,
+        }}
+      >
+        <div style={{
+          fontWeight: 700,
+          fontSize: 16.5,
+          color: "var(--color-primary)",
+          marginBottom: 4,
+          display: "flex",
+          gap: 8,
+          alignItems: "center"
+        }}>
+          <span role="img" aria-label="clock" style={{ fontSize: 17, marginRight: 2 }}>⏰</span>
+          Ride Timing
+        </div>
+
+        {/* Now/later radio group */}
+        <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 4 }}>
+          <label style={{ fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+            <input
+              type="radio"
+              name="ride-time-type"
+              checked={rideTimeType === "now"}
+              onChange={() => setRideTimeType("now")}
+              style={{ accentColor: "var(--color-accent)" }}
+            />
+            Now
+          </label>
+          <label style={{ fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+            <input
+              type="radio"
+              name="ride-time-type"
+              checked={rideTimeType === "later"}
+              onChange={() => setRideTimeType("later")}
+              style={{ accentColor: "var(--color-primary)" }}
+            />
+            Schedule for Later
+          </label>
+        </div>
+
+        {/* Show time picker if "Schedule for Later" selected */}
+        {rideTimeType === "later" && (
+          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+            <label htmlFor="date-picker"
+              style={{
+                fontWeight: 500,
+                fontSize: 13.5,
+                color: "var(--color-muted)",
+                marginBottom: 0, marginRight: 3,
+              }}
+            >
+              Date
+            </label>
+            <input
+              id="date-picker"
+              type="date"
+              value={scheduledDate}
+              min={today}
+              onChange={(e) => setScheduledDate(e.target.value)}
+              style={{
+                border: "1.1px solid var(--color-border)",
+                borderRadius: 7,
+                padding: "7px",
+                fontSize: "1em",
+                color: "var(--color-text-primary)",
+                background: "#f8fafb",
+                outline: "none",
+                fontWeight: 500,
+              }}
+            />
+            <label htmlFor="time-picker"
+              style={{
+                fontWeight: 500,
+                fontSize: 13.5,
+                color: "var(--color-muted)",
+                marginRight: 3, marginLeft: 5
+              }}
+            >
+              Time
+            </label>
+            <input
+              id="time-picker"
+              type="time"
+              value={scheduledTime}
+              onChange={(e) => setScheduledTime(e.target.value)}
+              style={{
+                border: "1.1px solid var(--color-border)",
+                borderRadius: 7,
+                padding: "7px",
+                fontSize: "1em",
+                color: "var(--color-text-primary)",
+                background: "#f8fafb",
+                outline: "none",
+                fontWeight: 500,
+              }}
+            />
+
+            {/* ±Time range (15/30min) */}
+            <div style={{ marginLeft: 7 }}>
+              <span style={{ fontSize: 13.1, color: "var(--color-text-secondary)", marginRight: 5 }}>
+                Flexibility:
+              </span>
+              <button
+                type="button"
+                className="tr-chip"
+                style={{
+                  padding: "4px 12px",
+                  fontSize: 13.5,
+                  color: timeFlex === 15 ? "var(--color-accent)" : "var(--color-primary)",
+                  background: timeFlex === 15
+                    ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
+                    : "linear-gradient(90deg, #e3f3ff 70%, #ecfcf7 99%)",
+                  border: "1px solid var(--color-border)",
+                  marginLeft: 0,
+                  marginRight: 2,
+                  opacity: 1,
+                  fontWeight: 600,
+                }}
+                onClick={() => setTimeFlex(15)}
+                tabIndex={0}
+                aria-label="±15 min"
+              >
+                ±15 min
+              </button>
+              <button
+                type="button"
+                className="tr-chip"
+                style={{
+                  padding: "4px 12px",
+                  fontSize: 13.5,
+                  color: timeFlex === 30 ? "var(--color-accent)" : "var(--color-primary)",
+                  background: timeFlex === 30
+                    ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
+                    : "linear-gradient(90deg, #e3f3ff 70%, #ecfcf7 99%)",
+                  border: "1px solid var(--color-border)",
+                  marginLeft: 0,
+                  opacity: 1,
+                  fontWeight: 600,
+                }}
+                onClick={() => setTimeFlex(30)}
+                tabIndex={0}
+                aria-label="±30 min"
+              >
+                ±30 min
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* If "Now" is picked, show the ±time fleixibility? Optionally, but hide for now, keep minimal */}
       </section>
 
       {/* Filter bar */}
