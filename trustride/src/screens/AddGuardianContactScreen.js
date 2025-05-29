@@ -23,6 +23,19 @@ function AddGuardianContactScreen() {
     return phoneOk || emailOk;
   }
 
+  // Helper: Checks if minimum booking state is present for navigation flow
+  function isBookingDataPresent(state) {
+    // Must minimally have ride, pickup, destination, mode
+    const rideObj = state.selectedRide || state.ride;
+    const hasRide = rideObj && typeof rideObj === 'object' && Object.keys(rideObj).length > 0;
+    return (
+      hasRide &&
+      (state.pickup || (state.booking && state.booking.pickup)) &&
+      (state.destination || (state.booking && state.booking.destination)) &&
+      (state.mode || state.transportMode)
+    );
+  }
+
   // User adds a guardian contact, proceeds to confirmation
   function handleContinue(e) {
     e.preventDefault();
@@ -31,39 +44,55 @@ function AddGuardianContactScreen() {
       setError("Provide a valid phone number or email for your guardian contact.");
       return;
     }
-    // In prod: Save guardian contact in account/profile, session, or ride context.
-    // For now: Pass along to next confirm screen in navigation state.
-    // Always preserve selectedRide, pickup, destination, and mode
-    // Guardian can be null or the valid contact
+    // Defensive: Check prior booking state
+    if (!isBookingDataPresent(prevState)) {
+      // Route user back to booking details page
+      navigate("/book-ride", {
+        replace: true,
+        state: { error: "Booking details missing. Please start again." },
+      });
+      return;
+    }
+    // Pass along complete state for confirmation
+    const ride = prevState.selectedRide || prevState.ride;
+    const mode = prevState.mode || prevState.transportMode || '';
+    const modeIcon = prevState.modeIcon || '';
+    const pickup = prevState.pickup || (prevState.booking && prevState.booking.pickup) || '';
+    const destination = prevState.destination || (prevState.booking && prevState.booking.destination) || '';
     navigate("/confirm-booking", {
       state: {
         ...prevState,
         guardianContact: guardian || null,
-        // Optionally group main "booking" info for clarity
-        booking: {
-          pickup: prevState.pickup,
-          destination: prevState.destination,
-        },
-        ride: prevState.selectedRide,
-        mode: prevState.mode,
-        modeIcon: prevState.modeIcon,
+        booking: { pickup, destination },
+        ride,
+        mode,
+        modeIcon,
       },
     });
   }
 
   // User opts to skip guardian contact
   function handleSkip() {
+    if (!isBookingDataPresent(prevState)) {
+      navigate("/book-ride", {
+        replace: true,
+        state: { error: "Booking details missing. Please start again." },
+      });
+      return;
+    }
+    const ride = prevState.selectedRide || prevState.ride;
+    const mode = prevState.mode || prevState.transportMode || '';
+    const modeIcon = prevState.modeIcon || '';
+    const pickup = prevState.pickup || (prevState.booking && prevState.booking.pickup) || '';
+    const destination = prevState.destination || (prevState.booking && prevState.booking.destination) || '';
     navigate("/confirm-booking", {
       state: {
         ...prevState,
         guardianContact: null,
-        booking: {
-          pickup: prevState.pickup,
-          destination: prevState.destination,
-        },
-        ride: prevState.selectedRide,
-        mode: prevState.mode,
-        modeIcon: prevState.modeIcon,
+        booking: { pickup, destination },
+        ride,
+        mode,
+        modeIcon,
       },
     });
   }
