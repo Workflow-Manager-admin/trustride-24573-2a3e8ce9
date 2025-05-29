@@ -209,8 +209,29 @@ function BookingDetailsScreen(props) {
                     borderRadius: 11,
                     minWidth: 44,
                   }}
-                  disabled
-                  title="(Booking only in next milestone)"
+                  // On click, check if guardian contact is set (stub: always false), go to /add-guardian-contact with current booking data
+                  onClick={() => {
+                    // In a real app: check user/session state for guardian, or allow passing down.
+                    // For now, always require prompt.
+                    window.scrollTo(0,0); // UX: scroll to top
+                    // Pass ride context via navigation state for next screen
+                    const nav = require('react-router-dom').useNavigate?.() || null;
+                    // Fallback for direct invocation if static analysis blocks import:
+                    if (nav) {
+                      nav('/add-guardian-contact', {
+                        state: {
+                          selectedRide: ride,
+                          pickup,
+                          destination,
+                          mode: modeLabel,
+                          modeIcon: modeIcon
+                        }
+                      });
+                    } else {
+                      window.location.href = '/add-guardian-contact'; // fallback, loses state
+                    }
+                  }}
+                  title="Proceed to add guardian contact"
                 >Book</button>
               </div>
             ))}
