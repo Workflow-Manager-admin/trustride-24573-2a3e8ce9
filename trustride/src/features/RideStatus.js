@@ -1,8 +1,22 @@
 import React from "react";
+import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for missing default marker icons in leaflet
+import L from "leaflet";
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  shadowUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+});
 
 /**
  * PUBLIC_INTERFACE
- * RideStatus: Displays ride status, estimated pickup, mock driver map, and SOS.
+ * RideStatus: Displays ride status, estimated pickup, and a real map with live mock driver location and route.
  */
 export default function RideStatus({ ride, onSOS }) {
   // Use mock data if no ride passed
@@ -11,8 +25,14 @@ export default function RideStatus({ ride, onSOS }) {
     vehicle: "Hyundai Verna - Blue",
     depPoint: "Greenwood University Main Gate",
     estPickup: new Date(Date.now() + 13 * 60000),
+    // mock: Mumbai [driver + pickup] (could be anywhere realistic)
+    driverLatLng: [19.103, 72.87], // moving "toward" pickup
+    pickupLatLng: [19.1167, 72.8333]
   };
   const r = ride || mockRide;
+
+  // Mock route (normally you'd get real API route polyline)
+  const route = [r.driverLatLng, r.pickupLatLng];
 
   // Format pickup time
   function fmtTime(dt) {
@@ -145,79 +165,57 @@ export default function RideStatus({ ride, onSOS }) {
             fontSize: 17,
             marginBottom: 11,
             textAlign: "center",
+            letterSpacing: "-0.3px"
           }}
         >
-          Driver Map / Arrival Tracking (Demo)
+          <span style={{marginRight: 6, fontSize: 23}}>🗺️</span>
+          Live Map: Driver & Route
         </div>
-        <div
-          aria-label="Live Driver Map (mock)"
-          style={{
-            width: "100%",
-            minHeight: 67,
-            maxWidth: 290,
-            background: "linear-gradient(90deg, #e3f3ff 50%, #ecfcf7 100%)",
-            borderRadius: 17,
-            border: "1px solid #eaf0f6",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "flex-end",
-            justifyContent: "space-between",
-            padding: "0 18px",
-            marginTop: 5,
-            marginBottom: 0,
-          }}
-        >
-          <span
+        <div style={{
+          width: "100%",
+          maxWidth: 320,
+          height: 210,
+          margin: "0 auto",
+          borderRadius: 17,
+          overflow: "hidden",
+          border: "1.5px solid var(--color-accent)",
+          boxShadow: "0 2px 14px #b9efe945"
+        }}>
+          <MapContainer
+            center={r.driverLatLng}
+            zoom={14}
+            scrollWheelZoom={false}
             style={{
-              width: 18,
-              height: 18,
-              borderRadius: "50%",
-              background: "#0077B6",
-              display: "inline-block",
-              marginRight: 2,
-              border: "2.5px solid #fff",
-              boxShadow: "0 2px 5px rgba(0,119,182,0.13)",
+              width: "100%",
+              height: "210px",
+              borderRadius: 17,
+              border: "none"
             }}
-          ></span>
-          <span
-            style={{
-              flex: 1,
-              borderBottom: "3px dashed #00A896",
-              height: 0,
-              margin: "0 4px",
-              alignSelf: "center",
-              minWidth: 26,
-            }}
-          ></span>
-          <span
-            style={{
-              fontSize: 28,
-              color: "#00A896",
-              marginRight: 4,
-              background: "#f4fbf9",
-              borderRadius: "50%",
-              width: 34,
-              height: 34,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "2.5px solid #00A89650",
-            }}
+            dragging={true}
+            doubleClickZoom={false}
+            attributionControl={false}
           >
-            Car
-          </span>
-          <span
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: "50%",
-              background: "#00A896",
-              display: "inline-block",
-              marginLeft: 2,
-              border: "2.5px solid #fff",
-              boxShadow: "0 2px 5px rgba(0,168,150,0.13)",
-            }}
-          ></span>
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={18}
+              attribution="&copy; OpenStreetMap contributors"
+            />
+            {/* Driver marker */}
+            <Marker position={r.driverLatLng}>
+              <Popup>
+                Driver: {r.driver} <br />
+                {r.vehicle}
+              </Popup>
+            </Marker>
+            {/* Pickup marker */}
+            <Marker position={r.pickupLatLng}>
+              <Popup>
+                Pickup: {r.depPoint}
+              </Popup>
+            </Marker>
+            {/* Route polyline */}
+            <Polyline positions={route} pathOptions={{ color: "#00A896", weight: 6, opacity: 0.67, dashArray: "3 7" }} />
+          </MapContainer>
         </div>
         <div
           style={{
@@ -229,7 +227,7 @@ export default function RideStatus({ ride, onSOS }) {
           }}
         >
           Driver is approaching your pickup point.<br />
-          Track progress here.
+          Track progress in real-time on the map.
         </div>
       </section>
 
