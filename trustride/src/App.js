@@ -19,6 +19,14 @@ import BookingDetailsScreen from './screens/BookingDetailsScreen';
 /**
  * PUBLIC_INTERFACE
  * The TrustRide App main entry – minimalist, on-brand layout, routing, and navigation.
+ * 
+ * Routing flow:
+ *   - "/sign-in" (SignInScreen) → on successful sign-in navigates to "/book-ride"
+ *   - "/book-ride" (RideBookingScreen) → user selects transport mode, taps Continue,
+ *     navigates to "/booking-details" with the chosen mode passed via router state.
+ *   - "/booking-details" (BookingDetailsScreen) receives selected mode from navigation state
+ *     and renders booking info accordingly.
+ *   - Other static app screens remain as-is.
  */
 function AppContainer() {
   const navigate = useNavigate();
@@ -47,10 +55,11 @@ function AppContainer() {
           <Route path="/profile" element={<ProfileScreen />} />
           <Route path="/sign-in" element={<SignInScreen />} />
 
-          {/* Ride booking start. /book-ride presents RideBookingScreen */}
+          {/* Ride booking flow:
+              /book-ride shows RideBookingScreen;
+              RideBookingScreen navigates to /booking-details with mode in navigation state;
+              BookingDetailsScreen gets mode from state. */}
           <Route path="/book-ride" element={<RideBookingScreen />} />
-
-          {/* Sequential booking details screen. BookingDetailsScreen will read mode from navigation state */}
           <Route path="/booking-details" element={<BookingDetailsScreen />} />
         </Routes>
       </main>
