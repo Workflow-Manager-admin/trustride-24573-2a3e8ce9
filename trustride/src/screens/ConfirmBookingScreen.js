@@ -121,12 +121,27 @@ function ConfirmBookingScreen() {
 
   // PUBLIC_INTERFACE
   // Handles ride confirmation flow: disables, simulates backend, shows confirmation
+  // PUBLIC_INTERFACE
+  // Handles ride confirmation flow: disables, simulates backend, and navigates to RideStatusScreen with all relevant details
   function handleConfirmBooking() {
     setSubmitPending(true);
     setTimeout(() => {
-      setConfirmSuccess(true);
       setSubmitPending(false);
       // In production: Call backend, notify guardian, notify driver/host, etc.
+
+      // Compose navigation state for RideStatusScreen: pass all essential details
+      navigate("/ride-status", {
+        state: {
+          ride,
+          booking,         // { pickup, destination }
+          pickup,
+          destination,
+          mode,
+          modeIcon,
+          guardianContact,
+        },
+        replace: true,
+      });
     }, 1100);
   }
 
