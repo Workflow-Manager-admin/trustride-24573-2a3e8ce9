@@ -540,9 +540,9 @@ function RideStatusScreen() {
 
   // Toast for quick feedback
   useEffect(() => {
-    let t;
-    if (showToast) t = setTimeout(() => setShowToast(null), 2100);
-    return () => t && clearTimeout(t);
+    if (!showToast) return;
+    const t = setTimeout(() => setShowToast(null), 2100);
+    return () => clearTimeout(t);
   }, [showToast]);
 
   // Helper for emergency button styling
