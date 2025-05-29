@@ -6,6 +6,7 @@ import {
   Route,
 } from 'react-router-dom';
 
+import React, { useCallback } from 'react';
 import BottomTabNavigation from './navigation/BottomTabNavigation';
 import HomeScreen from './screens/HomeScreen';
 import EcoScoreScreen from './screens/EcoScoreScreen';
@@ -13,7 +14,6 @@ import TrustSafetyScreen from './screens/TrustSafetyScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import SignInScreen from './screens/SignInScreen';
 import { useNavigate } from 'react-router-dom';
-import React, { useCallback } from 'react';
 
 // Ride booking screen stub to redirect to after sign-in
 function BookRideScreen() {
