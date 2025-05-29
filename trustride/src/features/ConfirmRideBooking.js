@@ -2,9 +2,11 @@ import React, { useState } from "react";
 
 /**
  * PUBLIC_INTERFACE
- * ConfirmRideBooking: Displays selected ride details for user confirmation,
- * presents conduct rules (with acceptance checkbox), and enables booking confirmation
- * only after agreement. Uses TrustRide modern UI branding.
+ * ConfirmRideBooking: Displays all passed ride details for user confirmation,
+ * presents a clear, visible section with ride conduct rules,
+ * and requires the user to check an agreement box before enabling the confirm button.
+ * All UI is minimalist and styled with TrustRide's brand guidelines.
+ * Prepares state management for conduct acceptance and confirmation.
  *
  * @param {Object} props
  * @param {Object} props.ride - The selected ride details object (driver, fare, schedule, etc.)
