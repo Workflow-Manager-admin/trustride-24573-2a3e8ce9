@@ -1,31 +1,28 @@
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 /**
  * PUBLIC_INTERFACE
- * BookingDetailsScreen — gather pickup/destination, simulate ride search for selected mode, and show mock ride options.
- * 
- * Props (preferred):
- *   - transportMode: {icon, label} (from navigation state or prop)
- * 
- * If transportMode is not present as a prop, can fallback to navigation location.state.
+ * BookingDetailsScreen — gathers pickup/destination, renders selected mode, and lists mock available rides (incl. price).
+ * Reads mode from navigation state or props.
  */
 const MOCK_RIDES = {
   Bike: [
     { id: 1, driver: 'Rahul S.', price: 20, eta: 3 },
-    { id: 2, driver: 'Anu M.', price: 18, eta: 5 }
+    { id: 2, driver: 'Anu M.', price: 18, eta: 5 },
   ],
   'Mini Cab': [
     { id: 3, driver: 'Ravi K.', price: 55, eta: 4 },
-    { id: 4, driver: 'Pooja T.', price: 62, eta: 8 }
+    { id: 4, driver: 'Pooja T.', price: 62, eta: 8 },
   ],
   'Prime Cab': [
     { id: 5, driver: 'Mayank J.', price: 80, eta: 2 },
-    { id: 6, driver: 'Sneha D.', price: 90, eta: 6 }
+    { id: 6, driver: 'Sneha D.', price: 90, eta: 6 },
   ],
   Auto: [
     { id: 7, driver: 'Govind A.', price: 30, eta: 4 },
-    { id: 8, driver: 'Sunita G.', price: 27, eta: 7 }
-  ]
+    { id: 8, driver: 'Sunita G.', price: 27, eta: 7 },
+  ],
 };
 
 function getIcon(mode) {
@@ -40,43 +37,48 @@ function getIcon(mode) {
 
 // PUBLIC_INTERFACE
 function BookingDetailsScreen(props) {
-  // Support both prop and navigation state for transportMode
+  // Get transportMode from props (preferred), or from navigation state
+  const location = useLocation();
   let transportMode = props.transportMode;
+  if (!transportMode && location && location.state && location.state.transportMode) {
+    transportMode = location.state.transportMode;
+  }
+  // Fallback for legacy access
   if (!transportMode && window.history.state?.usr?.transportMode) {
-    // react-router-dom v6 location.state as window.history.state.usr
     transportMode = window.history.state.usr.transportMode;
   }
 
+  // Normalize mode label/icon support
   const modeLabel = transportMode?.label || transportMode || "Ride";
   const modeIcon = transportMode?.icon || getIcon(modeLabel);
 
   const [pickup, setPickup] = useState('');
-  const [dest, setDest] = useState('');
+  const [destination, setDestination] = useState('');
+  const [rides, setRides] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [rides, setRides] = useState(null); // null = no search yet; array = results
 
   // PUBLIC_INTERFACE
-  function handleSubmit(e) {
+  function handleSearch(e) {
     e.preventDefault();
-    if (!pickup.trim() || !dest.trim()) return;
+    if (!pickup.trim() || !destination.trim()) return;
     setLoading(true);
     setRides(null);
-    // Simulate async "search"
     setTimeout(() => {
-      // Use mocked rides for selected mode
       setRides(MOCK_RIDES[modeLabel] ? [...MOCK_RIDES[modeLabel]] : []);
       setLoading(false);
-    }, 1100);
+    }, 1000);
   }
 
   return (
     <div className="container" style={{ paddingTop: 84, paddingBottom: 70 }}>
+      {/* Selected mode header */}
       <section className="rounded-card" style={{ maxWidth: 440, margin: '24px auto 22px auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 13, marginBottom: 10 }}>
           <span role="img" style={{ fontSize: 32 }}>{modeIcon}</span>
           <span className="heading-1" style={{ fontSize: 26, margin: 0 }}>{modeLabel} — Booking</span>
         </div>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 15, margin: '17px 0' }}>
+        {/* Pickup/Dest Inputs & Search */}
+        <form onSubmit={handleSearch} style={{ display: 'flex', flexDirection: 'column', gap: 15, margin: '17px 0' }}>
           <div>
             <label htmlFor="pickup" style={{ fontWeight: 600, fontSize: 15 }}>Pickup Location</label>
             <input
@@ -99,12 +101,12 @@ function BookingDetailsScreen(props) {
             />
           </div>
           <div>
-            <label htmlFor="dest" style={{ fontWeight: 600, fontSize: 15 }}>Destination</label>
+            <label htmlFor="destination" style={{ fontWeight: 600, fontSize: 15 }}>Destination</label>
             <input
               type="text"
-              id="dest"
-              value={dest}
-              onChange={e => setDest(e.target.value)}
+              id="destination"
+              value={destination}
+              onChange={e => setDestination(e.target.value)}
               placeholder="Enter your destination"
               required
               style={{
@@ -128,16 +130,17 @@ function BookingDetailsScreen(props) {
               borderRadius: 22,
               marginTop: 10,
               minWidth: 130,
-              background: pickup.trim() && dest.trim() ? undefined : "#bbb",
-              cursor: pickup.trim() && dest.trim() ? "pointer" : "not-allowed",
-              opacity: pickup.trim() && dest.trim() ? 1 : 0.7,
+              background: pickup.trim() && destination.trim() ? undefined : "#bbb",
+              cursor: pickup.trim() && destination.trim() ? "pointer" : "not-allowed",
+              opacity: pickup.trim() && destination.trim() ? 1 : 0.7,
             }}
-            disabled={!pickup.trim() || !dest.trim() || loading}
+            disabled={!pickup.trim() || !destination.trim() || loading}
           >
-            {loading ? "Searching..." : "Find Rides"}
+            {loading ? "Searching..." : "Search"}
           </button>
         </form>
       </section>
+      {/* Ride Results */}
       <section className="rounded-card" style={{ maxWidth: 560, margin: '0 auto', minHeight: 80 }}>
         <h3 className="heading-2" style={{ marginTop: 0, marginBottom: 10, fontSize: 19 }}>
           Ride Options
@@ -149,10 +152,10 @@ function BookingDetailsScreen(props) {
         )}
         {loading && (
           <div style={{ color: "var(--accent)", fontWeight: 600, margin: "8px 0", fontSize: 16 }}>
-            Searching for rides near {pickup || 'your pickup'}...
+            Searching rides near <span style={{ fontWeight: 700 }}>{pickup || 'your pickup'}</span>...
           </div>
         )}
-        {rides && !rides.length && (
+        {rides && rides.length === 0 && (
           <div style={{
             color: "#c00",
             fontWeight: 600,
@@ -196,7 +199,7 @@ function BookingDetailsScreen(props) {
                     ETA: {ride.eta} min • <span style={{ color: 'var(--primary)' }}>₹{ride.price}</span>
                   </div>
                   <div style={{ color: 'var(--accent)', fontSize: 13.5, marginTop: 2 }}>Pickup: {pickup || 'N/A'}</div>
-                  <div style={{ color: 'var(--primary)', fontSize: 13.5 }}>Destination: {dest || 'N/A'}</div>
+                  <div style={{ color: 'var(--primary)', fontSize: 13.5 }}>Destination: {destination || 'N/A'}</div>
                 </div>
                 <button
                   className="btn"
