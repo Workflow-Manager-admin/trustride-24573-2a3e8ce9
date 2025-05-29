@@ -100,24 +100,24 @@ function RideStatusScreen() {
   const [driverProgress, setDriverProgress] = useState(0);
 
   // --- Feedback (emoji rating) state ----
-  const [showFeedback, setShowFeedback] = useState(false);
+  // showFeedback is always true on 'Completed', guarded to prevent errors if status changes out of order, to robustly show rating bar and thank you modal
   const [selectedRating, setSelectedRating] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
+  // For robust navigation-after-feedback, ensure it only fires once per rating
+  const [didAutoNavigate, setDidAutoNavigate] = useState(false);
 
   // SOS alert modal
   const [showSOS, setShowSOS] = useState(false);
-
   // Chat/call modals
   const [showChat, setShowChat] = useState(false);
   const [showCall, setShowCall] = useState(false);
-
   // Emergency features: Fake Call, Silent SOS, Ride Deviation Alert states
   const [showFakeCall, setShowFakeCall] = useState(false);
   const [showSilentSOS, setShowSilentSOS] = useState(false);
   const [showDeviation, setShowDeviation] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
-  // Modal lock
+  // Modal lock (other modals)
   useModalLock(showChat || showCall || showFakeCall || showSilentSOS || showDeviation);
 
   // Toast for quick feedback
@@ -138,8 +138,7 @@ function RideStatusScreen() {
         // After some seconds, complete the ride
         completeStatusTimer = setTimeout(() => {
           setRideStatus("Completed");
-          setShowFeedback(true);
-        }, Math.max(4000, etaMinutes * 500)); // Simulate trip completion
+        }, Math.max(4000, etaMinutes * 500));
       }, 2000);
     }
     return () => {
@@ -154,22 +153,26 @@ function RideStatusScreen() {
     let notifTimer;
     if (showRideStartNotif) {
       notifTimer = setTimeout(() => {
-        setShowBanner(false); // animate/dismiss
+        setShowBanner(false);
         setTimeout(() => setShowRideStartNotif(false), 350);
       }, 3500);
     }
     return () => notifTimer && clearTimeout(notifTimer);
   }, [showRideStartNotif]);
 
-  // When a rating is selected, show thank you and then return to home page after short delay
+  // When a rating is selected, robustly show thank you and always auto-navigate to home after delay (only once)
   useEffect(() => {
     let thankYouTimer, redirectTimer;
-    if (selectedRating !== null) {
+    if (
+        selectedRating !== null &&
+        rideStatus === "Completed" &&
+        !didAutoNavigate
+    ) {
       setShowThankYou(true);
+      // Short delay for thank you, then auto-redirect
       thankYouTimer = setTimeout(() => {
         setShowThankYou(false);
-        setShowFeedback(false);
-        // Redirect to home
+        setDidAutoNavigate(true); // prevent duplicate navigations
         navigate("/", { replace: true });
       }, 1700);
     }
@@ -177,8 +180,7 @@ function RideStatusScreen() {
       if (thankYouTimer) clearTimeout(thankYouTimer);
       if (redirectTimer) clearTimeout(redirectTimer);
     };
-    // eslint-disable-next-line
-  }, [selectedRating, navigate]);
+  }, [selectedRating, rideStatus, didAutoNavigate, navigate]);
 
   // Manual notification/banner dismiss
   function handleManuallyDismiss() {
