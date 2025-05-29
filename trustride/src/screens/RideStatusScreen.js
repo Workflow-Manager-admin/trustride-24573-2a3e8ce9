@@ -723,7 +723,7 @@ function RideStatusScreen() {
             <span style={{ color: "var(--accent)", fontWeight: 700 }}>{driverName}</span>
             <br />
             <span style={{ color: "var(--primary)", fontWeight: 400, fontSize: 12.5 }}>
-              ETA: <b>{Math.max(0, etaMinutes - Math.floor((driverProgress/(MOCK_ROUTE.length-1))*etaMinutes))} min</b>
+              ETA: <b>{Math.max(0, liveEta)} min</b>
             </span>
           </div>
           {/* Pickup icon left of map */}
