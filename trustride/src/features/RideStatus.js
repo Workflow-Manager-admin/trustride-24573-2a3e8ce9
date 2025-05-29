@@ -52,7 +52,7 @@ export default function RideStatus({ ride, onSOS }) {
     pickupLatLng: [19.1167, 72.8333],
   };
 
-  // Calculate mock ETA (6-12 min) or real from ride.estPickup
+  // Calculate ETA minutes: use real value if provided, else mock (6-12 min)
   const etaMins = useMemo(() => {
     if (ride && ride.estPickup) {
       const minFromNow = Math.max(1, Math.ceil((new Date(ride.estPickup) - new Date()) / 60000));
@@ -62,7 +62,7 @@ export default function RideStatus({ ride, onSOS }) {
     }
   }, [ride && ride.estPickup]);
 
-  // Calculate the target pickup time object
+  // Calculate the estimated pickup time object
   const estPickup = useMemo(() => {
     if (ride && ride.estPickup) return new Date(ride.estPickup);
     const now = new Date();
@@ -77,11 +77,36 @@ export default function RideStatus({ ride, onSOS }) {
     estPickup
   };
 
-  // Display strings for ETA
+  // Visually prominent ETA: "Arriving in X min: 09:42 AM"
   const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date()) / 60000));
+  const clockStr = new Date(r.estPickup).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
   const timeStr = timeDiff <= 1
-    ? "Arriving now"
-    : `Arriving in ${timeDiff} min`;
+    ? <span>Arriving now <span style={{
+          marginLeft: 10,
+          fontWeight: 800,
+          color: "#129083",
+          fontSize: "1rem",
+          background: "rgba(0,168,150,0.09)", padding: "6px 15px", borderRadius: 12,
+          border: "1.2px solid #00A896",
+          boxShadow: "0 1px 8px #b9efe925",
+          verticalAlign: "middle"
+        }}>
+          &#x23F1; {clockStr}
+        </span></span>
+    : <span>Arriving in <span style={{ color: "var(--color-primary)", fontWeight: 900 }}>{timeDiff} min</span>
+        <span style={{
+          marginLeft: 12,
+          fontWeight: 800,
+          color: "#129083",
+          fontSize: "1.09rem",
+          background: "rgba(0,168,150,0.09)", padding: "6px 15px", borderRadius: 12,
+          border: "1.2px solid #00A896",
+          boxShadow: "0 1px 8px #b9efe925",
+          verticalAlign: "middle"
+        }}>
+          &#x23F1; {clockStr}
+        </span>
+      </span>;
 
   // Format as '08:12 PM'
   function formatClock(dt) {
@@ -96,7 +121,7 @@ export default function RideStatus({ ride, onSOS }) {
     );
   }
 
-  // Style for ETA
+  // Styling for ETA (TrustRide brand)
   const etaBoxStyle = {
     margin: "0 auto 13px",
     fontWeight: 900,
@@ -129,7 +154,7 @@ export default function RideStatus({ ride, onSOS }) {
   // Map route
   const route = [r.driverLatLng, r.pickupLatLng];
 
-  // Map height (responsive for mobile)
+  // Responsive map height
   const getMapHeight = () => window.innerWidth < 420 ? 180 : 210;
 
   // Main render
@@ -143,21 +168,6 @@ export default function RideStatus({ ride, onSOS }) {
         style={etaBoxStyle}
       >
         {timeStr}
-        <span style={{
-          margin: "0 12px 0 9px",
-          fontSize: "1.19rem",
-          color: "#129083",
-          fontWeight: 800,
-          background: "rgba(0,168,150,0.09)",
-          padding: "6px 15px",
-          borderRadius: 12,
-          verticalAlign: "middle",
-          letterSpacing: "0.1em",
-          border: "1.2px solid #00A896",
-          boxShadow: "0 1px 8px #b9efe925"
-        }}>
-          &#x23F1; {formatClock(r.estPickup)}
-        </span>
       </div>
       {/* Ride status card */}
       <section
