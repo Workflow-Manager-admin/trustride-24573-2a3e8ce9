@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -38,11 +38,12 @@ const userIcon = new L.Icon({
   shadowSize: [38, 38]
 });
 
-/**
- * PUBLIC_INTERFACE
- * RideStatus: Displays ride status, estimated pickup, and a real map with live mock driver location and route.
- */
+// PUBLIC_INTERFACE
+// RIDE STATUS COMPONENT, vertical arrangement of pickup ETA, ride status, map, and SOS button with modals
 export default function RideStatus({ ride, onSOS }) {
+  // For the inline SOS modal demo
+  const [showSOSModal, setShowSOSModal] = useState(false);
+
   // Mock ride if none is passed
   const mockRide = {
     driver: "Priya Shah",
@@ -77,112 +78,205 @@ export default function RideStatus({ ride, onSOS }) {
     estPickup
   };
 
-  // Visually prominent ETA: "Arriving in X min: 09:42 AM"
+  // Time difference for ETA
   const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date()) / 60000));
   const clockStr = new Date(r.estPickup).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-  const timeStr = timeDiff <= 1
-    ? <span>Arriving now <span style={{
-          marginLeft: 10,
-          fontWeight: 800,
-          color: "#129083",
-          fontSize: "1rem",
-          background: "rgba(0,168,150,0.09)", padding: "6px 15px", borderRadius: 12,
-          border: "1.2px solid #00A896",
-          boxShadow: "0 1px 8px #b9efe925",
-          verticalAlign: "middle"
-        }}>
-          &#x23F1; {clockStr}
-        </span></span>
-    : <span>Arriving in <span style={{ color: "var(--color-primary)", fontWeight: 900 }}>{timeDiff} min</span>
-        <span style={{
-          marginLeft: 12,
-          fontWeight: 800,
-          color: "#129083",
-          fontSize: "1.09rem",
-          background: "rgba(0,168,150,0.09)", padding: "6px 15px", borderRadius: 12,
-          border: "1.2px solid #00A896",
-          boxShadow: "0 1px 8px #b9efe925",
-          verticalAlign: "middle"
-        }}>
-          &#x23F1; {clockStr}
-        </span>
-      </span>;
 
-  // Format as '08:12 PM'
-  function formatClock(dt) {
-    return new Date(dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
-  }
-
-  // SOS handler
-  function handleSOS() {
-    if (onSOS) return onSOS();
-    window.alert(
-      "SOS Emergency activated (Demo). In production, guardians and support would be notified immediately."
-    );
-  }
-
-  // Styling for ETA (TrustRide brand)
+  // Prominently styled ETA box (branded, pulsing)
   const etaBoxStyle = {
-    margin: "0 auto 13px",
+    margin: "0 auto 24px",
     fontWeight: 900,
-    fontSize: "2rem",
+    fontSize: "2.1rem",
     color: "var(--color-accent)",
     background: "linear-gradient(90deg, #faffeb 60%, #eaf9ff 100%)",
     borderRadius: 20,
     border: "2.7px solid var(--color-accent)",
     boxShadow: "0 8px 33px #a7f2eb25",
-    padding: "15px 33px 13px 27px",
+    padding: "18px 28px 16px 24px",
     textAlign: "center",
-    letterSpacing: "1.4px",
+    letterSpacing: ".9px",
     display: "block",
-    lineHeight: 1.21,
+    lineHeight: 1.22,
     textShadow: "0 2px 4px #00A89611",
-    animation: "pulseEtaTime 1.35s infinite alternate",
+    animation: "pulseEtaTime 1.2s infinite alternate",
+    zIndex: 13,
     position: "relative",
-    top: "-18px",
-    zIndex: 11,
-    transition: "background 0.25s"
+    transition: "background 0.2s"
   };
-
   const etaPulseKeyframesStyle = `
     @keyframes pulseEtaTime {
       0% { box-shadow: 0 0 0 rgba(0,168,150,0.09); background-size: 100% 100%; }
-      100% { box-shadow: 0 7px 28px 7px #a7f2eb44; background-size: 118% 113%; }
+      100% { box-shadow: 0 6px 21px 5px #a7f2eb44; background-size: 120% 115%; }
     }
   `;
 
   // Map route
   const route = [r.driverLatLng, r.pickupLatLng];
 
-  // Responsive map height
+  // Responsive map height helper
   const getMapHeight = () => window.innerWidth < 420 ? 180 : 210;
 
-  // Main render
+  // SOS click handler: open modal
+  function handleSOS() {
+    if (onSOS) return onSOS();
+    setShowSOSModal(true);
+  }
+
+  // Renders the modal for SOS confirmation
+  function SOSSafetyModal({ open, onClose }) {
+    if (!open) return null;
+    return (
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Emergency SOS"
+        tabIndex={-1}
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 12000,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(0,0,0,0.17)",
+        }}
+        onClick={onClose}
+      >
+        <div
+          className="card"
+          style={{
+            minWidth: 320,
+            maxWidth: 380,
+            background: "#fff",
+            border: "2.4px solid #e22b38",
+            borderRadius: 23,
+            boxShadow: "0 12px 42px #e22b3842",
+            padding: "33px 22px 28px 24px",
+            textAlign: "center",
+            position: "relative",
+            outline: "none",
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <span
+            role="img"
+            aria-label="Siren"
+            style={{
+              fontSize: 56,
+              marginBottom: 15,
+              color: "#e22b38",
+              filter: "drop-shadow(0 0 9px #e22b3855)",
+              transform: "rotate(-13deg)",
+              display: "inline-block",
+              background: "linear-gradient(90deg, #ffeaea, #fff1f1 97%)",
+              borderRadius: "50%",
+              padding: "9px 16px 7px",
+              border: "1.4px solid #e22b38",
+              boxShadow: "0 1px 9px 0 #f4fbf9"
+            }}
+          >🚨</span>
+          <h2 style={{
+            color: "#e22b38",
+            fontWeight: 800,
+            fontSize: "1.5rem",
+            margin: "0 0 13px 0",
+            letterSpacing: "-0.8px"
+          }}>SOS Emergency Activated</h2>
+          <div className="description" style={{ color: "#e22b38", fontWeight: 660, fontSize: 15, marginBottom: 12 }}>
+            Your guardians and TrustRide support will be immediately notified.<br />
+            Live status & location shared. Please stay calm, help is on the way.
+          </div>
+          <div style={{ color: "#8da8ad", fontSize: 13.1, marginBottom: 20 }}>
+            (This is a demo: no real notifications sent.)
+          </div>
+          <button
+            autoFocus
+            className="btn"
+            style={{
+              color: "#e22b38",
+              background: "#fff",
+              border: "2px solid #e22b38",
+              borderRadius: 10,
+              fontWeight: 700,
+              minWidth: 120,
+              fontSize: 16,
+              marginTop: 7
+            }}
+            onClick={onClose}
+            aria-label="Dismiss and return"
+          >
+            Dismiss
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Main render: vertical stack, minimalist, with enhanced section spacing
   return (
-    <div style={{ paddingTop: 34, paddingBottom: 30, maxWidth: 430, margin: "0 auto" }}>
+    <div style={{
+      paddingTop: 38,
+      paddingBottom: 34,
+      maxWidth: 430,
+      margin: "0 auto",
+      display: "flex",
+      flexDirection: "column",
+      gap: 0
+    }}>
       <style>{etaPulseKeyframesStyle}</style>
-      {/* ETA PROMINENT DISPLAY */}
+      <SOSSafetyModal open={showSOSModal} onClose={() => setShowSOSModal(false)} />
+
+      {/* 1. Estimated Pickup Time */}
       <div
         aria-live="polite"
         aria-atomic="true"
         style={etaBoxStyle}
       >
-        {timeStr}
+        {timeDiff <= 1
+          ? (<span>Arriving now <span style={{
+            marginLeft: 9,
+            fontWeight: 800,
+            color: "#129083",
+            fontSize: "1rem",
+            background: "rgba(0,168,150,0.09)", padding: "5px 13px", borderRadius: 12,
+            border: "1.1px solid #00A896",
+            boxShadow: "0 1px 8px #b9efe925",
+            verticalAlign: "middle"
+          }}>
+            &#x23F1; {clockStr}
+          </span></span>)
+          : (<span>Arriving in <span style={{ color: "var(--color-primary)", fontWeight: 900 }}>{timeDiff} min</span>
+            <span style={{
+              marginLeft: 11,
+              fontWeight: 800,
+              color: "#129083",
+              fontSize: "1.09rem",
+              background: "rgba(0,168,150,0.09)", padding: "5px 13px", borderRadius: 12,
+              border: "1.1px solid #00A896",
+              boxShadow: "0 1px 8px #b9efe925",
+              verticalAlign: "middle"
+            }}>
+              &#x23F1; {clockStr}
+            </span>
+          </span>)
+        }
       </div>
-      {/* Ride status card */}
+
+      {/* 2. Ride Status Section */}
       <section
         className="card"
+        aria-label="Ride Status"
         style={{
           borderRadius: "var(--radius-main)",
           boxShadow: "0 2px 23px rgba(0,168,150,0.09)",
-          border: "2.2px solid var(--color-accent)",
-          padding: "34px 22px 19px 22px",
-          marginBottom: 18,
+          border: "2px solid var(--color-accent)",
+          padding: "28px 20px 15px 20px",
+          marginBottom: 19,
           background: "#fff",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          gap: 7,
+          gap: 9,
           textAlign: "center",
         }}
       >
@@ -199,7 +293,9 @@ export default function RideStatus({ ride, onSOS }) {
             border: "1.5px solid var(--color-accent)",
             borderRadius: 19,
             marginBottom: 5,
-            textTransform: "uppercase"
+            textTransform: "uppercase",
+            letterSpacing: ".1em",
+            boxShadow: "0 1.5px 10px #acfff440"
           }}
         >
           En Route
@@ -259,16 +355,18 @@ export default function RideStatus({ ride, onSOS }) {
           Pickup Point: <span style={{ color: "#0077B6" }}>{r.depPoint}</span>
         </div>
       </section>
-      {/* Map card */}
+
+      {/* 3. Live Map Card */}
       <section
         className="card"
+        aria-label="Live Map"
         style={{
           borderRadius: "var(--radius-main)",
           border: "1.2px solid var(--color-border)",
           background: "#f8fafb",
           boxShadow: "0 1.5px 10px rgba(0,119,182,0.045)",
-          padding: "19px 13px 13px 13px",
-          marginBottom: 22,
+          padding: "18px 10px 13px 10px",
+          marginBottom: 25,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -352,13 +450,15 @@ export default function RideStatus({ ride, onSOS }) {
           Track progress live on the map.
         </div>
       </section>
-      {/* SOS Button Section */}
+
+      {/* 4. SOS Button as bottom card-style group */}
       <section
+        aria-label="Emergency SOS"
         style={{
           width: "100%",
           display: "flex",
           justifyContent: "center",
-          marginBottom: 37,
+          marginBottom: 0,
         }}
       >
         <button
@@ -366,23 +466,24 @@ export default function RideStatus({ ride, onSOS }) {
           style={{
             background: "linear-gradient(90deg, #e22b38, #ff5e67)",
             color: "#fff",
-            fontWeight: 740,
-            fontSize: "1.16rem",
-            padding: "16px 38px",
+            fontWeight: 750,
+            fontSize: "1.13rem",
+            padding: "15px 38px",
             borderRadius: 15,
             border: "none",
-            boxShadow: "0 4px 18px rgba(226,43,56,0.10)",
+            boxShadow: "0 4px 18px rgba(226,43,56,0.11)",
             outline: "none",
-            letterSpacing: "0.6px",
+            letterSpacing: "0.7px",
             display: "flex",
             alignItems: "center",
-            gap: 13,
-            transition: "background 0.16s cubic-bezier(0.4,0,0.2,1)"
+            gap: 12,
+            transition: "background 0.12s cubic-bezier(0.4,0,0.2,1)"
           }}
           onClick={handleSOS}
           aria-label="Emergency SOS"
           tabIndex={0}
         >
+          <span role="img" aria-label="siren" style={{ fontSize: 26, marginRight: 6 }}>🚨</span>
           Emergency SOS
         </button>
       </section>
