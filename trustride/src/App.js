@@ -76,16 +76,11 @@ function App() {
             </div>
           </div>
         );
-      case 'profile':
-        return (
-          <div className="hero">
-            <div className="subtitle">Your TrustRide Profile</div>
-            <h1 className="title">Profile</h1>
-            <div className="description">
-              See your verified institution status, rides, ratings, and safety configuration in one place.
-            </div>
-          </div>
-        );
+      case 'profile': {
+        // Import the Profile screen from features
+        const Profile = require('./features/Profile').default;
+        return <Profile />;
+      }
       default:
         return null;
     }
