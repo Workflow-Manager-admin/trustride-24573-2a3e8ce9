@@ -1,50 +1,74 @@
 :root {
-  --kavia-orange: #E87A41;
-  --kavia-dark: #1A1A1A;
-  --text-color: #ffffff;
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --border-color: rgba(255, 255, 255, 0.1);
+  /* TrustRide Brand Colors */
+  --color-primary: #0077B6;   /* Calm blue */
+  --color-accent: #00A896;    /* Vibrant green */
+  --color-secondary: #FFFFFF; /* White background */
+  --color-navbar: #FFFFFF;
+  --color-navbar-shadow: 0 2px 8px rgba(0, 76, 148, 0.05);
+
+  /* Text */
+  --color-text-primary: #062942;
+  --color-text-secondary: #45566E;
+  --color-muted: #9fb3c8;
+
+  /* Border & shadows */
+  --color-border: #eaf0f6;
+  --color-card-shadow: 0 2px 24px rgba(0, 119, 182, 0.07);
+
+  /* UI */
+  --radius-main: 20px;
 }
 
 body {
   margin: 0;
   font-family: 'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-  background-color: var(--kavia-dark);
-  color: var(--text-color);
+  background: var(--color-secondary);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* App container */
 .app {
   min-height: 100vh;
+  background: var(--color-secondary);
   display: flex;
   flex-direction: column;
 }
 
+/* Navbar styles */
 .navbar {
-  background-color: var(--kavia-dark);
-  padding: 16px;
+  background: var(--color-navbar);
+  box-shadow: var(--color-navbar-shadow);
+  padding: 14px 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-color);
+  justify-content: center;
+  border-bottom: 1px solid var(--color-border);
   position: fixed;
   top: 0;
   width: 100%;
-  box-sizing: border-box;
   z-index: 100;
 }
 
 .logo {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -1px;
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--color-primary);
+  background: none;
 }
 
 .logo-symbol {
-  color: var(--kavia-orange);
+  display: inline-block;
+  color: var(--color-accent);
+  font-weight: 900;
+  font-size: 1.8rem;
+  line-height: 1;
+  transform: rotate(-17deg);
 }
 
 .container {
@@ -55,9 +79,10 @@ body {
   box-sizing: border-box;
 }
 
+/* Hero, title, subtitle, description */
 .hero {
-  padding-top: 120px;
-  padding-bottom: 64px;
+  padding-top: 110px;
+  padding-bottom: 60px;
   text-align: center;
   display: flex;
   flex-direction: column;
@@ -66,43 +91,96 @@ body {
 }
 
 .subtitle {
-  color: var(--kavia-orange);
-  font-weight: 500;
-  font-size: 1.1rem;
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 1.15rem;
 }
 
 .title {
-  font-size: 3.5rem;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 3.25rem;
+  font-weight: 700;
+  line-height: 1.13;
   margin: 0;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-fill-color: transparent;
+  letter-spacing: -1px;
 }
 
 .description {
-  font-size: 1.1rem;
-  line-height: 1.5;
-  color: var(--text-secondary);
+  font-size: 1.16rem;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
   max-width: 600px;
   margin-bottom: 16px;
 }
 
+/* Button base */
 .btn {
-  background-color: var(--kavia-orange);
-  color: white;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+  color: #fff;
   border: none;
-  border-radius: 4px;
-  padding: 10px 20px;
+  border-radius: 8px;
+  padding: 10px 22px;
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,119,182,0.10);
+  transition: background 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s cubic-bezier(0.4,0,0.2,1);
+  outline: none;
+}
+
+.btn:active,
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-accent), 0 2px 8px rgba(0,119,182,0.06);
 }
 
 .btn:hover {
-  background-color: #FF8B4D;
+  background: linear-gradient(90deg, #009ee8, var(--color-accent));
 }
 
+/* Large Button */
 .btn-large {
-  padding: 12px 24px;
-  font-size: 1.1rem;
+  padding: 14px 32px;
+  font-size: 1.15rem;
+}
+
+/* Card utility */
+.card {
+  background: #fff;
+  border-radius: var(--radius-main);
+  box-shadow: var(--color-card-shadow);
+  padding: 32px;
+  margin: 32px 0;
+  border: 1px solid var(--color-border);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  background: #f3fafd;
+}
+::-webkit-scrollbar-thumb {
+  background: #e6eff7;
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 750px) {
+  .hero {
+    padding-top: 84px;
+    padding-bottom: 36px;
+  }
+  .title {
+    font-size: 2.1rem;
+  }
+  .container {
+    padding: 0 12px;
+  }
+  .card {
+    padding: 16px;
+    margin: 18px 0;
+  }
 }
