@@ -3,25 +3,23 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 /**
  * PUBLIC_INTERFACE
- * ConfirmBookingScreen – Final booking review, payment selection, terms agreement, and simulated confirmation
- * Receives booking-state (mode, fare, eta, pickup, destination, guardianContact, ride) from navigation state.
- * Displays details, lets user pick payment, agree to terms, and confirm ride. Simulates confirmation & notification.
+ * ConfirmBookingScreen – Receives ride, booking, mode, and guardian details from navigation state.
+ * Displays summary, allows payment selection, requires terms acceptance, and shows booking success.
  */
-
 const MOCK_PAYMENTS = [
   { id: "upi", name: "UPI", icon: "🇮🇳" },
   { id: "card", name: "Credit Card", icon: "💳" },
-  { id: "cash", name: "Cash", icon: "💵" },
+  { id: "cash", name: "Cash", icon: "💵" }
 ];
 
 const CONDUCT_TERMS = [
   "Respect your driver/host and fellow riders.",
   "No food, smoking, or loud music unless mutually agreed.",
   "Share route updates with guardian if enabled.",
-  "Adhere to ride timings and safety instructions.",
+  "Follow ride timings and safety instructions.",
 ];
 
-// Simple utility to choose icon if not passed via navigation state
+// Util for fallback transport mode icon
 function getModeIcon(mode) {
   switch ((mode || "").toLowerCase()) {
     case "bike": return "🚲";
@@ -37,115 +35,95 @@ function ConfirmBookingScreen() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Accept state passed from previous screens (guardian/ride/mode info)
+  // All relevant navigation state
   const state = location.state || {};
   const {
-    selectedRide,
-    pickup,
-    destination,
+    booking = {},
+    ride = {},
     mode,
     modeIcon,
-    guardianContact,
+    guardianContact
   } = state;
 
-  // Ride details: fallback to safe mock if missing
-  const ride = selectedRide || {};
-  const fare = ride.price ?? "—";
-  const eta = ride.eta ?? "—";
-  const modeStr = mode || "Ride";
-  const icon = modeIcon || getModeIcon(modeStr);
+  // Prefer these aliases for legacy/compat
+  const selectedRide = state.selectedRide || ride || {};
+  const pickup = state.pickup || booking.pickup || "";
+  const destination = state.destination || booking.destination || "";
+  const fare = selectedRide.price ?? "—";
+  const eta = selectedRide.eta ?? "—";
+  const driverName = selectedRide.driver ?? "";
 
+  const rideMode = mode || state.mode || "Ride";
+  const icon = modeIcon || getModeIcon(rideMode);
+
+  // Local UI states
   const [payment, setPayment] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
 
-  // Handle Confirm Ride (simulate async with timeout)
+  // Simulate notification; after success, return to home
   function handleConfirm() {
     setSubmitting(true);
     setTimeout(() => {
       setConfirmed(true);
       setSubmitting(false);
-      // Simulate sending notification to driver/host (mock effect only)
-      // In prod: trigger API call or websocket etc
-    }, 1400);
+      // In real app, trigger API call to book/unlock in backend + notify driver/host
+    }, 1200);
   }
-
-  // Return to home after booking
   function handleGoHome() {
     navigate("/", { replace: true });
   }
 
-  // Show ride success state/modal
+  // Booking success/notification state
   if (confirmed) {
     return (
-      <div className="container" style={{ paddingTop: 94, paddingBottom: 78 }}>
+      <div className="container" style={{ paddingTop: 94, paddingBottom: 76 }}>
         <section
           className="rounded-card"
           style={{
             maxWidth: 410,
-            margin: "32px auto",
+            margin: "34px auto",
             textAlign: "center",
-            paddingTop: 40,
-            paddingBottom: 42,
+            paddingTop: 38,
+            paddingBottom: 40
           }}
         >
-          <span style={{ fontSize: 41, marginBottom: 15, display: "inline-block", color: "var(--accent)" }}>✅</span>
+          <span style={{ fontSize: 43, marginBottom: 17, color: "var(--accent)" }}>✅</span>
           <h2 className="heading-2" style={{ fontSize: 22, marginBottom: 10 }}>
-            Ride Booked Successfully!
+            Ride Booked!
           </h2>
-          <div style={{ color: "var(--text-secondary)", fontSize: 15.3, marginBottom: 11 }}>
-            Your booking is confirmed. <br />
-            <b style={{ color: "var(--primary)" }}>{ride.driver ? <>Driver: {ride.driver}</> : null}</b>
+          <div style={{ color: "var(--text-secondary)", fontSize: 15.3, marginBottom: 9 }}>
+            {driverName && <b style={{ color: "var(--primary)" }}>Driver: {driverName}</b>}
+            <br />
             {guardianContact ? (
-              <>
-                <br />
-                <span style={{ color: "var(--accent)" }}>
-                  Your guardian will receive ride updates.
-                </span>
-              </>
+              <span style={{ color: "var(--accent)" }}>
+                Guardian <span style={{ fontWeight: 700 }}>{guardianContact}</span> will receive ride updates.
+              </span>
             ) : null}
             <br />
-            <b>Driver/Host Notified!</b>
+            <span style={{ color: "var(--text-secondary)" }}>Driver/Host Notified!</span>
           </div>
           <div style={{
-            padding: "14px 0 3px 0",
+            padding: "13px 0 4px 0",
             color: "var(--primary)",
-            letterSpacing: "1px",
             fontWeight: 600,
-            fontSize: 16,
+            fontSize: 17,
+            letterSpacing: "0.5px",
           }}>
-            {icon} {modeStr}
-            {pickup && (
-              <>
-                <br />
-                <span style={{ color: "var(--accent)", fontWeight: 500 }}>From: </span>
-                {pickup}
-              </>
-            )}
-            {destination && (
-              <>
-                <br />
-                <span style={{ color: "var(--accent)", fontWeight: 500 }}>To: </span>
-                {destination}
-              </>
-            )}
-            {fare !== "—" && (
-              <>
-                <br />
-                <span style={{ color: "var(--text-secondary)" }}>Fare: ₹{fare}</span>
-              </>
-            )}
+            {icon} {rideMode}
+            <br />
+            <span style={{ color: "var(--accent)", fontWeight: 500 }}>From:</span> {pickup}
+            <br />
+            <span style={{ color: "var(--accent)", fontWeight: 500 }}>To:</span> {destination}
+            <br />
+            <span style={{ color: "var(--text-secondary)" }}>
+              Fare: {fare !== "—" ? <>₹{fare}</> : "—"}
+            </span>
           </div>
           <button
             className="btn btn-large"
-            style={{
-              marginTop: 24,
-              borderRadius: 22,
-              padding: "12px 32px",
-              fontWeight: 600,
-              minWidth: 120,
-            }}
+            style={{ marginTop: 24, borderRadius: 22, minWidth: 118, fontWeight: 600, fontSize: 16.2 }}
             onClick={handleGoHome}
           >
             Return Home
@@ -155,26 +133,28 @@ function ConfirmBookingScreen() {
     );
   }
 
+  // Main booking review & confirmation UI
   return (
-    <div className="container" style={{ paddingTop: 92, paddingBottom: 74 }}>
-      <section className="rounded-card" style={{ maxWidth: 420, margin: "32px auto 22px auto" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 12 }}>
+    <div className="container" style={{ paddingTop: 92, paddingBottom: 72 }}>
+      <section className="rounded-card" style={{ maxWidth: 434, margin: "32px auto" }}>
+        {/* Ride header/summary */}
+        <div style={{ display: "flex", alignItems: "center", gap: 13, marginBottom: 9 }}>
           <span role="img" style={{ fontSize: 31 }}>{icon}</span>
-          <span className="heading-2" style={{ fontSize: 20, color: "var(--accent)" }}>
-            Review & Confirm Ride
+          <span className="heading-2" style={{ fontSize: 21, color: "var(--accent)" }}>
+            Confirm Your Booking
           </span>
         </div>
         <div style={{
-          background: "rgba(0,168,150,0.08)",
+          background: "rgba(0,168,150,0.085)",
           borderRadius: 10,
-          padding: "14px 10px",
+          padding: "13px 10px",
           marginBottom: 13,
         }}>
-          <div style={{ fontWeight: 700, fontSize: 17, color: "var(--primary)", marginBottom: 2 }}>
-            {modeStr} Ride {ride.driver ? <span>with <span style={{ color: "var(--accent)" }}>{ride.driver}</span></span> : ""}
+          <div style={{ fontWeight: 700, fontSize: 17.2, color: "var(--primary)", marginBottom: 1 }}>
+            {rideMode} Ride {driverName ? <span>with <span style={{ color: "var(--accent)" }}>{driverName}</span></span> : ""}
           </div>
           <div style={{ color: "var(--text-secondary)", fontSize: 14.5 }}>
-            ETA: <b>{eta} min</b>{" | "}Fare: {fare !== "—" ? <>₹<b>{fare}</b></> : "—"}
+            ETA: <b>{eta}</b> min | Fare: {fare !== "—" ? <>₹<b>{fare}</b></> : "—"}
           </div>
           <div style={{
             color: "var(--accent)",
@@ -189,23 +169,23 @@ function ConfirmBookingScreen() {
           {guardianContact && (
             <div style={{
               color: "var(--accent)",
-              background: "rgba(0,119,182,0.07)",
+              background: "rgba(0,119,182,0.064)",
               padding: "5px 10px",
-              borderRadius: 8,
+              borderRadius: 7,
               marginTop: 7,
-              fontSize: 13,
+              fontSize: 13.3,
             }}>
-              Guardian contact set: <b>{guardianContact}</b>
+              <b>Guardian: {guardianContact}</b>
             </div>
           )}
         </div>
-        {/* Payment selection */}
-        <div style={{ marginBottom: 16 }}>
+        {/* Payment method */}
+        <div style={{ marginBottom: 15 }}>
           <div style={{ fontWeight: 600, marginBottom: 6, fontSize: 15 }}>
             Select Payment Method
           </div>
-          <div style={{ display: "flex", gap: 18 }}>
-            {MOCK_PAYMENTS.map((opt) => (
+          <div style={{ display: "flex", gap: 16 }}>
+            {MOCK_PAYMENTS.map(opt => (
               <button
                 key={opt.id}
                 type="button"
@@ -219,13 +199,13 @@ function ConfirmBookingScreen() {
                   fontWeight: 600,
                   border: payment === opt.id ? "2.2px solid var(--accent)" : "1px solid var(--border-color)",
                   boxShadow: payment === opt.id ? "0 2px 9px rgba(0,168,150,0.07)" : "none",
-                  outline: payment === opt.id ? "2.5px solid var(--accent)" : "none",
+                  outline: payment === opt.id ? "2.2px solid var(--accent)" : "none",
                   minWidth: 78,
                   display: "flex",
                   alignItems: "center",
-                  gap: 7,
+                  gap: 6,
                   justifyContent: "center",
-                  padding: "9px 0",
+                  padding: "8px 0",
                   cursor: "pointer"
                 }}
                 onClick={() => setPayment(opt.id)}
@@ -237,12 +217,12 @@ function ConfirmBookingScreen() {
             ))}
           </div>
         </div>
-        {/* Rules agreement */}
+        {/* Terms agreement */}
         <div
           style={{
             background: "rgba(0,119,182,0.065)",
             borderRadius: 10,
-            padding: "11px 10px 5px 10px",
+            padding: "10px 10px 6px 10px",
             marginBottom: 9,
             border: "1px solid var(--border-color)",
           }}
@@ -259,24 +239,25 @@ function ConfirmBookingScreen() {
                 marginRight: 4,
               }}
             />
-            <span style={{ fontWeight: 500, fontSize: 14.6 }}>
+            <span style={{ fontWeight: 500, fontSize: 14.4 }}>
               I agree to the TrustRide Conduct Terms
             </span>
           </label>
-          <ul style={{ marginLeft: 26, marginTop: 0, paddingLeft: 15, fontSize: 13.7 }}>
+          <ul style={{ marginLeft: 26, marginTop: 0, paddingLeft: 15, fontSize: 13.5 }}>
             {CONDUCT_TERMS.map((line, idx) =>
               <li key={idx} style={{ marginBottom: 3 }}>{line}</li>
             )}
           </ul>
         </div>
-        <div style={{ textAlign: "center", marginTop: 13 }}>
+        {/* Confirm button */}
+        <div style={{ textAlign: "center", marginTop: 11 }}>
           <button
             className="btn btn-large"
             style={{
-              borderRadius: 20,
+              borderRadius: 19,
               fontWeight: 700,
-              fontSize: 16.1,
-              minWidth: 154,
+              fontSize: 16,
+              minWidth: 140,
               background: payment && agreed && !submitting ? "var(--primary)" : "#bbb",
               color: "#fff",
               cursor: payment && agreed && !submitting ? "pointer" : "not-allowed",
