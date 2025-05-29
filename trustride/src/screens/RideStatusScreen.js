@@ -100,11 +100,11 @@ function RideStatusScreen() {
   const [driverProgress, setDriverProgress] = useState(0);
 
   // --- Feedback (emoji rating) state ----
-  // showFeedback is always true on 'Completed', guarded to prevent errors if status changes out of order, to robustly show rating bar and thank you modal
+  // Feedback is REQUIRED and modal/dialog must ALWAYS appear on completion, with robust redirect after.
   const [selectedRating, setSelectedRating] = useState(null);
   const [showThankYou, setShowThankYou] = useState(false);
-  // For robust navigation-after-feedback, ensure it only fires once per rating
-  const [didAutoNavigate, setDidAutoNavigate] = useState(false);
+  // Track if Home redirect has occurred for this completion event
+  const [didHomeRedirect, setDidHomeRedirect] = useState(false);
 
   // SOS alert modal
   const [showSOS, setShowSOS] = useState(false);
@@ -160,19 +160,28 @@ function RideStatusScreen() {
     return () => notifTimer && clearTimeout(notifTimer);
   }, [showRideStartNotif]);
 
-  // When a rating is selected, robustly show thank you and always auto-navigate to home after delay (only once)
+  // Show emoji feedback modal as soon as status transitions to Completed, regardless of flow
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  useEffect(() => {
+    if (rideStatus === "Completed") {
+      setShowFeedbackModal(true);
+    }
+  }, [rideStatus]);
+
+  // When a rating is selected, always show thank you, then auto-redirect to Home (once)
   useEffect(() => {
     let thankYouTimer, redirectTimer;
     if (
-        selectedRating !== null &&
-        rideStatus === "Completed" &&
-        !didAutoNavigate
+      rideStatus === "Completed" &&
+      selectedRating !== null &&
+      !didHomeRedirect
     ) {
       setShowThankYou(true);
-      // Short delay for thank you, then auto-redirect
+      // Short thank you, then dismiss and redirect home
       thankYouTimer = setTimeout(() => {
         setShowThankYou(false);
-        setDidAutoNavigate(true); // prevent duplicate navigations
+        setDidHomeRedirect(true); // Prevent double navigations
+        setShowFeedbackModal(false);
         navigate("/", { replace: true });
       }, 1700);
     }
@@ -180,7 +189,7 @@ function RideStatusScreen() {
       if (thankYouTimer) clearTimeout(thankYouTimer);
       if (redirectTimer) clearTimeout(redirectTimer);
     };
-  }, [selectedRating, rideStatus, didAutoNavigate, navigate]);
+  }, [selectedRating, rideStatus, didHomeRedirect, navigate]);
 
   // Manual notification/banner dismiss
   function handleManuallyDismiss() {
