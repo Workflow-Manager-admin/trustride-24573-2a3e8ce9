@@ -2,12 +2,7 @@ import React from "react";
 
 /**
  * PUBLIC_INTERFACE
- * RideStatus: Displays the current status of the booked ride ("Scheduled"),
- * estimated pickup time, a static/mock map for driver tracking, and an always-visible SOS Button.
- * Minimalist TrustRide-branded UI.
- *
- * @param {Object} props
- * @param {Object} props.ride - (optional) ride/driver info to display, else displays mock.
+ * RideStatus: Displays ride status, estimated pickup, mock driver map, and SOS.
  */
 export default function RideStatus({ ride, onSOS }) {
   // Use mock data if no ride passed
@@ -19,19 +14,16 @@ export default function RideStatus({ ride, onSOS }) {
   };
   const r = ride || mockRide;
 
-  // Format pickup time as 12-hour AM/PM
+  // Format pickup time
   function fmtTime(dt) {
     const d = new Date(dt);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
   }
 
-  // Handler for SOS click - delegate or use default alert
   function handleSOS() {
     if (onSOS) return onSOS();
     window.alert(
-      "🚨 Emergency SOS activated (Demo)
-
-In the real app, guardians and TrustRide would be notified immediately."
+      "SOS Emergency activated (Demo). In production, guardians and support would be notified immediately."
     );
   }
 
@@ -74,17 +66,10 @@ In the real app, guardians and TrustRide would be notified immediately."
         <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15, marginBottom: 2 }}>
           Your verified driver is on the way!
         </div>
-
-        {/* Estimated Pickup */}
         <div style={{ marginTop: 14, marginBottom: 8, fontWeight: 700, color: "#0077B6", fontSize: 16 }}>
-          <span role="img" aria-label="clock" style={{ marginRight: 7, fontSize: 18 }}>
-            ⏰
-          </span>
           Estimated Pickup:&nbsp;
           <span>{fmtTime(r.estPickup)}</span>
         </div>
-
-        {/* Driver Info */}
         <div
           style={{
             marginTop: 8,
@@ -162,12 +147,8 @@ In the real app, guardians and TrustRide would be notified immediately."
             textAlign: "center",
           }}
         >
-          <span role="img" aria-label="map" style={{ fontSize: 20, marginRight: 6 }}>
-            🗺️
-          </span>
           Driver Map / Arrival Tracking (Demo)
         </div>
-        {/* Static minimalist "map": dots as route, car as driver location */}
         <div
           aria-label="Live Driver Map (mock)"
           style={{
@@ -186,7 +167,6 @@ In the real app, guardians and TrustRide would be notified immediately."
             marginBottom: 0,
           }}
         >
-          {/* Start pin */}
           <span
             style={{
               width: 18,
@@ -199,7 +179,6 @@ In the real app, guardians and TrustRide would be notified immediately."
               boxShadow: "0 2px 5px rgba(0,119,182,0.13)",
             }}
           ></span>
-          {/* Route line (dots) */}
           <span
             style={{
               flex: 1,
@@ -210,15 +189,11 @@ In the real app, guardians and TrustRide would be notified immediately."
               minWidth: 26,
             }}
           ></span>
-          {/* Car (driver marker) */}
           <span
-            aria-label="car"
-            role="img"
             style={{
               fontSize: 28,
               color: "#00A896",
               marginRight: 4,
-              transform: "rotate(-11deg)",
               background: "#f4fbf9",
               borderRadius: "50%",
               width: 34,
@@ -229,9 +204,8 @@ In the real app, guardians and TrustRide would be notified immediately."
               border: "2.5px solid #00A89650",
             }}
           >
-            🚗
+            Car
           </span>
-          {/* End pin */}
           <span
             style={{
               width: 18,
@@ -290,9 +264,6 @@ In the real app, guardians and TrustRide would be notified immediately."
           aria-label="Emergency SOS"
           tabIndex={0}
         >
-          <span role="img" aria-label="siren" style={{ fontSize: 27, marginRight: 2 }}>
-            🚨
-          </span>
           Emergency SOS
         </button>
       </section>
