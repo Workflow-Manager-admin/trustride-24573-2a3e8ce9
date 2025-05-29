@@ -2,7 +2,14 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Polyline, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
-// Fix for missing default marker icons in leaflet
+// SVGs for custom markers (blue car, green home pointer for style), fallback to default
+const carSVG = encodeURIComponent(
+  `<svg width="42" height="42" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="21" r="21" fill="#00A896"/><text x="13.5" y="28" font-size="22" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">🚗</text></svg>`
+);
+const pickupSVG = encodeURIComponent(
+  `<svg width="42" height="42" xmlns="http://www.w3.org/2000/svg"><circle cx="21" cy="21" r="21" fill="#0077B6"/><text x="9" y="29" font-size="25" font-family="Arial,sans-serif" fill="#fff" font-weight="bold">📍</text></svg>`
+);
+
 import L from "leaflet";
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -14,6 +21,23 @@ L.Icon.Default.mergeOptions({
     "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
+const carIcon = new L.Icon({
+  iconUrl: `data:image/svg+xml,${carSVG}`,
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [1, -28],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  shadowSize: [38, 38]
+});
+const userIcon = new L.Icon({
+  iconUrl: `data:image/svg+xml,${pickupSVG}`,
+  iconSize: [38, 38],
+  iconAnchor: [19, 38],
+  popupAnchor: [1, -24],
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  shadowSize: [38, 38]
+});
+// Fix for missing default marker icons in leaflet
 /**
  * PUBLIC_INTERFACE
  * RideStatus: Displays ride status, estimated pickup, and a real map with live mock driver location and route.
@@ -24,22 +48,31 @@ export default function RideStatus({ ride, onSOS }) {
     driver: "Priya Shah",
     vehicle: "Hyundai Verna - Blue",
     depPoint: "Greenwood University Main Gate",
-    estPickup: new Date(Date.now() + 13 * 60000),
-    // mock: Mumbai [driver + pickup] (could be anywhere realistic)
-    driverLatLng: [19.103, 72.87], // moving "toward" pickup
-    pickupLatLng: [19.1167, 72.8333]
+    estPickup: new Date(Date.now() + 6 * 60000), // 6 min demo/prompt
+    driverLatLng: [19.103, 72.87],               // sample "on the way" location
+    pickupLatLng: [19.1167, 72.8333],            // fixed mock pickup (Mumbai)
   };
   const r = ride || mockRide;
 
-  // Mock route (normally you'd get real API route polyline)
+  // For "Arriving in X min" logic
+  const timeDiff = Math.max(1, Math.ceil((new Date(r.estPickup) - new Date())/60000));
+  const timeStr = timeDiff <= 1
+    ? "Arriving now"
+    : `Arriving in ${timeDiff} min`;
+
+  // (optional) Use 'en route' line or animated marker here if desired
   const route = [r.driverLatLng, r.pickupLatLng];
 
-  // Format pickup time
-  function fmtTime(dt) {
-    const d = new Date(dt);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  // Responsive map height for mobile
+  const getMapHeight = () =>
+    window.innerWidth < 420 ? 180 : 210;
+
+  // Format as '08:45 PM' string
+  function fmtClock(dt) {
+    return new Date(dt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
   }
 
+  // Handler for SOS
   function handleSOS() {
     if (onSOS) return onSOS();
     window.alert(
@@ -47,6 +80,24 @@ export default function RideStatus({ ride, onSOS }) {
     );
   }
 
+  // Style for ETA display
+  const etaBoxStyle = {
+    margin: "18px auto 8px",
+    fontWeight: 850,
+    fontSize: "1.33rem",
+    color: "var(--color-accent)",
+    background: "linear-gradient(90deg, #ecfcf7 70%, #eaf9ff 100%)",
+    borderRadius: 13,
+    border: "2px solid var(--color-accent)",
+    boxShadow: "0 2.5px 11px #a7f2eb33",
+    padding: "10px 18px 7px 14px",
+    textAlign: "center",
+    letterSpacing: "0.7px",
+    display: "inline-block",
+    lineHeight: 1.2,
+  };
+
+  // Main component render
   return (
     <div style={{ paddingTop: 48, paddingBottom: 30, maxWidth: 430, margin: "0 auto" }}>
       {/* Status Card */}
@@ -56,8 +107,8 @@ export default function RideStatus({ ride, onSOS }) {
           borderRadius: "var(--radius-main)",
           boxShadow: "0 2px 23px rgba(0,168,150,0.09)",
           border: "2.2px solid var(--color-accent)",
-          padding: "34px 22px 25px 22px",
-          marginBottom: 26,
+          padding: "34px 22px 19px 22px",
+          marginBottom: 18,
           background: "#fff",
           display: "flex",
           flexDirection: "column",
@@ -79,20 +130,28 @@ export default function RideStatus({ ride, onSOS }) {
             border: "1.5px solid var(--color-accent)",
             borderRadius: 19,
             marginBottom: 5,
+            textTransform: "uppercase"
           }}
         >
-          Scheduled
+          En Route
         </span>
-        <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15, marginBottom: 2 }}>
+        <div className="description" style={{ color: "var(--color-text-secondary)", fontSize: 15 }}>
           Your verified driver is on the way!
         </div>
-        <div style={{ marginTop: 14, marginBottom: 8, fontWeight: 700, color: "#0077B6", fontSize: 16 }}>
-          Estimated Pickup:&nbsp;
-          <span>{fmtTime(r.estPickup)}</span>
+        {/* PROMINENT ETA */}
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          style={etaBoxStyle}
+        >
+          {timeStr} &middot;&nbsp;
+          <span style={{ color: "var(--color-primary)", fontWeight: 800, marginLeft: 4, letterSpacing: ".6px" }}>
+            {fmtClock(r.estPickup)}
+          </span>
         </div>
         <div
           style={{
-            marginTop: 8,
+            marginTop: 2,
             marginBottom: 0,
             display: "flex",
             alignItems: "center",
@@ -143,7 +202,7 @@ export default function RideStatus({ ride, onSOS }) {
         </div>
       </section>
 
-      {/* Map/Mini-tracker Card */}
+      {/* Map Card */}
       <section
         className="card"
         style={{
@@ -151,8 +210,8 @@ export default function RideStatus({ ride, onSOS }) {
           border: "1.2px solid var(--color-border)",
           background: "#f8fafb",
           boxShadow: "0 1.5px 10px rgba(0,119,182,0.045)",
-          padding: "23px 17px 18px 19px",
-          marginBottom: 27,
+          padding: "19px 13px 13px 13px",
+          marginBottom: 22,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -163,18 +222,18 @@ export default function RideStatus({ ride, onSOS }) {
             fontWeight: 800,
             color: "var(--color-primary)",
             fontSize: 17,
-            marginBottom: 11,
+            marginBottom: 10,
             textAlign: "center",
             letterSpacing: "-0.3px"
           }}
         >
-          <span style={{marginRight: 6, fontSize: 23}}>🗺️</span>
+          <span style={{marginRight: 7, fontSize: 23}}>🗺️</span>
           Live Map: Driver & Route
         </div>
         <div style={{
           width: "100%",
-          maxWidth: 320,
-          height: 210,
+          maxWidth: 370,
+          height: getMapHeight(),
           margin: "0 auto",
           borderRadius: 17,
           overflow: "hidden",
@@ -187,7 +246,8 @@ export default function RideStatus({ ride, onSOS }) {
             scrollWheelZoom={false}
             style={{
               width: "100%",
-              height: "210px",
+              height: "100%",
+              minHeight: 120,
               borderRadius: 17,
               border: "none"
             }}
@@ -200,21 +260,26 @@ export default function RideStatus({ ride, onSOS }) {
               maxZoom={18}
               attribution="&copy; OpenStreetMap contributors"
             />
-            {/* Driver marker */}
-            <Marker position={r.driverLatLng}>
+            {/* Driver marker (car icon) */}
+            <Marker position={r.driverLatLng} icon={carIcon}>
               <Popup>
                 Driver: {r.driver} <br />
                 {r.vehicle}
               </Popup>
             </Marker>
-            {/* Pickup marker */}
-            <Marker position={r.pickupLatLng}>
+            {/* Pickup marker (blue pin) */}
+            <Marker position={r.pickupLatLng} icon={userIcon}>
               <Popup>
                 Pickup: {r.depPoint}
               </Popup>
             </Marker>
             {/* Route polyline */}
-            <Polyline positions={route} pathOptions={{ color: "#00A896", weight: 6, opacity: 0.67, dashArray: "3 7" }} />
+            <Polyline positions={route} pathOptions={{
+              color: "#00A896",
+              weight: 7,
+              opacity: 0.75,
+              dashArray: "5 11"
+            }} />
           </MapContainer>
         </div>
         <div
@@ -226,8 +291,8 @@ export default function RideStatus({ ride, onSOS }) {
             textAlign: "center",
           }}
         >
-          Driver is approaching your pickup point.<br />
-          Track progress in real-time on the map.
+          Driver is currently en route to your pickup.<br />
+          Track progress live on the map.
         </div>
       </section>
 
