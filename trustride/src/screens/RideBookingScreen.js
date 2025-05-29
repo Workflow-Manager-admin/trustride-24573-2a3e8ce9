@@ -6,12 +6,10 @@ import React, { useState } from 'react';
  * Minimalist card UI for each mode. Selected mode is highlighted, with confirmation shown.
  */
 const TRANSPORT_MODES = [
-  { icon: '🚘', label: 'Car' },
   { icon: '🚲', label: 'Bike' },
-  { icon: '🚐', label: 'Minivan' },
-  { icon: '🚌', label: 'Shuttle Bus' },
-  { icon: '🛴', label: 'e-Scooter' },
-  // Add more modes as needed
+  { icon: '🚕', label: 'Mini Cab' },
+  { icon: '🚖', label: 'Prime Cab' },
+  { icon: '🛺', label: 'Auto' }
 ];
 
 // PUBLIC_INTERFACE
