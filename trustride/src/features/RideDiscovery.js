@@ -76,6 +76,12 @@ export default function RideDiscovery() {
   const [selectedInstitution, setSelectedInstitution] = useState("All");
   const [rides, setRides] = useState(MOCK_RIDES);
 
+  // Pickup & Destination state
+  const [pickup, setPickup] = useState("");
+  const [destination, setDestination] = useState("");
+  // For demonstration, pinning address via map is a placeholder (not interactive)
+  // Would use lat/lng and address resolution in real implementation
+
   const institutions = ["All", ...getInstitutions(rides)];
 
   const filteredRides =
@@ -99,9 +105,113 @@ A confirmation will be sent (mock).`
     );
   }
 
-  // UI minimalist filter bar, card grid, empty state if none
+  // UI minimalist filter bar, Pickup/Destination inputs, card grid, empty state if none
   return (
-    <div style={{ paddingTop: 16, paddingBottom: 28 }}>
+    <div style={{ paddingTop: 16, paddingBottom: 28, maxWidth: 480, margin: "0 auto" }}>
+      {/* Pickup/Destination input section */}
+      <section
+        className="card"
+        aria-label="Pickup and Destination Entry"
+        style={{
+          margin: "0 0 18px 0",
+          borderRadius: "var(--radius-main)",
+          boxShadow: "0 2px 14px rgba(0,119,182,0.06)",
+          border: "1.5px solid var(--color-border)",
+          padding: "22px 14px 22px 14px",
+          background: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          gap: 18,
+        }}
+      >
+        <div style={{ fontWeight: 700, fontSize: 17, color: "var(--color-primary)", marginBottom: 5, display: "flex", gap: 8, alignItems: "center" }}>
+          <span role="img" aria-label="car" style={{ fontSize: 18, marginRight: 1 }}>🚗</span>
+          Enter Pickup & Destination
+        </div>
+        {/* Input fields & map placeholder, minimalistic UI */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+          {/* Pickup Field */}
+          <label
+            htmlFor="pickup-address"
+            style={{ fontSize: 14, color: "var(--color-text-secondary)", fontWeight: 600, marginBottom: 2 }}
+          >
+            Pickup
+          </label>
+          <input
+            id="pickup-address"
+            type="text"
+            className="input"
+            placeholder="Enter pickup location or drop pin..."
+            style={{
+              padding: "10px 12px",
+              fontSize: "1.01rem",
+              border: "1.4px solid var(--color-border)",
+              borderRadius: 6,
+              marginBottom: 1,
+              background: "#f8fafb",
+              color: "var(--color-text-primary)"
+            }}
+            value={pickup}
+            onChange={e => setPickup(e.target.value)}
+            autoComplete="off"
+            autoFocus
+          />
+
+          {/* Destination Field */}
+          <label
+            htmlFor="dest-address"
+            style={{ fontSize: 14, color: "var(--color-text-secondary)", fontWeight: 600, marginBottom: 2, marginTop: 2 }}
+          >
+            Destination
+          </label>
+          <input
+            id="dest-address"
+            type="text"
+            className="input"
+            placeholder="Enter destination or drop pin..."
+            style={{
+              padding: "10px 12px",
+              fontSize: "1.01rem",
+              border: "1.4px solid var(--color-border)",
+              borderRadius: 6,
+              marginBottom: 1,
+              background: "#f8fafb",
+              color: "var(--color-text-primary)"
+            }}
+            value={destination}
+            onChange={e => setDestination(e.target.value)}
+            autoComplete="off"
+          />
+
+          {/* Map placeholder: future enhancement */}
+          <div
+            style={{
+              background: "linear-gradient(90deg, #e3f3ff 65%, #e0faf7 99%)",
+              border: "1.3px dashed var(--color-accent)",
+              borderRadius: 14,
+              minHeight: 74,
+              marginTop: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#90bda1",
+              fontWeight: 600,
+              fontSize: 14.7,
+            }}
+            aria-label="Map location picker (placeholder)"
+          >
+            {/* In real app, this will be an interactive map with pinning */}
+            <span style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 9 }}>
+              <span role="img" aria-label="location pin" style={{ fontSize: 23, marginRight: 6 }}>📍</span>
+              Pin pickup & drop-off on map &nbsp;
+              <span style={{ color: "var(--color-muted)", fontWeight: 500, fontSize: 13 }}>
+                (Map coming soon)
+              </span>
+            </span>
+          </div>
+        </div>
+      </section>
+
       {/* Filter bar */}
       <div
         role="region"
