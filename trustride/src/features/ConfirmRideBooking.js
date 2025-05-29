@@ -497,24 +497,24 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
         <button
           className="btn btn-large"
           style={{
-            background: agreed
+            background: etaFareReviewed && agreed
               ? "linear-gradient(90deg, var(--color-primary), var(--color-accent))"
               : "#e8eeee",
-            color: agreed ? "#fff" : "#aac7c6",
+            color: etaFareReviewed && agreed ? "#fff" : "#aac7c6",
             fontWeight: 700,
             fontSize: "1.09rem",
             borderRadius: 10,
             minWidth: 160,
-            boxShadow: agreed
+            boxShadow: etaFareReviewed && agreed
               ? "0 2px 8px rgba(0,119,182,0.10)"
               : "none",
             outline: "none",
             transition: "background 0.18s cubic-bezier(0.4,0,0.2,1)",
-            cursor: agreed ? "pointer" : "not-allowed"
+            cursor: etaFareReviewed && agreed ? "pointer" : "not-allowed"
           }}
           type="button"
-          disabled={!agreed || submitting || success}
-          aria-disabled={!agreed || submitting || success}
+          disabled={!etaFareReviewed || !agreed || submitting || success}
+          aria-disabled={!etaFareReviewed || !agreed || submitting || success}
           onClick={handleConfirm}
         >
           {submitting ? "Booking..." : success ? "Confirmed!" : "Confirm Booking"}
