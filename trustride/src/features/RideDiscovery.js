@@ -130,59 +130,159 @@ A confirmation will be sent (mock).`
         </div>
         {/* Input fields & map placeholder, minimalistic UI */}
         <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-          {/* Pickup Field */}
-          <label
-            htmlFor="pickup-address"
-            style={{ fontSize: 14, color: "var(--color-text-secondary)", fontWeight: 600, marginBottom: 2 }}
-          >
-            Pickup
-          </label>
-          <input
-            id="pickup-address"
-            type="text"
-            className="input"
-            placeholder="Enter pickup location or drop pin..."
-            style={{
-              padding: "10px 12px",
-              fontSize: "1.01rem",
-              border: "1.4px solid var(--color-border)",
-              borderRadius: 6,
-              marginBottom: 1,
-              background: "#f8fafb",
-              color: "var(--color-text-primary)"
-            }}
-            value={pickup}
-            onChange={e => setPickup(e.target.value)}
-            autoComplete="off"
-            autoFocus
-          />
-
-          {/* Destination Field */}
-          <label
-            htmlFor="dest-address"
-            style={{ fontSize: 14, color: "var(--color-text-secondary)", fontWeight: 600, marginBottom: 2, marginTop: 2 }}
-          >
-            Destination
-          </label>
-          <input
-            id="dest-address"
-            type="text"
-            className="input"
-            placeholder="Enter destination or drop pin..."
-            style={{
-              padding: "10px 12px",
-              fontSize: "1.01rem",
-              border: "1.4px solid var(--color-border)",
-              borderRadius: 6,
-              marginBottom: 1,
-              background: "#f8fafb",
-              color: "var(--color-text-primary)"
-            }}
-            value={destination}
-            onChange={e => setDestination(e.target.value)}
-            autoComplete="off"
-          />
-
+          {/* Pickup Field with icon */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 2,
+            background: "#f8fafb",
+            borderRadius: 8,
+            border: "1.35px solid var(--color-border)",
+            padding: "2px 0"
+          }}>
+            <span
+              aria-label="pickup icon"
+              style={{
+                background: "#ecfcf7",
+                color: "var(--color-accent)",
+                borderRadius: 10,
+                padding: "6px 8px 5px",
+                fontSize: 22,
+                display: "inline-flex",
+                marginLeft: 6,
+                marginRight: 2
+              }}
+              role="img"
+            >
+              ⬆️
+            </span>
+            <div style={{ flex: 1 }}>
+              <label
+                htmlFor="pickup-address"
+                style={{
+                  fontSize: 13.7,
+                  color: "var(--color-text-secondary)",
+                  fontWeight: 600,
+                  marginBottom: 1,
+                  letterSpacing: "0.2px",
+                  display: "block"
+                }}
+              >
+                Pickup
+              </label>
+              <input
+                id="pickup-address"
+                type="text"
+                className="input"
+                placeholder="Enter pickup address or drop a pin"
+                style={{
+                  width: "100%",
+                  padding: "9px 11px",
+                  fontSize: "1.06rem",
+                  border: "none",
+                  borderRadius: 7,
+                  background: "none",
+                  color: "var(--color-text-primary)"
+                }}
+                value={pickup}
+                onChange={e => setPickup(e.target.value)}
+                autoComplete="off"
+                autoFocus
+              />
+            </div>
+            {/* Future: pin button on map */}
+            <span
+              aria-label="map pin placeholder"
+              style={{
+                color: "#00A896",
+                marginRight: 13,
+                marginLeft: 4,
+                fontSize: 22,
+                opacity: 0.86
+              }}
+              role="img"
+              title="Pin on map (coming soon)"
+            >
+              📍
+            </span>
+          </div>
+          {/* Destination Field with icon */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            marginBottom: 2,
+            background: "#f8fafb",
+            borderRadius: 8,
+            border: "1.35px solid var(--color-border)",
+            padding: "2px 0"
+          }}>
+            <span
+              aria-label="destination icon"
+              style={{
+                background: "#e3f3ff",
+                color: "var(--color-primary)",
+                borderRadius: 10,
+                padding: "6px 8px 5px",
+                fontSize: 22,
+                display: "inline-flex",
+                marginLeft: 6,
+                marginRight: 2
+              }}
+              role="img"
+            >
+              ⬇️
+            </span>
+            <div style={{ flex: 1 }}>
+              <label
+                htmlFor="dest-address"
+                style={{
+                  fontSize: 13.7,
+                  color: "var(--color-text-secondary)",
+                  fontWeight: 600,
+                  marginBottom: 1,
+                  letterSpacing: "0.2px",
+                  display: "block"
+                }}
+              >
+                Destination
+              </label>
+              <input
+                id="dest-address"
+                type="text"
+                className="input"
+                placeholder="Enter destination address or drop a pin"
+                style={{
+                  width: "100%",
+                  padding: "9px 11px",
+                  fontSize: "1.06rem",
+                  border: "none",
+                  borderRadius: 7,
+                  background: "none",
+                  color: "var(--color-text-primary)"
+                }}
+                value={destination}
+                onChange={e => setDestination(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
+            {/* Future: pin button on map */}
+            <span
+              aria-label="map pin placeholder"
+              style={{
+                color: "#0077B6",
+                marginRight: 13,
+                marginLeft: 4,
+                fontSize: 22,
+                opacity: 0.86
+              }}
+              role="img"
+              title="Pin on map (coming soon)"
+            >
+              📍
+            </span>
+          </div>
           {/* Map placeholder: future enhancement */}
           <div
             style={{
@@ -200,12 +300,11 @@ A confirmation will be sent (mock).`
             }}
             aria-label="Map location picker (placeholder)"
           >
-            {/* In real app, this will be an interactive map with pinning */}
             <span style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 9 }}>
-              <span role="img" aria-label="location pin" style={{ fontSize: 23, marginRight: 6 }}>📍</span>
-              Pin pickup & drop-off on map &nbsp;
-              <span style={{ color: "var(--color-muted)", fontWeight: 500, fontSize: 13 }}>
-                (Map coming soon)
+              <span role="img" aria-label="location pin" style={{ fontSize: 23, marginRight: 6 }}>🗺️</span>
+              Pick location on map (coming soon)
+              <span style={{ color: "var(--color-muted)", fontWeight: 500, fontSize: 13, marginLeft: 8 }}>
+                (Map support coming soon)
               </span>
             </span>
           </div>
