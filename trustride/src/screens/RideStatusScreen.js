@@ -389,9 +389,9 @@ function RideStatusScreen() {
         </div>
 
         {/* Post-ride Emoji Rating Feedback */}
-        {showFeedback && rideStatus === "Completed" ? (
+        {rideStatus === "Completed" ? (
           <>
-            {/* Modal/Dialog overlay on feedback */}
+            {/* Modal/Dialog overlay for emoji feedback: always visible on 'Completed' until rating chosen */}
             <div
               style={{
                 position: "fixed",
@@ -402,7 +402,11 @@ function RideStatusScreen() {
               }}
               role="dialog"
               aria-modal="true"
-              aria-label="Rate your ride"
+              aria-label={
+                selectedRating == null
+                  ? "Rate your ride"
+                  : "Thank you for your feedback"
+              }
             >
               <div
                 style={{
@@ -427,12 +431,21 @@ function RideStatusScreen() {
                   letterSpacing: 0.12,
                   textAlign: "center",
                 }}>
-                  Enjoyed the ride?<br />
-                  <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
-                    Take a moment to rate us.
-                  </span>
+                  {selectedRating == null ? (
+                    <>
+                      Enjoyed the ride?<br />
+                      <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
+                        Take a moment to rate us.
+                      </span>
+                    </>
+                  ) : (
+                    <span>
+                      {/* To ensure accessibility: Thank you title */}
+                      Thank you for riding with us!
+                    </span>
+                  )}
                 </div>
-                {!selectedRating ? (
+                {selectedRating == null ? (
                   <>
                     <div style={{
                       display: "flex",
@@ -481,7 +494,7 @@ function RideStatusScreen() {
                     </div>
                   </>
                 ) : (
-                  // Thank You Message after rating
+                  // Thank You Message always visible on feedback, before auto-navigate
                   <div style={{
                     color: "var(--primary)",
                     fontWeight: 700,
@@ -499,7 +512,7 @@ function RideStatusScreen() {
             </div>
           </>
         ) : (
-          // Only show buttons if not in feedback mode
+          // Only show buttons if not in feedback mode – i.e., NOT 'Completed'
           <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
             <button
               className="btn"
