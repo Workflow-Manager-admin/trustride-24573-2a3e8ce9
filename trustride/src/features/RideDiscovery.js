@@ -713,18 +713,18 @@ A confirmation will be sent (mock).`
           borderRadius: "var(--radius-main)",
           boxShadow: "0 2px 10px rgba(0,168,150,0.05)",
           border: "1.2px solid var(--color-border)",
-          padding: "19px 14px 19px 14px",
+          padding: "21px 15px 17px 15px",
           background: "#fff",
           display: "flex",
           flexDirection: "column",
-          gap: 11,
+          gap: 9,
         }}
       >
         <div style={{
           fontWeight: 700,
           fontSize: 16.5,
           color: "var(--color-primary)",
-          marginBottom: 4,
+          marginBottom: 3,
           display: "flex",
           gap: 8,
           alignItems: "center"
@@ -732,10 +732,11 @@ A confirmation will be sent (mock).`
           <span role="img" aria-label="clock" style={{ fontSize: 17, marginRight: 2 }}>⏰</span>
           Ride Timing
         </div>
-
-        {/* Now/later radio group */}
-        <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 4 }}>
-          <label style={{ fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 19, marginBottom: 4 }}>
+          <label style={{
+            fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)",
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 7
+          }}>
             <input
               type="radio"
               name="ride-time-type"
@@ -745,7 +746,10 @@ A confirmation will be sent (mock).`
             />
             Now
           </label>
-          <label style={{ fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)", cursor: "pointer", display: "flex", alignItems: "center", gap: 7 }}>
+          <label style={{
+            fontWeight: 600, fontSize: 14.5, color: "var(--color-text-secondary)",
+            cursor: "pointer", display: "flex", alignItems: "center", gap: 7
+          }}>
             <input
               type="radio"
               name="ride-time-type"
@@ -756,18 +760,16 @@ A confirmation will be sent (mock).`
             Schedule for Later
           </label>
         </div>
-
-        {/* Show time picker if "Schedule for Later" selected */}
+        {/* Only show the picker/±range if "later" */}
         {rideTimeType === "later" && (
-          <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 13, alignItems: "center", flexWrap: "wrap" }}>
             <label htmlFor="date-picker"
               style={{
                 fontWeight: 500,
-                fontSize: 13.5,
+                fontSize: 13.4,
                 color: "var(--color-muted)",
                 marginBottom: 0, marginRight: 3,
-              }}
-            >
+              }}>
               Date
             </label>
             <input
@@ -775,9 +777,9 @@ A confirmation will be sent (mock).`
               type="date"
               value={scheduledDate}
               min={today}
-              onChange={(e) => setScheduledDate(e.target.value)}
+              onChange={e => setScheduledDate(e.target.value)}
               style={{
-                border: "1.1px solid var(--color-border)",
+                border: "1.08px solid var(--color-border)",
                 borderRadius: 7,
                 padding: "7px",
                 fontSize: "1em",
@@ -790,20 +792,19 @@ A confirmation will be sent (mock).`
             <label htmlFor="time-picker"
               style={{
                 fontWeight: 500,
-                fontSize: 13.5,
+                fontSize: 13.4,
                 color: "var(--color-muted)",
-                marginRight: 3, marginLeft: 5
-              }}
-            >
+                marginRight: 3, marginLeft: 5,
+              }}>
               Time
             </label>
             <input
               id="time-picker"
               type="time"
               value={scheduledTime}
-              onChange={(e) => setScheduledTime(e.target.value)}
+              onChange={e => setScheduledTime(e.target.value)}
               style={{
-                border: "1.1px solid var(--color-border)",
+                border: "1.08px solid var(--color-border)",
                 borderRadius: 7,
                 padding: "7px",
                 fontSize: "1em",
@@ -813,10 +814,8 @@ A confirmation will be sent (mock).`
                 fontWeight: 500,
               }}
             />
-
-            {/* ±Time range (15/30min) */}
             <div style={{ marginLeft: 7 }}>
-              <span style={{ fontSize: 13.1, color: "var(--color-text-secondary)", marginRight: 5 }}>
+              <span style={{ fontSize: 13.1, color: "var(--color-text-secondary)", marginRight: 4 }}>
                 Flexibility:
               </span>
               <button
@@ -824,7 +823,7 @@ A confirmation will be sent (mock).`
                 className="tr-chip"
                 style={{
                   padding: "4px 12px",
-                  fontSize: 13.5,
+                  fontSize: 13.2,
                   color: timeFlex === 15 ? "var(--color-accent)" : "var(--color-primary)",
                   background: timeFlex === 15
                     ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
@@ -838,15 +837,13 @@ A confirmation will be sent (mock).`
                 onClick={() => setTimeFlex(15)}
                 tabIndex={0}
                 aria-label="±15 min"
-              >
-                ±15 min
-              </button>
+              >±15 min</button>
               <button
                 type="button"
                 className="tr-chip"
                 style={{
                   padding: "4px 12px",
-                  fontSize: 13.5,
+                  fontSize: 13.2,
                   color: timeFlex === 30 ? "var(--color-accent)" : "var(--color-primary)",
                   background: timeFlex === 30
                     ? "linear-gradient(90deg, #ecfcf7 70%, #e3f3ff 99%)"
@@ -859,14 +856,10 @@ A confirmation will be sent (mock).`
                 onClick={() => setTimeFlex(30)}
                 tabIndex={0}
                 aria-label="±30 min"
-              >
-                ±30 min
-              </button>
+              >±30 min</button>
             </div>
           </div>
         )}
-
-        {/* If "Now" is picked, show the ±time fleixibility? Optionally, but hide for now, keep minimal */}
       </section>
 
       {/* Filter bar */}
