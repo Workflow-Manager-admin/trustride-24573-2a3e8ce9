@@ -388,90 +388,114 @@ function RideStatusScreen() {
 
         {/* Post-ride Emoji Rating Feedback */}
         {showFeedback && rideStatus === "Completed" ? (
-          <div style={{
-            margin: "32px auto 10px auto",
-            background: "rgba(0,168,150,0.07)",
-            border: "1.5px solid var(--accent)",
-            borderRadius: 14,
-            padding: "1.2rem 0.7rem 1.4rem 0.7rem",
-            textAlign: "center",
-            maxWidth: 330,
-            boxShadow: "0 6px 22px rgba(0,168,150,0.08)"
-          }}>
-            <div className="heading-2" style={{
-              fontSize: 17,
-              color: "var(--accent)",
-              marginBottom: 10,
-              fontWeight: 700,
-              letterSpacing: 0.15
-            }}>
-              Enjoyed the ride?<br />
-              <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
-                Take a moment to rate us.
-              </span>
+          <>
+            {/* Modal/Dialog overlay on feedback */}
+            <div
+              style={{
+                position: "fixed",
+                left: 0, top: 0, width: "100vw", height: "100vh",
+                zIndex: 9100,
+                background: "rgba(30,40,58,0.23)",
+                display: "flex", alignItems: "center", justifyContent: "center"
+              }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Rate your ride"
+            >
+              <div
+                style={{
+                  background: "#fff",
+                  borderRadius: 21,
+                  minWidth: 285,
+                  maxWidth: 350,
+                  boxShadow: "0 8px 42px rgba(0,168,150, 0.21)",
+                  padding: "2.1rem 1.2rem 1.5rem 1.2rem",
+                  border: "2px solid var(--accent)",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  position: "relative"
+                }}
+              >
+                <div className="heading-2" style={{
+                  fontSize: 18,
+                  color: "var(--accent)",
+                  marginBottom: 9,
+                  fontWeight: 700,
+                  letterSpacing: 0.12,
+                  textAlign: "center",
+                }}>
+                  Enjoyed the ride?<br />
+                  <span style={{ fontWeight: 500, color: "var(--text-secondary)", fontSize: 15.1 }}>
+                    Take a moment to rate us.
+                  </span>
+                </div>
+                {!selectedRating ? (
+                  <>
+                    <div style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "center",
+                      gap: 19,
+                      margin: "15px 0 8px 0"
+                    }}>
+                      {[{
+                        emoji: "😡", label: "Very Poor"
+                      }, {
+                        emoji: "😕", label: "Poor"
+                      }, {
+                        emoji: "😐", label: "Okay"
+                      }, {
+                        emoji: "🙂", label: "Good"
+                      }, {
+                        emoji: "😄", label: "Excellent"
+                      }].map((item, idx) => (
+                        <button
+                          key={item.emoji}
+                          style={{
+                            fontSize: 35,
+                            background: "transparent",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "0 3px",
+                            transition: "transform .14s",
+                          }}
+                          aria-label={item.label}
+                          tabIndex={0}
+                          onClick={() => setSelectedRating(idx + 1)}
+                        >
+                          <span role="img" aria-label={item.label}>{item.emoji}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{
+                      color: "var(--text-secondary)",
+                      fontSize: 13.5,
+                      fontStyle: "italic",
+                      marginTop: 7,
+                      textAlign: "center"
+                    }}>
+                      Tap an emoji to rate and return to home
+                    </div>
+                  </>
+                ) : (
+                  // Thank You Message after rating
+                  <div style={{
+                    color: "var(--primary)",
+                    fontWeight: 700,
+                    fontSize: 18,
+                    margin: "18px 0 12px 0",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center"
+                  }}>
+                    <span style={{ fontSize: 44, marginBottom: 2, marginTop: 2 }}>🎉</span>
+                    Thank you for your feedback!
+                  </div>
+                )}
+              </div>
             </div>
-            {!selectedRating ? (
-              <div style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                gap: 19,
-                margin: "10px 0 6px 0"
-              }}>
-                {[{
-                  emoji: "😡", label: "Very Poor"
-                }, {
-                  emoji: "☹️", label: "Poor"
-                }, {
-                  emoji: "😐", label: "Okay"
-                }, {
-                  emoji: "😊", label: "Good"
-                }, {
-                  emoji: "🤩", label: "Excellent"
-                }].map((item, idx) => (
-                  <button
-                    key={item.emoji}
-                    style={{
-                      fontSize: 33,
-                      background: "transparent",
-                      border: "none",
-                      cursor: "pointer",
-                      transition: "transform .14s",
-                    }}
-                    aria-label={item.label}
-                    tabIndex={0}
-                    onClick={() => setSelectedRating(idx + 1)}
-                  >
-                    <span role="img" aria-label={item.label}>{item.emoji}</span>
-                  </button>
-                ))}
-              </div>
-            ) : (
-              // Thank You Message after rating
-              <div style={{
-                color: "var(--primary)",
-                fontWeight: 700,
-                fontSize: 18,
-                margin: "16px 0 10px 0",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center"
-              }}>
-                <span style={{ fontSize: 38, marginBottom: 2 }}>🎉</span>
-                Thank you for your feedback!
-              </div>
-            )}
-            {!selectedRating &&
-              <div style={{
-                color: "var(--text-secondary)",
-                fontSize: 13.5,
-                fontStyle: "italic",
-                marginTop: 7
-              }}>
-                Tap an emoji to rate and return to home
-              </div>
-            }
-          </div>
+          </>
         ) : (
           // Only show buttons if not in feedback mode
           <div style={{ display: "flex", gap: 21, justifyContent: "center", marginTop: 19 }}>
