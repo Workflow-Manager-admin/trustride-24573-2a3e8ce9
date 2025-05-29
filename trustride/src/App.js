@@ -16,6 +16,7 @@ import SignInScreen from './screens/SignInScreen';
 import RideBookingScreen from './screens/RideBookingScreen';
 import BookingDetailsScreen from './screens/BookingDetailsScreen';
 import AddGuardianContactScreen from './screens/AddGuardianContactScreen';
+import ConfirmBookingScreen from './screens/ConfirmBookingScreen';
 
 /**
  * PUBLIC_INTERFACE
@@ -27,6 +28,8 @@ import AddGuardianContactScreen from './screens/AddGuardianContactScreen';
  *     navigates to "/booking-details" with the chosen mode passed via router state.
  *   - "/booking-details" (BookingDetailsScreen) receives selected mode from navigation state
  *     and renders booking info accordingly.
+ *   - "/add-guardian-contact" → collects guardian details, then MUST navigate to /confirm-booking with all booking and ride info
+ *   - "/confirm-booking" (ConfirmBookingScreen) receives state, shows final confirmation, or robust error fallback if state is missing/broken.
  *   - Other static app screens remain as-is.
  */
 function AppContainer() {
@@ -63,6 +66,10 @@ function AppContainer() {
           <Route path="/book-ride" element={<RideBookingScreen />} />
           <Route path="/booking-details" element={<BookingDetailsScreen />} />
           <Route path="/add-guardian-contact" element={<AddGuardianContactScreen />} />
+          {/* KEY: Confirm booking step MUST exist! */}
+          <Route path="/confirm-booking" element={<ConfirmBookingScreen />} />
+          {/* Optionally: fallback for unknown routes */}
+          {/* <Route path="*" element={<HomeScreen />} /> */}
         </Routes>
       </main>
       <BottomTabNavigation />
