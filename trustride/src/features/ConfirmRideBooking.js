@@ -88,13 +88,7 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   }
 
   // Fix: Always call hooks at the top-level, not conditionally
-  const [redirectToRideStatus, setRedirectToRideStatus] = useState(false);
-  React.useEffect(() => {
-    if (success) {
-      const t = setTimeout(() => setRedirectToRideStatus(true), 1000);
-      return () => clearTimeout(t);
-    }
-  }, [success]);
+  // Remove direct RideStatus redirect logic. Leave success confirmation, but trigger onConfirm for parent-level navigation.
 
   if (!ride) {
     // Defensive: No ride selected
@@ -126,31 +120,18 @@ export default function ConfirmRideBooking({ ride, onConfirm, onBack }) {
   // PUBLIC_INTERFACE
   function handleConfirm() {
     setTouchedPayment(true);
-    // If multi and not picked, do not proceed
     if (multiplePayments && !selectedPayment) return;
     setSubmitting(true);
-    // Simulate a booking request (in a real app, async API here)
+    // Simulate a booking request (async API in real app)
     setTimeout(() => {
       setSubmitting(false);
       setSuccess(true);
-      // onConfirm is called with paymentMethod info (can be expanded as API evolves)
       onConfirm && onConfirm({ paymentMethod: selectedPayment || paymentMethods[0] });
     }, 1100);
   }
 
-  // Render RideStatus if redirecting, not inside a conditional
-  if (redirectToRideStatus && ride) {
-    try {
-      const RideStatus = require('./RideStatus').default;
-      return <RideStatus ride={ride} />;
-    } catch (err) {
-      // fallback: show nothing or a message
-      return <div>Loading status...</div>;
-    }
-  }
-
   if (success) {
-    // Quick visible confirmation, then proceed to RideStatus automatically.
+    // Show confirmation briefly while parent navigates to RideStatus page.
     return (
       <div
         style={{
