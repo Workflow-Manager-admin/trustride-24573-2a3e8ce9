@@ -27,7 +27,7 @@ function useModalLock(open) {
  *  - Safety-first, readable UI, visually consistent with app.
  */
 
-// Helper: fallback icon for each mode
+ // Helper: fallback icon for each mode
 function getModeIcon(mode) {
   switch ((mode || "").toLowerCase()) {
     case "bike":
@@ -106,6 +106,22 @@ function RideStatusScreen() {
   const [showChat, setShowChat] = useState(false);
   const [showCall, setShowCall] = useState(false);
 
+  // Emergency features: Fake Call, Silent SOS, Ride Deviation Alert states
+  const [showFakeCall, setShowFakeCall] = useState(false);
+  const [showSilentSOS, setShowSilentSOS] = useState(false);
+  const [showDeviation, setShowDeviation] = useState(false);
+  const [showToast, setShowToast] = useState(null);
+
+  // Modal lock
+  useModalLock(showChat || showCall || showFakeCall || showSilentSOS || showDeviation);
+
+  // Toast for quick feedback
+  useEffect(() => {
+    if (!showToast) return;
+    const t = setTimeout(() => setShowToast(null), 2100);
+    return () => clearTimeout(t);
+  }, [showToast]);
+
   // Ride start status simulation timer
   useEffect(() => {
     let startStatusTimer;
@@ -163,7 +179,6 @@ function RideStatusScreen() {
     marginRight: "auto",
   };
 
-  // PUBLIC_INTERFACE
   // Handler for persistent SOS button
   function handleSOS() {
     setShowSOS(true);
@@ -171,9 +186,25 @@ function RideStatusScreen() {
   }
   function handleCloseSOS() { setShowSOS(false); }
 
-  // PUBLIC_INTERFACE
   // Return to Home/Book new ride
   function handleBackHome() { navigate("/", { replace: true }); }
+
+  // Emergency button style
+  const emergBtnStyle = {
+    minWidth: 109,
+    minHeight: 44,
+    fontSize: 15,
+    fontWeight: 700,
+    borderRadius: 32,
+    border: "none",
+    boxShadow: "0 1.5px 8px #0077B609",
+    outline: "none",
+    background: "var(--background)",
+    color: "var(--primary)",
+    transition: "background .12s,color .12s",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 10, cursor: "pointer",
+    padding: "8.5px 20px",
+  };
 
   // Compose main details
   return (
@@ -521,49 +552,6 @@ function RideStatusScreen() {
         </section>
       )}
 
-      {/* Call modal lock at root of RideStatusScreen (unconditional as per React rules) */}
-=======
-  // ...state and effect hooks...
-
-  // Chat/call modals
-  const [showChat, setShowChat] = useState(false);
-  const [showCall, setShowCall] = useState(false);
-
-  // Emergency features: Fake Call, Silent SOS, Ride Deviation Alert states
-  const [showFakeCall, setShowFakeCall] = useState(false);
-  const [showSilentSOS, setShowSilentSOS] = useState(false);
-  const [showDeviation, setShowDeviation] = useState(false);
-  const [showToast, setShowToast] = useState(null); // for quick effect notification
-
-  // Always call the hook at the top
-  useModalLock(showChat || showCall || showFakeCall || showSilentSOS || showDeviation);
-
-  // Toast for quick feedback
-  useEffect(() => {
-    if (!showToast) return;
-    const t = setTimeout(() => setShowToast(null), 2100);
-    return () => clearTimeout(t);
-  }, [showToast]);
-
-  // Helper for emergency button styling
-  const emergBtnStyle = {
-    minWidth: 109,
-    minHeight: 44,
-    fontSize: 15,
-    fontWeight: 700,
-    borderRadius: 32,
-    border: "none",
-    boxShadow: "0 1.5px 8px #0077B609",
-    outline: "none",
-    background: "var(--background)",
-    color: "var(--primary)",
-    transition: "background .12s,color .12s",
-    display: "flex", alignItems: "center", justifyContent: "center", gap: 10, cursor: "pointer",
-    padding: "8.5px 20px",
-  };
-
-  // ...rest of component...
-
       {/* Emergency Safety Features */}
       <section className="rounded-card" style={{ ...sectionCardStyle, textAlign: 'center', border: '2px solid var(--accent)', background: 'rgba(0,168,150,0.028)' }}>
         <div className="heading-2" style={{ marginBottom: 7, fontSize: 17, color: "var(--accent)", fontWeight: 700, letterSpacing: 0.1 }}>
@@ -702,13 +690,6 @@ function RideStatusScreen() {
       >
         🆘
       </button>
-
-      {/* Go Home / Book new ride after ride finished */}
-      {/* 
-      <div style={{textAlign:"center", marginTop:26}}>
-        <button className="btn" style={{borderRadius:16, minWidth:100}} onClick={handleBackHome}>Done / Back Home</button>
-      </div>
-      */}
     </div>
   );
 }
